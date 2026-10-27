@@ -1,0 +1,1246 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>QuantScale · V3拓扑结果与单Agent补跑</title>
+<style>
+:root{--ink:#182631;--muted:#65727d;--line:#dce3e7;--paper:#fff;--bg:#f6f8f9;--accent:#176275;--pale:#edf5f6;--gray:#9aabb2}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:32px}body{margin:0;color:var(--ink);background:var(--paper);font:16px/1.85 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}a{color:var(--accent)}aside{position:fixed;inset:0 auto 0 0;width:220px;padding:38px 24px;background:var(--bg);border-right:1px solid var(--line);overflow-y:auto}aside .brand{font-size:21px;font-weight:750;letter-spacing:-.5px}aside .edition{font-size:12px;color:var(--muted);margin:4px 0 30px}nav a{display:flex;gap:13px;align-items:center;text-decoration:none;font-size:12px;color:var(--muted);padding:8px 0;border-bottom:1px solid transparent}nav a span{font-size:14px}nav a.active{color:var(--accent);font-weight:650}aside .aside-note{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:20px;margin-top:28px}main{margin-left:220px;max-width:1330px;padding:50px 64px 64px}header{max-width:960px;border-bottom:1px solid var(--line);padding-bottom:30px}.eyebrow{font-size:12px;color:var(--accent);letter-spacing:1.5px;font-weight:700}h1{font-size:36px;line-height:1.4;letter-spacing:-1px;margin:14px 0 16px;font-weight:750}header .intro{font-size:18px;line-height:1.8;color:#405561;max-width:750px}.meta{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 10px}.meta span{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:3px 10px;border-radius:3px}.actions{display:flex;align-items:center;gap:18px;margin-top:20px}.actions small{color:var(--muted);font-size:12px}button{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:4px;background:white;color:var(--ink);padding:7px 14px;cursor:pointer}button:hover{border-color:var(--accent)}section{padding-top:42px;margin-bottom:4px;max-width:1000px}.section-no{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:1px;margin-bottom:5px}h2{font-size:25px;line-height:1.5;margin:0 0 20px;letter-spacing:-.4px}h3{font-size:18px;line-height:1.5;margin:26px 0 12px}p{margin:14px 0;max-width:860px}strong{font-weight:690}section+section{border-top:1px solid var(--line);margin-top:38px}.finding{display:grid;grid-template-columns:55px 1fr;gap:20px;padding:16px 0;border-bottom:1px solid var(--line)}.finding>span{color:var(--accent);font-size:13px;font-weight:700;padding-top:3px}.finding p{margin:0}.takeaway{font-size:17px;line-height:1.9;border-left:3px solid var(--accent);padding-left:20px;margin:25px 0}.source,.chart-label{font-size:12px;line-height:1.8;color:var(--muted);max-width:none}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:4px;margin:20px 0 10px;max-width:100%}table{border-collapse:collapse;width:100%;font-size:13px;line-height:1.65;font-variant-numeric:tabular-nums}th{background:var(--bg);font-size:12px;color:#4e606a;font-weight:650;text-align:left;white-space:nowrap}th,td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}tr:last-child td{border-bottom:0}td:first-child{font-weight:550;min-width:105px}tbody tr:hover{background:#fafcfc}td{min-width:90px}#methods td:last-child{min-width:380px}.chart-box{margin:30px 0 24px;padding:22px 24px;background:#fbfcfd;border:1px solid var(--line);border-radius:4px}.chart-box h3{margin:0}.chart-label{margin:6px 0 12px}.chart-box svg{display:block;width:100%;height:auto;max-height:390px}.legend{display:flex;gap:20px;font-size:12px;color:var(--muted);flex-wrap:wrap;margin:12px 0}.legend span{display:inline-flex;align-items:center;gap:7px}.legend i{width:16px;height:3px;background:var(--accent);display:inline-block}.legend i.gray{background:var(--gray)}.chart-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.chart-heading label{font-size:12px;color:var(--muted)}select{font:inherit;font-size:13px;padding:6px 9px;margin-left:8px;border:1px solid var(--line);background:white;color:var(--ink);border-radius:4px}.note{background:var(--pale);padding:20px 24px;margin:24px 0;border-radius:4px}.note p{margin:7px 0 0}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin:22px 0}.two-col article{border-top:2px solid var(--line);padding-top:12px}.two-col h3{margin:0}.two-col p{font-size:14px}details{border:1px solid var(--line);border-radius:4px;padding:14px 18px;margin:20px 0}summary{cursor:pointer;font-weight:600;font-size:14px;line-height:1.7}summary:hover{color:var(--accent)}details[open]>summary{padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:14px}.strategy summary span{display:block;font-size:12px;color:var(--accent);margin-bottom:3px}.strategy summary small{display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:6px}.formula{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;background:var(--bg);padding:16px 18px;border-radius:3px;overflow-wrap:anywhere}.audit{font-size:14px;color:#41545f}.code-details{background:var(--bg)}pre{overflow:auto;max-height:520px;font:12px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;background:#172831;color:#e2edef;padding:20px;border-radius:4px;tab-size:4}.pipeline{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 0;margin-bottom:14px}.pipeline div{display:flex;flex-direction:column}.pipeline b{font-size:32px;line-height:1.3;font-weight:700}.pipeline div span{font-size:12px;color:var(--muted);margin-top:6px}.pipeline>span{color:var(--gray)}ul,ol{padding-left:24px;max-width:860px}li{margin:12px 0}.steps li{padding-left:6px}footer{border-top:1px solid var(--line);padding-top:25px;margin-top:45px;color:var(--muted);font-size:12px;max-width:960px}footer a{margin-right:14px}noscript p{background:#fff4dc;padding:14px}::selection{background:#cce3e8}
+
+.topology-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:20px 0}.topology-legend span{display:flex;align-items:center;gap:8px}.topology-legend i{display:inline-block;width:26px;border-top:2px solid var(--accent)}.topology-legend .management-key{border-color:#334b58}.topology-legend .feedback-key{border-color:#8798a2;border-top-style:dashed}.topology-figure{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(220px,1fr);align-items:center;gap:28px;border-top:1px solid var(--line);padding:26px 0;margin:0}.topology-svg{display:block;width:100%;height:auto}.topology-svg .worker rect{fill:#edf5f6;stroke:#176275;stroke-width:1.5}.topology-svg .manager rect{fill:#334b58;stroke:#334b58;stroke-width:1.5}.topology-svg .worker text{fill:#174e5c;font-size:17px;font-weight:650}.topology-svg .manager text{fill:#fff;font-size:17px;font-weight:650}.topology-svg .edge{fill:none;stroke-width:1.7}.topology-svg .management{stroke:#334b58}.topology-svg .peer{stroke:#176275;stroke-width:1.5}.topology-svg .feedback{stroke:#8798a2;stroke-dasharray:6 4;stroke-width:1.4}.topology-svg .arrow-management{fill:#334b58}.topology-svg .arrow-peer{fill:#176275}.topology-svg .arrow-feedback{fill:#8798a2}.topology-svg .context-box{fill:#f6f8f9;stroke:#dce3e7}.topology-svg .context-label{fill:#41545f;font-size:15px}.topology-svg .node-sub,.topology-svg .edge-label{fill:#65727d;font-size:13px}.topology-explanation h3{font-size:22px;margin:7px 0}.topology-explanation p{font-size:14px;margin:12px 0}.topology-explanation .fleet-count{font-size:12px;color:var(--accent);font-weight:650;margin:4px 0}.experiment-timeline{display:flex;gap:5px;margin:25px 0 12px}.experiment-timeline .phase{min-width:0;padding:18px 16px;display:flex;flex-direction:column;gap:6px;background:#edf1f3;border-radius:4px}.experiment-timeline .train{flex:6}.experiment-timeline .validation{flex:2;background:#e0ebee}.experiment-timeline .test{flex:2;background:#176275;color:white}.phase span{font-size:12px}.phase strong{font-size:18px;white-space:nowrap}.phase small{font-size:11px;opacity:.8}.experiment-flow{list-style:none;display:grid;grid-template-columns:repeat(5,1fr);gap:9px;max-width:none;margin:20px 0;padding:0}.experiment-flow li{margin:0;border-top:2px solid var(--line);padding:13px 9px 0 0;position:relative}.experiment-flow li:not(:last-child):after{content:'→';position:absolute;right:3px;top:10px;color:var(--muted)}.experiment-flow b{display:block;font-size:13px;padding-right:13px}.experiment-flow span{display:block;font-size:12px;color:var(--muted);margin-top:7px}.topology-drawing{min-width:0}
+@media(max-width:900px){.topology-figure{grid-template-columns:1fr;gap:5px}.topology-svg{max-width:600px;margin:0 auto}.topology-explanation{padding:0 8px}.experiment-timeline .phase{padding:14px 10px}.phase strong{font-size:15px}.experiment-flow{grid-template-columns:1fr}.experiment-flow li{padding:10px 0}.experiment-flow li:not(:last-child):after{content:'↓';right:4px}.experiment-timeline .train{flex:3}.experiment-timeline .validation,.experiment-timeline .test{flex:2}}
+@media print{.topology-figure{break-inside:avoid;grid-template-columns:1.4fr 1fr}.topology-svg .worker rect,.experiment-timeline .test{print-color-adjust:exact;-webkit-print-color-adjust:exact}.topology-explanation p{font-size:11px}}
+
+@media(min-width:1500px){main{padding-left:85px}}@media(max-width:1050px){aside{width:185px;padding:30px 18px}main{margin-left:185px;padding:35px 30px}h1{font-size:30px}}@media(max-width:720px){aside{position:relative;width:auto;border-right:0;border-bottom:1px solid var(--line);padding:18px 20px}aside .edition,aside .aside-note{display:none}nav{display:flex;overflow:auto;gap:18px;margin-top:12px;white-space:nowrap}nav a{gap:6px;padding:4px 0}nav a span{font-size:12px}main{margin:0;padding:28px 20px}h1{font-size:27px}h2{font-size:22px}header .intro{font-size:16px}.two-col{grid-template-columns:1fr;gap:10px}.chart-box{padding:16px 10px}.finding{grid-template-columns:36px 1fr;gap:12px}.pipeline{gap:5px}.pipeline b{font-size:26px}.pipeline div span{font-size:10px}th,td{padding:10px 11px}}
+@media print{aside,.actions,select{display:none}main{margin:0;padding:0;max-width:none}header{padding-bottom:16px}section{padding-top:22px}h1{font-size:26px}h2{font-size:21px}.table-wrap{overflow:visible}table{font-size:10px}th,td{padding:7px;min-width:0!important}details:not([open]){display:none}.chart-box,table,.finding{break-inside:avoid}body{font-size:12px;color:#000}section+section{margin-top:24px}a{color:inherit;text-decoration:none}.source{font-size:10px}}
+</style></head><body>
+<aside><div class="brand">QuantScale</div><div class="edition">实验研究报告 · 2026.10</div><nav aria-label="章节导航"><a href="#v3-overview">01<span>V3总览</span></a><a href="#v3-results">02<span>测试结果</span></a><a href="#supplement">03<span>单Agent补跑</span></a><a href="#topology-mechanisms">04<span>拓扑机制</span></a><a href="#search-dynamics">05<span>搜索改进过程</span></a><a href="#topology-risk">06<span>风险与相似性</span></a><a href="#v3-tokens">07<span>token账目</span></a><a href="#v3-code">08<span>策略代码</span></a><a href="#v3-methods">09<span>实验设定</span></a></nav><p class="aside-note">独立 HTML · 无外部依赖<br>支持离线阅读、策略代码展开及打印。</p></aside>
+<main><header><div class="eyebrow">QUANTSCALE / V3</div><h1>V3拓扑实验：<br>单Agent补跑与完整结果</h1><p class="intro">只展示V3。当前完成测试10/10个逻辑条件；原网络失败与本次追加研究分别记录。</p><div class="meta"><span>DeepSeek Flash</span><span>500只股票</span><span>每次最多17万token</span><span>补跑单独记账</span></div><div class="actions"><button onclick="window.print()">打印 / 保存PDF</button></div></header>
+
+<section id="v3-overview"><div class="section-no">01</div><h2>V3结果：补全视图与实际成本分开看</h2><p>当前完成测试的逻辑条件为 <strong>10/10</strong>。原批次有9份测试结果，单Agent标签17因网络失败没有提交；本次单独追加一次研究，状态为 <strong>evaluated</strong>。原始失败记录仍然保留。</p><div class="table-wrap"><table><thead><tr><th scope="col">统计口径</th><th scope="col">已确认token</th><th scope="col">候选尝试</th><th scope="col">完成训练与验证</th></tr></thead><tbody><tr><td>原V3批次（包含原网络失败）</td><td>1,318,114</td><td>92</td><td>73</td></tr><tr><td>本次单Agent补跑</td><td>134,284</td><td>7</td><td>5</td></tr><tr><td>全部V3研究活动合计</td><td>1,452,398</td><td>99</td><td>78</td></tr></tbody></table></div><p>其中训练与验证都有持仓的有效候选共 76 个。仍有 1 个请求没有用量回执，对应预留请求额度 65,536 token；已确认token不能当作完整账单。</p><div class="note"><strong>补跑不抹去原失败，也不构成全新盲测。</strong><p>策略结果表每个逻辑条件取一份，单Agent·17使用这次补跑的冻结结果，原失败无收益可替换。成本表则计入全部研究尝试。单Agent因此有一次额外研究尝试，不能把补全视图当作完全同时、严格预算匹配的原始十组实验。</p></div></section>
+<section id="v3-results"><div class="section-no">02</div><h2>五种拓扑的V3测试结果</h2><div class="table-wrap"><table><thead><tr><th scope="col">结构</th><th scope="col">完成/计划</th><th scope="col">测试Sharpe均值</th><th scope="col">测试年化收益均值</th><th scope="col">测试最大回撤均值</th><th scope="col">研究尝试数</th></tr></thead><tbody><tr><td>单 Agent</td><td>2/2</td><td>-0.79</td><td>-9.46%</td><td>19.86%</td><td>3</td></tr><tr><td>独立并行</td><td>2/2</td><td>-0.82</td><td>-9.33%</td><td>22.18%</td><td>2</td></tr><tr><td>中心化</td><td>2/2</td><td>0.25</td><td>6.90%</td><td>21.02%</td><td>2</td></tr><tr><td>去中心化</td><td>2/2</td><td>-0.28</td><td>-2.70%</td><td>19.27%</td><td>2</td></tr><tr><td>混合</td><td>2/2</td><td>0.82</td><td>8.00%</td><td>9.25%</td><td>2</td></tr></tbody></table></div><p class="source">来源：V3原始冻结评估与本次追加的单次评估。均值是各次指标的算术均值，不是组合策略表现；补跑仅覆盖原失败条件，没有按收益替换其他策略。</p><div class="table-wrap"><table><thead><tr><th scope="col">策略</th><th scope="col">验证Sharpe</th><th scope="col">测试Sharpe</th><th scope="col">年化收益</th><th scope="col">最大回撤</th><th scope="col">2024累计</th><th scope="col">2025累计</th></tr></thead><tbody><tr><td>单 Agent · 7</td><td>0.4321</td><td>-0.84</td><td>-9.84%</td><td>21.37%</td><td>-11.63%</td><td>-7.86%</td></tr><tr><td>单 Agent · 17（补跑）</td><td>0.3510</td><td>-0.74</td><td>-9.09%</td><td>18.36%</td><td>-5.76%</td><td>-12.17%</td></tr><tr><td>独立并行 · 7</td><td>0.2319</td><td>-0.79</td><td>-8.38%</td><td>18.26%</td><td>-5.19%</td><td>-11.35%</td></tr><tr><td>独立并行 · 17</td><td>-0.0002</td><td>-0.85</td><td>-10.28%</td><td>26.11%</td><td>-5.11%</td><td>-15.02%</td></tr><tr><td>中心化 · 7</td><td>0.3285</td><td>-0.61</td><td>-8.28%</td><td>18.18%</td><td>-8.94%</td><td>-7.49%</td></tr><tr><td>中心化 · 17</td><td>-0.0046</td><td>1.10</td><td>22.08%</td><td>23.86%</td><td>27.62%</td><td>16.41%</td></tr><tr><td>去中心化 · 7</td><td>-0.0119</td><td>-1.44</td><td>-15.17%</td><td>30.22%</td><td>-14.25%</td><td>-15.86%</td></tr><tr><td>去中心化 · 17</td><td>0.2158</td><td>0.88</td><td>9.78%</td><td>8.32%</td><td>12.10%</td><td>7.34%</td></tr><tr><td>混合 · 7</td><td>0.0692</td><td>0.84</td><td>7.97%</td><td>6.77%</td><td>14.01%</td><td>2.12%</td></tr><tr><td>混合 · 17</td><td>0.0401</td><td>0.80</td><td>8.02%</td><td>11.73%</td><td>7.20%</td><td>8.72%</td></tr></tbody></table></div><div class="chart-box"><div class="chart-heading"><h3>V3测试期净值路径</h3><label>选择结构 <select id="nav-select"><option value="single" selected>单 Agent</option><option value="independent">独立并行</option><option value="centralized">中心化</option><option value="decentralized">去中心化</option><option value="hybrid">混合</option></select></label></div><p class="chart-label">横轴：月末日期 · 纵轴：复合净值，初始1；多空交易费5bp、借券年化30bp</p><div id="nav-chart"></div><div id="nav-legend" class="legend"></div><p class="source">逐日净收益连续复合后月末抽样；回撤指标使用完整日序列，月末图不会显示全部月内波动。</p></div></section>
+<section id="supplement"><div class="section-no">03</div><h2>单Agent标签17的补跑记录</h2><div class="table-wrap"><table><thead><tr><th scope="col">项目</th><th scope="col">本次单独补跑</th></tr></thead><tbody><tr><td>重复标签</td><td>17；服务端随机数不受标签控制</td></tr><tr><td>研究方式</td><td>重新开始搜索，不导入原失败尝试的候选或测试反馈</td></tr><tr><td>额外预算上限</td><td>170,000总token，最多12个候选</td></tr><tr><td>生成设置</td><td>研究者low推理，最大输出32,768；V3代码与数据接口不变</td></tr><tr><td>当前状态</td><td>evaluated</td></tr><tr><td>实际已确认token</td><td>134,284</td></tr><tr><td>候选尝试 / 有效</td><td>7 / 5</td></tr><tr><td>错误</td><td>无终止错误</td></tr></tbody></table></div><p>本次选中策略验证Sharpe为 <strong>0.3510</strong>，测试Sharpe为 <strong>-0.7355</strong>，测试年化收益 <strong>-9.09%</strong>，最大回撤 <strong>18.36%</strong>。</p><div class="table-wrap"><table><thead><tr><th scope="col">候选顺序</th><th scope="col">验证Sharpe</th><th scope="col">执行结果</th></tr></thead><tbody><tr><td>1</td><td>0.3510</td><td>完成训练与验证</td></tr><tr><td>2</td><td>—</td><td>单次决策超过10秒</td></tr><tr><td>3</td><td>-0.9197</td><td>完成训练与验证</td></tr><tr><td>4</td><td>-0.1314</td><td>完成训练与验证</td></tr><tr><td>5</td><td>0.2348</td><td>完成训练与验证</td></tr><tr><td>6</td><td>-0.3198</td><td>完成训练与验证</td></tr><tr><td>7</td><td>—</td><td>单次决策超过10秒</td></tr></tbody></table></div><p>第2、7个候选发生决策超时，属于策略代码执行失败；本次没有网络终止错误。用量达到134,284 token后，剩余35,716额度不足以覆盖下一请求的保守输入预留，因此正常停止，没有强行用完17万上限。12个候选是上限，并非保证次数。</p><p>最终选中第1个候选：用最近完成周五的5日收益排序，买入最多40只跌幅最大的股票，卖空最多40只涨幅最大的股票，两侧各约50%等权敞口。后续6次尝试均未超过它。其测试期2024年收益−5.76%，2025年−12.17%；此次补跑补全了流程，但没有改善为盈利策略。</p><p class="source">原网络失败已确认消耗13,343 token，另有一个在途请求用量未知；两者没有从总成本里删除。研究与冻结完成后，新增策略只测试一次。</p></section>
+<section id="topology-mechanisms"><div class="section-no">04</div><h2>把排名拆开：管理者与共享分别对应什么？</h2><p>四种多研究者结构可以按“有无管理者 × 有无同伴共享”理解；单Agent则是额外的单研究者基线。这样能组织比较，但本轮不是严格的随机因子试验，下面的差值只是已选策略的历史描述。</p><div class="table-wrap"><table><thead><tr><th scope="col">管理者</th><th scope="col">同伴共享</th><th scope="col">结构</th><th scope="col">测试Sharpe均值</th></tr></thead><tbody><tr><td>无</td><td>无</td><td>独立并行</td><td>-0.824</td></tr><tr><td>有</td><td>无</td><td>中心化</td><td>0.246</td></tr><tr><td>无</td><td>有</td><td>去中心化</td><td>-0.278</td></tr><tr><td>有</td><td>有</td><td>混合</td><td>0.820</td></tr></tbody></table></div><div class="table-wrap"><table><thead><tr><th scope="col">描述性比较</th><th scope="col">组均值差（Sharpe单位）</th></tr></thead><tbody><tr><td>无共享：中心化 − 独立并行</td><td>1.070</td></tr><tr><td>有共享：混合 − 去中心化</td><td>1.098</td></tr><tr><td>无管理者：去中心化 − 独立并行</td><td>0.546</td></tr><tr><td>有管理者：混合 − 中心化</td><td>0.575</td></tr><tr><td>交互对比：混合 − 中心化 − 去中心化 + 独立并行</td><td>0.029</td></tr></tbody></table></div><div class="note"><strong>混合最好，不等于已经发现了额外的“混合协同红利”。</strong><p>本轮交互对比仅约0.029，四组均值的形态接近加性叠加。管理者相关对比约1.07–1.10，共享相关对比约0.55–0.57，但不能将这些数当作因果效应或推广到未来。也不能用接近零的交互对比证明协同不存在；没有进行统计显著性确认。</p></div><p>每组仅两次，实际token和有效候选数不同，管理者还增加一个不同推理设置的角色；最终策略的经济方向也不同。因此，结构差异、预算分配、策略风格和随机性混在一起。这里最有价值的是提出后续消融问题，而不是给管理者或同伴信息“定价”。</p><h3>逐个结构，更具体地理解</h3><p><strong>单Agent：</strong>补跑后可观察两份完整结果，但其中一份来自追加研究尝试，原网络失败的费用和未知用量仍须计入。单Agent·7有明显的验证改善却测试失败，说明自我迭代也能提升验证成绩；补全后的均值仍不足以证明稳定的单Agent能力。</p><p><strong>独立并行：</strong>20个有效候选、每个约1.34万token，产出便宜且多，但最终两份测试都亏损。当前问题不只是“探索不够”，而是独立生成与验证选优没有稳定找到泛化方向。尚无证据证明所有损失来自重复搜索。</p><p><strong>中心化：</strong>两次测试Sharpe为−0.61和1.10，均值0.25掩盖了很大的分歧。管理者有组织修订方向的轨迹，但一份选到反转方向，另一份选到含高Beta与状态切换的动量方向；不能把均值看成稳定的中心化收益。</p><p><strong>去中心化：</strong>一次赢家来自首轮，无同伴信息；另一次收到一条同伴有效结果，却只有极小验证改善，最终测试−1.44。当前更准确的说法是“共享没有在这两次运行中稳定创造超越首轮的候选”，而不是“大家互相抄袭导致失败”。</p><p><strong>混合：</strong>两次都在后续轮次产生赢家，均收到管理者分工与三条同伴有效结果，两份测试均盈利。它是本轮最值得继续验证的机制线索；不过，自身反馈、同伴反馈、管理者分工同时存在，还无法分离各自贡献。</p><p class="source">来源：V3逐次评估和信息流配置。Sharpe均值的差值不是收益率差值，也不是组合策略Sharpe。比较没有控制底层金融因子，不是严格随机的2×2因果试验。</p></section>
+<section id="search-dynamics"><div class="section-no">05</div><h2>过程证据：共享后有没有超过首轮？</h2><div class="table-wrap"><table><thead><tr><th scope="col">运行</th><th scope="col">首个有效轮次</th><th scope="col">该轮有效数</th><th scope="col">该轮最佳验证Sharpe</th><th scope="col">后续有效数</th><th scope="col">后续最佳验证Sharpe</th><th scope="col">后续−首轮最佳</th></tr></thead><tbody><tr><td>单 Agent · 7</td><td>0</td><td>1</td><td>-0.2454</td><td>8</td><td>0.4321</td><td>0.6775</td></tr><tr><td>单 Agent · 17（补跑）</td><td>0</td><td>1</td><td>0.3510</td><td>4</td><td>0.2348</td><td>-0.1162</td></tr><tr><td>独立并行 · 7</td><td>0</td><td>4</td><td>0.0519</td><td>7</td><td>0.2319</td><td>0.1799</td></tr><tr><td>独立并行 · 17</td><td>0</td><td>2</td><td>-0.0003</td><td>7</td><td>-0.0002</td><td>0.0001</td></tr><tr><td>中心化 · 7</td><td>0</td><td>4</td><td>0.0086</td><td>4</td><td>0.3285</td><td>0.3200</td></tr><tr><td>中心化 · 17</td><td>1</td><td>2</td><td>-0.6848</td><td>4</td><td>-0.0046</td><td>0.6802</td></tr><tr><td>去中心化 · 7</td><td>0</td><td>2</td><td>-0.0155</td><td>5</td><td>-0.0119</td><td>0.0036</td></tr><tr><td>去中心化 · 17</td><td>0</td><td>3</td><td>0.2158</td><td>6</td><td>0.1391</td><td>-0.0767</td></tr><tr><td>混合 · 7</td><td>0</td><td>4</td><td>-0.5769</td><td>4</td><td>0.0692</td><td>0.6461</td></tr><tr><td>混合 · 17</td><td>0</td><td>3</td><td>-0.4562</td><td>2</td><td>0.0401</td><td>0.4963</td></tr></tbody></table></div><p class="source">“首轮”是该组首个产生有效回测的轮次；中心化·17实际为第1轮，因为第0轮管理者格式失败。单Agent每轮1次，多研究者每轮最多4次，所以首轮候选数并不匹配。空白是没有后续有效候选，不填零。这里比较后续候选的最佳值，最终全局最佳值不会因加入较差候选而下降。</p><h3>混合：出现了两次可追踪的方向修订</h3><p>混合·7从首轮最佳−0.577提升到后续0.069；赢家由W2从快速残差反转转向月末残差动量。混合·17从−0.456提升到0.040；W2先前因仓位限制没有有效结果，随后提出月度状态切换的高低波动率多空策略。两次赢家均在第1轮，收到三条同伴的亏损回测和管理者分工。</p><p>这支持“系统能够依据已有失败经济证据提出不同方向”的观察，却不证明同伴消息是必要原因。混合·7同时有自己的负反馈；混合·17也有自己的仓位错误反馈。没有相同任务下的共享关闭对照，无法排除自行修订或管理者单独分工也能产生同一方案。</p><h3>去中心化：信息共享存在，但边际搜索改进很弱</h3><p>去中心化·17的后续最佳0.139没有超过首轮0.216，最后保留首轮独立提案。去中心化·7仅从−0.0155变为−0.0119，改进约0.0036。不能据此证明共享有害，但这两次没有显示稳定的增量发现能力。</p><h3>验证改善不是协作独有，也不是测试盈利的保证</h3><p>单Agent·7从首轮−0.245提高到0.432，幅度约0.678，却在测试期得到−0.837。中心化·7和独立并行·7也改善了验证最佳值，但最终测试为负。因此，仅用“后续验证改善幅度”衡量拓扑，会混淆自我反馈、更多选优机会和真正泛化能力。</p><details><summary>展开胜出候选的实际信息来源与各worker尝试数</summary><div class="table-wrap"><table><thead><tr><th scope="col">运行</th><th scope="col">胜出worker / 轮次</th><th scope="col">可见自身有效结果</th><th scope="col">可见同伴有效结果</th><th scope="col">各worker尝试数</th></tr></thead><tbody><tr><td>单 Agent · 7</td><td>W0 / 3</td><td>2</td><td>0</td><td>W0: 10</td></tr><tr><td>单 Agent · 17（补跑）</td><td>W0 / 0</td><td>0</td><td>0</td><td>W0: 7</td></tr><tr><td>独立并行 · 7</td><td>W3 / 1</td><td>1</td><td>0</td><td>W0: 3, W1: 3, W2: 3, W3: 3</td></tr><tr><td>独立并行 · 17</td><td>W1 / 1</td><td>1</td><td>0</td><td>W0: 3, W1: 3, W2: 3, W3: 3</td></tr><tr><td>中心化 · 7</td><td>W1 / 1</td><td>1</td><td>0</td><td>W0: 3, W1: 3, W2: 2, W3: 2</td></tr><tr><td>中心化 · 17</td><td>W2 / 2</td><td>1</td><td>0</td><td>W0: 3, W1: 3, W2: 2, W3: 2</td></tr><tr><td>去中心化 · 7</td><td>W2 / 1</td><td>1</td><td>1</td><td>W0: 3, W1: 3, W2: 2, W3: 2</td></tr><tr><td>去中心化 · 17</td><td>W0 / 0</td><td>0</td><td>0</td><td>W0: 3, W1: 3, W2: 2, W3: 2</td></tr><tr><td>混合 · 7</td><td>W2 / 1</td><td>1</td><td>3</td><td>W0: 2, W1: 2, W2: 2, W3: 2</td></tr><tr><td>混合 · 17</td><td>W2 / 1</td><td>0</td><td>3</td><td>W0: 3, W1: 2, W2: 2, W3: 2</td></tr></tbody></table></div></details><h3>当前信息结构还有两项具体限制</h3><ul><li><strong>共享的是完成回测的候选，包括亏损策略；执行错误不会共享。</strong>管理者和同伴只拿各W最近一次有效结果，无法直接看见仓位违规、超时、禁用函数等失败细节。混合·17的W2首轮仓位违规，管理者下一轮只知道没有有效结果；W2自己才持有具体错误。</li><li><strong>信息结构之外还有固定的资源调度。</strong>混合·17后来管理者已提出继续改善W2方案，但最后执行轮次只调用W0一次，W2没有获得新尝试。预算、上下文预留与固定顺序共同限制后续探索，不能把没有继续改进全归于研究者能力。</li></ul><p class="source">来源：trajectory.jsonl中与候选对应的request、trial、manager_broadcast。研究者只持有自身最近3条结果，管理者和同伴只收到上一轮快照；这描述的是当前实现，不代表所有中心化/去中心化设计的能力上界。</p></section>
+<section id="topology-risk"><div class="section-no">06</div><h2>收益差异有多少可能来自策略风格与风险？</h2><div class="table-wrap"><table><thead><tr><th scope="col">策略一</th><th scope="col">策略二</th><th scope="col">测试日净收益相关系数</th></tr></thead><tbody><tr><td>单 Agent · 7</td><td>单 Agent · 17（补跑）</td><td>0.200</td></tr><tr><td>混合 · 7</td><td>混合 · 17</td><td>0.378</td></tr><tr><td>中心化 · 7</td><td>中心化 · 17</td><td>-0.612</td></tr><tr><td>去中心化 · 7</td><td>去中心化 · 17</td><td>0.082</td></tr><tr><td>独立并行 · 7</td><td>独立并行 · 17</td><td>0.458</td></tr><tr><td>单 Agent · 7</td><td>中心化 · 7</td><td>0.907</td></tr><tr><td>单 Agent · 7</td><td>去中心化 · 7</td><td>0.846</td></tr><tr><td>单 Agent · 7</td><td>独立并行 · 17</td><td>0.854</td></tr></tbody></table></div><p><strong>不同拓扑可以产生非常相似的收益。</strong>单Agent·7与中心化·7相关0.907，两者都在测试期亏损，策略描述均以较慢反转为主。这说明“不同组织结构”不保证“不同经济押注”。</p><p><strong>同一拓扑也可以产生完全不同的方向。</strong>中心化两份相关−0.612，去中心化两份仅0.082。去中心化这轮的差表现不能简单归因于同质化；它具有收益方向差异，却没有稳定筛选出两份都盈利的策略。相关性不能替代持仓或因子归因。</p><p><strong>混合的两份赢家并非收益近乎相同的重复。</strong>相关0.378，且两份策略各自2024和2025年度切片都为正。代码核读显示，混合·7主要为残差动量，混合·17则是市场趋势控制的高低波动率多空，两者机制和风险不同。</p><div class="table-wrap"><table><thead><tr><th scope="col">策略</th><th scope="col">测试Sharpe</th><th scope="col">年化波动率</th><th scope="col">平均总敞口</th><th scope="col">SPY Beta</th><th scope="col">日均交易量/NAV</th><th scope="col">单市场回归年化算术截距</th></tr></thead><tbody><tr><td>单 Agent · 7</td><td>-0.84</td><td>11.58%</td><td>0.980</td><td>-0.026</td><td>8.86%</td><td>-9.12%</td></tr><tr><td>单 Agent · 17（补跑）</td><td>-0.74</td><td>11.98%</td><td>1.000</td><td>0.205</td><td>36.85%</td><td>-13.23%</td></tr><tr><td>独立并行 · 7</td><td>-0.79</td><td>10.35%</td><td>1.000</td><td>0.145</td><td>31.23%</td><td>-11.34%</td></tr><tr><td>独立并行 · 17</td><td>-0.85</td><td>11.87%</td><td>0.960</td><td>-0.001</td><td>10.16%</td><td>-10.13%</td></tr><tr><td>中心化 · 7</td><td>-0.61</td><td>12.84%</td><td>1.000</td><td>-0.037</td><td>8.17%</td><td>-7.02%</td></tr><tr><td>中心化 · 17</td><td>1.10</td><td>19.95%</td><td>0.975</td><td>0.573</td><td>8.98%</td><td>9.59%</td></tr><tr><td>去中心化 · 7</td><td>-1.44</td><td>11.02%</td><td>1.000</td><td>0.062</td><td>9.90%</td><td>-17.17%</td></tr><tr><td>去中心化 · 17</td><td>0.88</td><td>11.32%</td><td>1.000</td><td>0.225</td><td>9.77%</td><td>5.11%</td></tr><tr><td>混合 · 7</td><td>0.84</td><td>9.62%</td><td>1.000</td><td>0.101</td><td>5.08%</td><td>5.96%</td></tr><tr><td>混合 · 17</td><td>0.80</td><td>10.37%</td><td>0.500</td><td>0.407</td><td>2.88%</td><td>-0.52%</td></tr></tbody></table></div><div class="note"><strong>两份混合策略都赚钱，但不能把它们都视作市场无关alpha。</strong><p>混合·7相对SPY的Beta约0.101、单市场回归年化算术截距约5.96%；混合·17平均总敞口仅0.5，但Beta约0.407，回归截距约−0.52%，R²约0.442。后者虽然净美元敞口接近零，仍有较明显市场风险。不能只凭约8%的年化收益，就认为两份策略具有相同的超额收益质量。</p></div><p>中心化·17的22.08%年化收益同样伴随约20.0%波动率、23.86%最大回撤和约0.573的市场Beta。与混合组比较时，应同时看风险，而不是只按最高收益率给拓扑排名。</p><p class="source">来源：10份已保存hidden_daily.csv的500个共同观测。SPY使用相同execution_date→date的复权开盘收益；OLS含截距，年化算术截距=252×(策略日均收益−Beta×市场日均收益)。仅做事后描述，没有多因子、显著性或因果确认；截距不等于复合超额收益。此项分析直接使用已保存收益，未额外调用模型或重跑策略。</p></section>
+<section id="v3-tokens"><div class="section-no">07</div><h2>V3 token消耗与有效产出</h2><div class="table-wrap"><table><thead><tr><th scope="col">结构</th><th scope="col">全部已确认token</th><th scope="col">输入token</th><th scope="col">输出token</th><th scope="col">其中推理token</th><th scope="col">有效/候选尝试</th><th scope="col">每有效候选token</th></tr></thead><tbody><tr><td>单 Agent</td><td>290,668</td><td>102,719</td><td>187,949</td><td>149,748</td><td>15/18</td><td>19378</td></tr><tr><td>独立并行</td><td>267,817</td><td>62,901</td><td>204,916</td><td>174,318</td><td>20/24</td><td>13391</td></tr><tr><td>中心化</td><td>309,573</td><td>82,513</td><td>227,060</td><td>191,066</td><td>14/20</td><td>22112</td></tr><tr><td>去中心化</td><td>290,504</td><td>90,122</td><td>200,382</td><td>170,769</td><td>16/20</td><td>18156</td></tr><tr><td>混合</td><td>293,836</td><td>113,592</td><td>180,244</td><td>151,515</td><td>13/17</td><td>22603</td></tr></tbody></table></div><p>上表计入所有V3研究活动：单Agent包含原失败尝试和追加补跑。输入、输出与推理必须分清，推理包含在输出中，不能重复相加。每个有效候选的费用包含已确认失败用量，但未包含服务端尚未确认的账单费用。</p><p>同样的预算上限不代表实际消耗相等。当前输入预留按消息UTF-8字节数+1024估计，带更多代码上下文的结构可能提前停止；本次追加预算也使单Agent总研究机会不同。不能单凭这张成本表认定某一拓扑长期更经济。</p></section>
+<section id="v3-code"><div class="section-no">08</div><h2>最终策略与代码</h2><details class="strategy"><summary>单 Agent · 7 · 测试Sharpe -0.84</summary><p>The prior weekly short-horizon reversal strategy had positive gross returns but was consumed by roughly 0.30 daily turnover and transaction costs. The revised experiment keeps the reversal premise but harvests it more slowly: rebalance only once per month using the last completed month-end close, rank stocks on 21-day and 63-day reversal plus a low-volatility tilt, and hold equal-weighted dollar-neutral long/short baskets until the next month-end signal. Slower formation windows and monthly holding should cut turnover by roughly an order of magnitude while retaining the reversal premium. Liquidity and eligibility screens remain, and position sizing respects the 2% cap, gross limit and net tolerance.</p><details><summary>完整Python代码</summary><pre><code>import numpy as np
+import pandas as pd
+
+
+def _zeros(tickers):
+    return pd.Series(0.0, index=pd.Index(tickers), dtype=float)
+
+
+def generate_weights(history, universe):
+    tickers = pd.Index(universe)
+    if len(tickers) == 0:
+        return pd.Series(dtype=float)
+
+    adj_full = history.get(&#x27;adjusted_close&#x27;)
+    if adj_full is None:
+        adj_full = history.get(&#x27;close&#x27;)
+    if adj_full is None or len(adj_full.index) == 0:
+        return _zeros(tickers)
+
+    adj = adj_full.reindex(columns=tickers)
+    dates = adj.index
+    if len(dates) &lt; 70:
+        return _zeros(tickers)
+
+    periods = np.asarray(dates.year) * 12 + np.asarray(dates.month)
+    if len(periods) &gt;= 2:
+        changes = periods[1:] != periods[:-1]
+        month_ends = np.where(changes)[0]
+    else:
+        month_ends = np.array([], dtype=int)
+
+    if len(month_ends) &gt; 0:
+        sig_idx = int(month_ends[-1])
+    else:
+        sig_idx = len(dates) - 1
+
+    start_idx = max(0, sig_idx - 140)
+    sub = adj.iloc[start_idx:sig_idx + 1].ffill(limit=5)
+    sub = sub.where(sub &gt; 0)
+    n = len(sub)
+    if n &lt; 25:
+        return _zeros(tickers)
+
+    elig = None
+    if &#x27;eligible&#x27; in history and history[&#x27;eligible&#x27;] is not None:
+        try:
+            elig = history[&#x27;eligible&#x27;].reindex(index=dates, columns=tickers)
+        except Exception:
+            elig = None
+
+    sig_ok = sub.iloc[-1].notna()
+    latest_ok = adj.iloc[-1].notna()
+    if elig is not None:
+        sig_ok = sig_ok &amp; elig.iloc[sig_idx].fillna(False).astype(bool)
+        latest_ok = latest_ok &amp; elig.iloc[-1].fillna(False).astype(bool)
+
+    liq_ok = pd.Series(True, index=tickers, dtype=bool)
+    if &#x27;volume&#x27; in history and &#x27;close&#x27; in history:
+        try:
+            vol = history[&#x27;volume&#x27;].reindex(index=dates, columns=tickers).iloc[start_idx:sig_idx + 1]
+            close = history[&#x27;close&#x27;].reindex(index=dates, columns=tickers).iloc[start_idx:sig_idx + 1]
+            liq = (close * vol).tail(60).median()
+            liq_rank = liq.rank(pct=True, na_option=&#x27;keep&#x27;)
+            liq_ok = liq.notna() &amp; (liq &gt; 0) &amp; (liq_rank &gt;= 0.20)
+        except Exception:
+            liq_ok = pd.Series(True, index=tickers, dtype=bool)
+
+    last = sub.iloc[-1]
+
+    rev21 = pd.Series(np.nan, index=tickers, dtype=float)
+    if n &gt;= 22:
+        rev21 = -(last / sub.iloc[-22] - 1.0)
+
+    rev63 = pd.Series(np.nan, index=tickers, dtype=float)
+    if n &gt;= 64:
+        rev63 = -(last / sub.iloc[-64] - 1.0)
+    elif n &gt;= 22:
+        rev63 = rev21
+
+    vola = pd.Series(np.nan, index=tickers, dtype=float)
+    try:
+        rets = sub.pct_change(fill_method=None)
+        vola = rets.tail(80).std(skipna=True) * np.sqrt(252.0)
+    except Exception:
+        vola = pd.Series(np.nan, index=tickers, dtype=float)
+
+    r21 = rev21.rank(pct=True, na_option=&#x27;keep&#x27;)
+    r63 = rev63.rank(pct=True, na_option=&#x27;keep&#x27;)
+    rvol = (-vola).rank(pct=True, na_option=&#x27;keep&#x27;)
+    score = 0.55 * r21 + 0.30 * r63 + 0.15 * rvol
+
+    valid = (
+        sig_ok &amp; latest_ok &amp; liq_ok &amp;
+        rev21.notna() &amp; rev63.notna() &amp; vola.notna() &amp;
+        last.notna()
+    )
+    score = score[valid].replace([np.inf, -np.inf], np.nan).dropna()
+    if len(score) &lt; 20:
+        return _zeros(tickers)
+
+    n_side = min(50, len(score) // 2)
+    if n_side &lt; 10:
+        return _zeros(tickers)
+
+    ranked = score.sort_values(ascending=False)
+    longs = ranked.index[:n_side]
+    shorts = ranked.index[-n_side:]
+
+    per_side = min(0.49, 0.02 * n_side)
+    w = per_side / float(n_side)
+
+    weights = pd.Series(0.0, index=tickers, dtype=float)
+    weights.loc[longs] = w
+    weights.loc[shorts] = -w
+    weights = weights.clip(-0.02, 0.02)
+    weights = weights.replace([np.inf, -np.inf], 0.0).fillna(0.0)
+    return weights.reindex(tickers)
+</code></pre></details></details><details class="strategy"><summary>单 Agent · 17（补跑） · 测试Sharpe -0.74</summary><p>Liquid equities exhibit short-horizon reversal after extreme recent moves. A weekly dollar-neutral portfolio that is long the most oversold liquid names and short the most overbought liquid names should capture a reversal premium while controlling risk through equal weights, liquidity filters, and a gross exposure cap of one.</p><details><summary>完整Python代码</summary><pre><code>import numpy as np
+import pandas as pd
+
+def _get_df(history, name):
+    df = history.get(name)
+    if isinstance(df, pd.DataFrame):
+        return df
+    return None
+
+def generate_weights(history, universe):
+    cols = pd.Index(pd.unique(pd.Index(universe).astype(str)))
+    if len(cols) == 0:
+        return pd.Series(dtype=float)
+    zeros = pd.Series(0.0, index=cols, dtype=float)
+    ac = _get_df(history, &#x27;adjusted_close&#x27;)
+    if ac is None:
+        ac = _get_df(history, &#x27;close&#x27;)
+    if ac is None or ac.empty:
+        return zeros
+    available = [c for c in cols if c in ac.columns]
+    if not available:
+        return zeros
+    ac = ac.loc[:, available].sort_index().tail(320)
+    if ac.empty:
+        return zeros
+    dates = ac.index
+    last_date = dates[-1]
+    wd = dates.weekday
+    fridays = dates[wd == 4]
+    sig_date = fridays[-1] if len(fridays) else last_date
+    hist_ac = ac.loc[:sig_date]
+    if len(hist_ac.index) &lt; 6:
+        hist_ac = ac
+        sig_date = last_date
+    if len(hist_ac.index) &lt; 6:
+        return zeros
+    px = hist_ac.iloc[-1]
+    ret5 = hist_ac.iloc[-1] / hist_ac.iloc[-6] - 1.0
+    rets = hist_ac.pct_change().tail(20)
+    vol = rets.std(ddof=0)
+    elig = pd.Series(True, index=available)
+    edf = _get_df(history, &#x27;eligible&#x27;)
+    if edf is not None:
+        ee = edf.reindex(columns=available).loc[:sig_date].tail(1)
+        if len(ee.index) &gt; 0:
+            elig = ee.iloc[0].fillna(False).astype(bool)
+    liq = pd.Series(np.nan, index=available)
+    vdf = _get_df(history, &#x27;volume&#x27;)
+    if vdf is not None:
+        vv = vdf.reindex(columns=available).loc[:sig_date].tail(20)
+        pp = hist_ac.tail(20)
+        common = vv.index.intersection(pp.index)
+        if len(common) &gt; 0:
+            dv = vv.loc[common].mul(pp.loc[common], axis=0)
+            liq = dv.mean()
+    base = (px.notna() &amp; ret5.notna() &amp; vol.notna() &amp; (vol &gt; 0) &amp; (px &gt; 1.0) &amp; elig)
+    base = base &amp; np.isfinite(px) &amp; np.isfinite(ret5) &amp; np.isfinite(vol)
+    if liq.notna().any():
+        base = base &amp; (liq.fillna(0.0) &gt; 1e6)
+    if int(base.sum()) &lt; 10:
+        base = (px.notna() &amp; ret5.notna() &amp; vol.notna() &amp; (vol &gt; 0) &amp; (px &gt; 0.5) &amp; elig)
+        base = base &amp; np.isfinite(px) &amp; np.isfinite(ret5) &amp; np.isfinite(vol)
+    candidates = [c for c in available if bool(base.get(c, False))]
+    if len(candidates) &lt; 2:
+        return zeros
+    r = ret5.loc[candidates].astype(float)
+    long_order = sorted(candidates, key=lambda c: (float(r.get(c, np.nan)), c))
+    short_order = sorted(candidates, key=lambda c: (-float(r.get(c, np.nan)), c))
+    max_n = min(40, len(candidates) // 2)
+    if max_n &lt; 1:
+        return zeros
+    longs = long_order[:max_n]
+    used = set(longs)
+    shorts = [c for c in short_order if c not in used][:max_n]
+    N = min(len(longs), len(shorts))
+    if N &lt; 1:
+        return zeros
+    longs = longs[:N]
+    shorts = shorts[:N]
+    w = float(min(0.5 / N, 0.02))
+    weights = zeros.copy()
+    for c in longs:
+        if c in weights.index:
+            weights.loc[c] = w
+    for c in shorts:
+        if c in weights.index:
+            weights.loc[c] = -w
+    net = float(weights.sum())
+    if abs(net) &gt; 1e-12:
+        nz = weights.index[weights != 0.0]
+        if len(nz) &gt; 0:
+            weights.loc[nz] -= net / len(nz)
+    weights = weights.clip(-0.02, 0.02)
+    gross = float(weights.abs().sum())
+    if gross &gt; 1.0:
+        weights = weights * (1.0 / gross)
+    return weights.fillna(0.0)</code></pre></details></details><details class="strategy"><summary>独立并行 · 7 · 测试Sharpe -0.79</summary><p>The prior 12-1 momentum long-short policy earned a negative train Sharpe and near-zero validation Sharpe, suggesting momentum-reversal instability in this universe. I will test a cross-sectional short-term reversal policy: recent relative losers should outperform recent relative winners over weekly horizons. To control noise, the signal combines 5-day and 21-day returns scaled by 21-day volatility, with liquidity, price, and eligibility filters. Weekly rebalancing keeps the reversal signal fresh while the 2% name cap, 100% gross limit, and equal-weight 50/50 construction keep the portfolio market-neutral and compliant.</p><details><summary>完整Python代码</summary><pre><code>import numpy as np
+import pandas as pd
+
+
+def generate_weights(history, universe):
+    tickers = pd.Index(universe)
+    n_assets = len(tickers)
+    if n_assets == 0:
+        return pd.Series(dtype=float)
+
+    ac = history.get(&#x27;adjusted_close&#x27;)
+    if ac is None:
+        ac = history.get(&#x27;close&#x27;)
+    if ac is None:
+        return pd.Series(0.0, index=tickers, dtype=float)
+
+    ac = ac.reindex(columns=tickers)
+    dates = ac.index
+    if len(dates) == 0:
+        return pd.Series(0.0, index=tickers, dtype=float)
+
+    current = dates[-1]
+    wd = dates.weekday
+    fri_idx = np.where(wd == 4)[0]
+    if len(fri_idx) &gt; 0 and dates[fri_idx[-1]] &lt;= current:
+        asof = dates[fri_idx[-1]]
+    else:
+        asof = current
+
+    ac_hist = ac.loc[:asof].tail(300)
+    if ac_hist.shape[0] &lt; 30:
+        return pd.Series(0.0, index=tickers, dtype=float)
+
+    hist_index = ac_hist.index
+    C = ac_hist.to_numpy(dtype=float)
+    n = C.shape[0]
+
+    elig = history.get(&#x27;eligible&#x27;)
+    if elig is not None:
+        elig_hist = elig.reindex(columns=tickers).loc[:asof]
+        if len(elig_hist) &gt; 0:
+            elig_last = elig_hist.iloc[-1].fillna(False).astype(bool)
+        else:
+            elig_last = pd.Series(True, index=tickers)
+    else:
+        elig_last = pd.Series(True, index=tickers)
+
+    last_close = C[-1, :]
+    valid = np.isfinite(last_close) &amp; (last_close &gt; 0)
+    valid &amp;= elig_last.to_numpy(dtype=bool)
+
+    vol = history.get(&#x27;volume&#x27;)
+    close_raw = history.get(&#x27;close&#x27;)
+    if vol is not None:
+        vol_hist = vol.reindex(columns=tickers).reindex(index=hist_index)
+        V = vol_hist.to_numpy(dtype=float)
+        if close_raw is not None:
+            CR = close_raw.reindex(columns=tickers).reindex(index=hist_index).to_numpy(dtype=float)
+        else:
+            CR = C.copy()
+        with np.errstate(all=&#x27;ignore&#x27;):
+            DV = CR * V
+            med_dv = np.nanmedian(DV[-63:, :], axis=0)
+        valid &amp;= np.isfinite(med_dv) &amp; (med_dv &gt;= 1e6)
+
+    if close_raw is not None:
+        CR_last = close_raw.reindex(columns=tickers).loc[:asof].iloc[-1].to_numpy(dtype=float)
+        valid &amp;= np.isfinite(CR_last) &amp; (CR_last &gt;= 3.0)
+    else:
+        valid &amp;= np.isfinite(last_close) &amp; (last_close &gt;= 3.0)
+
+    score = np.full(n_assets, np.nan, dtype=float)
+    if n &gt;= 22:
+        with np.errstate(all=&#x27;ignore&#x27;):
+            ret5 = C[-1, :] / C[-6, :] - 1.0
+            ret21 = C[-1, :] / C[-22, :] - 1.0
+            sub = C[-22:, :]
+            rets = sub[1:, :] / sub[:-1, :] - 1.0
+            vola = np.nanstd(rets, axis=0)
+            score = -(0.7 * ret5 + 0.3 * ret21) / (vola + 0.01)
+    elif n &gt;= 6:
+        with np.errstate(all=&#x27;ignore&#x27;):
+            ret5 = C[-1, :] / C[-6, :] - 1.0
+            sub = C[-6:, :]
+            rets = sub[1:, :] / sub[:-1, :] - 1.0
+            vola = np.nanstd(rets, axis=0)
+            score = -ret5 / (vola + 0.01)
+    else:
+        return pd.Series(0.0, index=tickers, dtype=float)
+
+    score = np.where(valid &amp; np.isfinite(score), score, np.nan)
+    finite = np.isfinite(score)
+    if finite.sum() &lt; 2:
+        return pd.Series(0.0, index=tickers, dtype=float)
+
+    idx = np.where(finite)[0]
+    order = np.argsort(score[idx])
+    sorted_idx = idx[order]
+    M = len(sorted_idx)
+    N = min(50, M // 2)
+    if N == 0:
+        return pd.Series(0.0, index=tickers, dtype=float)
+
+    longs = sorted_idx[-N:]
+    shorts = sorted_idx[:N]
+    w = min(0.02, 0.5 / float(N))
+
+    weights = np.zeros(n_assets, dtype=float)
+    weights[longs] = w
+    weights[shorts] = -w
+
+    return pd.Series(weights, index=tickers, dtype=float)
+</code></pre></details></details><details class="strategy"><summary>独立并行 · 17 · 测试Sharpe -0.85</summary><p>Cross-sectional one-month reversal combined with a low-volatility tilt and a long-term momentum filter among liquid US equities produces positive dollar-neutral returns. Recent monthly losers with below-median volatility and non-negative 6-to-12 month momentum tend to rebound, while recent winners with high volatility underperform. Monthly rebalancing at the first trading day controls transaction costs, and equal-weight 30 long / 30 short positions respect gross and position limits.</p><details><summary>完整Python代码</summary><pre><code>import pandas as pd
+import numpy as np
+
+def generate_weights(history, universe):
+    universe = pd.Index(universe)
+    if len(universe) == 0:
+        return pd.Series(dtype=float)
+    adj_all = history.get(&#x27;adjusted_close&#x27;)
+    vol_all = history.get(&#x27;volume&#x27;)
+    if adj_all is None or vol_all is None:
+        return pd.Series(0.0, index=universe)
+    common = universe.intersection(adj_all.columns).intersection(vol_all.columns)
+    if len(common) == 0:
+        return pd.Series(0.0, index=universe)
+    adj = adj_all[common]
+    vol = vol_all[common]
+    idx = adj.index
+    if len(idx) == 0:
+        return pd.Series(0.0, index=universe)
+    if not idx.is_monotonic_increasing:
+        adj = adj.sort_index()
+        vol = vol.sort_index()
+        idx = adj.index
+    periods = idx.to_period(&#x27;M&#x27;)
+    first_mask = ~periods.duplicated(keep=&#x27;first&#x27;)
+    rebal_dates = idx[first_mask]
+    if len(rebal_dates) == 0:
+        return pd.Series(0.0, index=universe)
+    rebal_date = rebal_dates[-1]
+    adj_r = adj.loc[:rebal_date]
+    vol_r = vol.loc[:rebal_date]
+    n = len(adj_r)
+    if n &lt; 30:
+        return pd.Series(0.0, index=universe)
+    ret = adj_r.pct_change()
+    if n &gt;= 22:
+        ret21 = adj_r.iloc[-1] / adj_r.iloc[-22] - 1.0
+    else:
+        ret21 = pd.Series(np.nan, index=common)
+    if n &gt;= 6:
+        ret5 = adj_r.iloc[-1] / adj_r.iloc[-6] - 1.0
+    else:
+        ret5 = pd.Series(np.nan, index=common)
+    if n &gt;= 127:
+        mom126 = adj_r.iloc[-22] / adj_r.iloc[-127] - 1.0
+    else:
+        mom126 = pd.Series(np.nan, index=common)
+    if n &gt;= 60:
+        vol60 = ret.iloc[-60:].std()
+    else:
+        vol60 = ret.std()
+    if n &gt;= 20:
+        dv = (adj_r.iloc[-20:] * vol_r.iloc[-20:]).median()
+    else:
+        dv = (adj_r * vol_r).median()
+    df = pd.DataFrame({&#x27;ret21&#x27;: ret21, &#x27;ret5&#x27;: ret5, &#x27;mom126&#x27;: mom126, &#x27;vol&#x27;: vol60, &#x27;dv&#x27;: dv})
+    df = df.replace([np.inf, -np.inf], np.nan).dropna()
+    df = df[df[&#x27;vol&#x27;] &gt; 0]
+    if len(df) &lt; 20:
+        return pd.Series(0.0, index=universe)
+    dv_cut = df[&#x27;dv&#x27;].quantile(0.2)
+    df = df[df[&#x27;dv&#x27;] &gt;= dv_cut]
+    if len(df) &lt; 20:
+        return pd.Series(0.0, index=universe)
+    df = df[df[&#x27;ret21&#x27;].abs() &lt; 0.75]
+    if len(df) &lt; 20:
+        return pd.Series(0.0, index=universe)
+    def zscore(s):
+        std = s.std(ddof=0)
+        if std == 0 or not np.isfinite(std):
+            return s * 0.0
+        return (s - s.mean()) / std
+    score = (-1.0 * zscore(df[&#x27;ret21&#x27;]) - 0.25 * zscore(df[&#x27;vol&#x27;]) + 0.15 * zscore(df[&#x27;mom126&#x27;]) - 0.2 * zscore(df[&#x27;ret5&#x27;]))
+    df = df.assign(score=score)
+    k = min(30, len(df) // 2)
+    if k &lt; 1:
+        return pd.Series(0.0, index=universe)
+    df_sorted = df.sort_values(&#x27;score&#x27;, ascending=False)
+    longs = df_sorted.index[:k]
+    shorts = df_sorted.index[-k:]
+    w = min(0.02, 0.96 / (2.0 * k))
+    weights = pd.Series(0.0, index=universe)
+    weights.loc[longs] = w
+    weights.loc[shorts] = -w
+    return weights.fillna(0.0)</code></pre></details></details><details class="strategy"><summary>中心化 · 7 · 测试Sharpe -0.61</summary><p>The prior momentum portfolio&#x27;s consistently negative Sharpe indicates that cross-sectional momentum is the wrong sign in this universe/period. I will flip it into a low-turnover cross-sectional reversal strategy: rank stocks by market-relative 20-, 60-, and 120-day returns, go long the relative losers and short the relative winners, size positions inversely to realized volatility, and rebalance only monthly using the prior month-end signal to keep turnover and transaction costs low. Dollar-neutrality and per-name caps are enforced; the hypothesis is that reversing the sign of the trend signal, residualizing against the equal-weighted market, and avoiding daily churn will improve risk-adjusted returns relative to the failed momentum version.</p><details><summary>完整Python代码</summary><pre><code>import numpy as np
+import pandas as pd
+
+
+def _capped_inv_vol(inv, target, cap):
+    n = len(inv)
+    if n == 0 or target &lt;= 0:
+        return np.zeros(n, dtype=float)
+    target = min(float(target), cap * n)
+    inv = np.asarray(inv, dtype=float)
+    inv = np.where(np.isfinite(inv) &amp; (inv &gt; 0), inv, 0.0)
+    if inv.sum() &lt;= 0:
+        w = np.full(n, target / n, dtype=float)
+        return np.minimum(w, cap)
+    w = np.zeros(n, dtype=float)
+    active = np.ones(n, dtype=bool)
+    remaining = float(target)
+    for _ in range(n + 2):
+        idx = np.flatnonzero(active)
+        if idx.size == 0:
+            break
+        s = inv[idx].sum()
+        if s &lt;= 0:
+            w[idx] += remaining / idx.size
+            remaining = 0.0
+            break
+        lam = remaining / s
+        raw = lam * inv[idx]
+        over = raw &gt;= cap - 1e-15
+        if not np.any(over):
+            w[idx] = raw
+            remaining = 0.0
+            break
+        over_idx = idx[over]
+        w[over_idx] = cap
+        active[over_idx] = False
+        remaining -= cap * over_idx.size
+        if remaining &lt;= 1e-15:
+            remaining = 0.0
+            break
+    if remaining &gt; 1e-12:
+        idx = np.flatnonzero(active &amp; (w &lt; cap - 1e-15))
+        if idx.size:
+            room = cap - w[idx]
+            add = min(remaining, room.sum())
+            if room.sum() &gt; 0:
+                w[idx] += add * room / room.sum()
+    return np.minimum(w, cap)
+
+
+def generate_weights(history, universe):
+    universe = pd.Index(universe)
+    n_assets = len(universe)
+    if n_assets == 0:
+        return pd.Series(dtype=float)
+
+    px = None
+    if &#x27;adjusted_close&#x27; in history:
+        px = history[&#x27;adjusted_close&#x27;]
+    elif &#x27;close&#x27; in history:
+        px = history[&#x27;close&#x27;]
+    else:
+        return pd.Series(0.0, index=universe)
+
+    if not isinstance(px, pd.DataFrame):
+        return pd.Series(0.0, index=universe)
+
+    px = px.reindex(columns=universe)
+    if px.shape[0] &lt; 25:
+        return pd.Series(0.0, index=universe)
+    if not px.index.is_monotonic_increasing:
+        px = px.sort_index()
+
+    vals = px.to_numpy(dtype=float, copy=False)
+    n_dates = vals.shape[0]
+
+    # Rebalance monthly: use the most recent prior month-end observation.
+    dates = px.index
+    current = dates[-1]
+    same_month = (dates.year == current.year) &amp; (dates.month == current.month)
+    first_current = int(np.argmax(same_month))
+    ref_idx = first_current - 1 if first_current &gt; 0 else n_dates - 1
+    if ref_idx &lt; 21:
+        return pd.Series(0.0, index=universe)
+
+    last = vals[ref_idx]
+    valid = np.isfinite(last) &amp; (last &gt; 0)
+
+    if &#x27;eligible&#x27; in history:
+        e = history[&#x27;eligible&#x27;]
+        if isinstance(e, pd.DataFrame):
+            e = e.reindex(index=px.index, columns=universe)
+            last_e = e.iloc[ref_idx].to_numpy(dtype=float, copy=False)
+            valid &amp;= np.isfinite(last_e) &amp; (last_e &gt; 0.5)
+
+    rets = px.pct_change(fill_method=None).to_numpy(dtype=float, copy=False)
+    start = max(0, ref_idx - 60)
+    rwin = rets[start:ref_idx + 1]
+    vol = np.nanstd(rwin, axis=0, ddof=1)
+    obs = np.sum(np.isfinite(rwin), axis=0)
+    valid &amp;= np.isfinite(vol) &amp; (vol &gt; 1e-8) &amp; (obs &gt;= 20)
+
+    if valid.sum() &lt; 10:
+        return pd.Series(0.0, index=universe)
+
+    denom = np.maximum(vol, 1e-8)
+    signal_sum = np.zeros(n_assets, dtype=float)
+    signal_w = np.zeros(n_assets, dtype=float)
+
+    # Reversal score: negative of market-relative past return, z-scored.
+    for L, wt in ((20, 0.2), (60, 0.5), (120, 0.3)):
+        if ref_idx &lt;= L:
+            continue
+        past = vals[ref_idx - L]
+        past_ok = np.isfinite(past) &amp; (past &gt; 0)
+        ret = np.where(past_ok &amp; valid, last / past - 1.0, np.nan)
+        finite = np.isfinite(ret)
+        if finite.sum() &lt; 10:
+            continue
+        mu = ret[finite].mean()
+        rel = ret - mu
+        sd = rel[finite].std(ddof=0)
+        if not np.isfinite(sd) or sd &lt;= 1e-12:
+            continue
+        z = np.where(finite, rel / sd, np.nan)
+        score = -np.clip(z, -3.0, 3.0)
+        good = np.isfinite(score)
+        signal_sum[good] += wt * score[good]
+        signal_w[good] += wt
+
+    signal = np.full(n_assets, np.nan, dtype=float)
+    has = signal_w &gt; 0
+    signal[has] = signal_sum[has] / signal_w[has]
+    valid &amp;= np.isfinite(signal)
+
+    candidates = np.flatnonzero(valid)
+    if candidates.size &lt; 10:
+        return pd.Series(0.0, index=universe)
+
+    K = min(40, candidates.size // 2)
+    if K &lt; 5:
+        return pd.Series(0.0, index=universe)
+
+    order = candidates[np.argsort(signal[candidates])]
+    short_idx = order[:K]
+    long_idx = order[-K:]
+
+    cap = 0.02
+    side_target = min(0.5, cap * K)
+    inv = 1.0 / denom
+    w = np.zeros(n_assets, dtype=float)
+    w[long_idx] = _capped_inv_vol(inv[long_idx], side_target, cap)
+    w[short_idx] = -_capped_inv_vol(inv[short_idx], side_target, cap)
+
+    pos = w &gt; 0
+    neg = w &lt; 0
+    long_sum = w[pos].sum()
+    short_sum = -w[neg].sum()
+    if long_sum &gt; 0 and short_sum &gt; 0:
+        side = min(long_sum, short_sum)
+        w[pos] *= side / long_sum
+        w[neg] *= side / short_sum
+    else:
+        return pd.Series(0.0, index=universe)
+
+    w = np.clip(w, -cap, cap)
+    gross = np.abs(w).sum()
+    if gross &gt; 1.0:
+        w *= 1.0 / gross
+
+    return pd.Series(w, index=universe, dtype=float)
+</code></pre></details></details><details class="strategy"><summary>中心化 · 17 · 测试Sharpe 1.10</summary><p>Prior conditional low-vol strategy failed because the low-risk anomaly was inverted in this sample: high-beta/high-vol names outperformed in both risk-on and risk-off regimes. I flip the tilt: in risk-on (equal-weight index above 200-day MA), go long high 120/60-day momentum, high 120-day beta, and high 60-day vol, short the mirror. In risk-off, use a momentum-quality tilt: long high 120/60-day momentum with low 20-day vol, short the mirror, with half gross exposure. This tests whether high-beta should be favored in risk-on while avoiding crash risk in risk-off. Rebalance every 5 trading days to control turnover, dollar-neutral, 30 names per side, equal weights capped at 2%.</p><details><summary>完整Python代码</summary><pre><code>import numpy as np
+import pandas as pd
+
+
+def _zscore(s):
+    s = s.astype(float)
+    mu = s.mean(skipna=True)
+    sd = s.std(skipna=True, ddof=0)
+    if not np.isfinite(sd) or sd == 0:
+        return s * 0.0
+    return (s - mu) / sd
+
+
+def generate_weights(history, universe):
+    idx_univ = pd.Index(list(universe))
+    zeros = pd.Series(0.0, index=idx_univ, dtype=float)
+    if len(idx_univ) == 0:
+        return zeros
+
+    adj = history.get(&#x27;adjusted_close&#x27;)
+    if adj is None:
+        adj = history.get(&#x27;close&#x27;)
+    if adj is None or adj.empty:
+        return zeros
+
+    cols = [c for c in idx_univ if c in adj.columns]
+    if len(cols) == 0:
+        return zeros
+
+    ac_full = adj[cols]
+    n_full = len(ac_full)
+    if n_full &lt; 30:
+        return zeros
+
+    # Rebalance every 5 trading days: use data up to the last row whose
+    # integer position is a multiple of 5.  This holds weights for 5 days.
+    rebal_pos = ((n_full - 1) // 5) * 5
+    ac = ac_full.iloc[:rebal_pos + 1].tail(320)
+    if len(ac) &lt; 30:
+        return zeros
+
+    rets = ac / ac.shift(1) - 1.0
+    rets = rets.replace([np.inf, -np.inf], np.nan)
+
+    mkt = rets.mean(axis=1)
+    idx_level = (1.0 + mkt.fillna(0.0)).cumprod()
+    ma = idx_level.rolling(window=200, min_periods=150).mean()
+
+    risk_off = True
+    if len(idx_level) &gt; 0 and np.isfinite(idx_level.iloc[-1]) and np.isfinite(ma.iloc[-1]):
+        risk_off = bool(idx_level.iloc[-1] &lt; ma.iloc[-1])
+
+    # 60-day realized volatility
+    vol_win = rets.tail(60)
+    count = vol_win.count()
+    vol60 = vol_win.std(ddof=0) * np.sqrt(252.0)
+    vol60[count &lt; 30] = np.nan
+
+    # 20-day realized volatility (for risk-off quality momentum)
+    vol_win20 = rets.tail(20)
+    count20 = vol_win20.count()
+    vol20 = vol_win20.std(ddof=0) * np.sqrt(252.0)
+    vol20[count20 &lt; 10] = np.nan
+
+    # 120-day beta vs equal-weight market
+    r120 = rets.tail(120)
+    m120 = mkt.tail(120)
+    R = r120.to_numpy(dtype=float)
+    M = m120.to_numpy(dtype=float)
+    n_cols = R.shape[1]
+    beta_vals = np.full(n_cols, np.nan)
+    for j in range(n_cols):
+        x = R[:, j]
+        mask = np.isfinite(x) &amp; np.isfinite(M)
+        if int(mask.sum()) &gt;= 40:
+            xv = x[mask]
+            yv = M[mask]
+            vy = float(np.var(yv, ddof=0))
+            if vy &gt; 0.0:
+                beta_vals[j] = float(np.cov(xv, yv, ddof=0)[0, 1] / vy)
+    beta = pd.Series(beta_vals, index=cols, dtype=float)
+
+    # Momentum
+    if len(ac) &gt;= 121:
+        mom120 = ac.iloc[-1] / ac.iloc[-121] - 1.0
+    else:
+        mom120 = pd.Series(np.nan, index=cols)
+    if len(ac) &gt;= 61:
+        mom60 = ac.iloc[-1] / ac.iloc[-61] - 1.0
+    else:
+        mom60 = pd.Series(np.nan, index=cols)
+
+    mom120 = mom120.replace([np.inf, -np.inf], np.nan)
+    mom60 = mom60.replace([np.inf, -np.inf], np.nan)
+
+    beta_filled = beta.copy()
+    if beta_filled.notna().any():
+        beta_filled = beta_filled.fillna(beta_filled.median())
+    else:
+        beta_filled = beta_filled.fillna(1.0)
+
+    z_mom120 = _zscore(mom120)
+    z_mom60 = _zscore(mom60)
+    z_beta = _zscore(beta_filled)
+    z_vol60 = _zscore(vol60)
+    z_vol20 = _zscore(vol20)
+
+    if risk_off:
+        # Quality momentum: high long-term momentum, low short-term vol
+        score = 0.6 * z_mom120 + 0.4 * z_mom60 - 0.3 * z_vol20
+        valid = mom120.notna() &amp; mom60.notna() &amp; vol20.notna()
+        gross_scale = 0.5
+    else:
+        # High-beta / high-vol / high-momentum tilt
+        score = 0.4 * z_mom120 + 0.3 * z_mom60 + 0.5 * z_beta + 0.4 * z_vol60
+        valid = mom120.notna() &amp; mom60.notna() &amp; vol60.notna() &amp; beta_filled.notna()
+        gross_scale = 1.0
+
+    score = score.where(valid, np.nan)
+    n = int(score.notna().sum())
+    if n &lt; 2:
+        return zeros
+
+    K = min(30, n // 2)
+    if K &lt; 1:
+        return zeros
+
+    ranked = score.dropna().sort_values(ascending=False, kind=&#x27;mergesort&#x27;)
+    longs = ranked.index[:K]
+    shorts = ranked.index[-K:]
+
+    w = min(0.02, 0.5 / float(K)) * gross_scale
+    weights = zeros.copy()
+    weights.loc[longs] = w
+    weights.loc[shorts] = -w
+    return weights
+</code></pre></details></details><details class="strategy"><summary>去中心化 · 7 · 测试Sharpe -1.44</summary><p>Short-horizon cross-sectional reversal is more reliable than momentum in this liquid universe, especially when reversal is measured on market-residual returns to avoid betting on market beta. A dollar-neutral, monthly rebalanced portfolio that buys recent residual losers and sells recent residual winners, while mildly penalizing high volatility and filtering for liquidity, should have lower turnover and less crash risk than daily momentum/reversal blends.</p><details><summary>完整Python代码</summary><pre><code>import numpy as np
+import pandas as pd
+
+
+def _rank_z(s, valid):
+    s = s.astype(float).copy()
+    s[~valid] = np.nan
+    s = s.replace([np.inf, -np.inf], np.nan)
+    if s.notna().sum() &lt; 2:
+        return pd.Series(0.0, index=s.index)
+    r = s.rank(pct=True)
+    return (2.0 * r - 1.0).fillna(0.0)
+
+
+def generate_weights(history, universe):
+    u = pd.Index(universe)
+    zeros = pd.Series(0.0, index=u)
+    if len(u) == 0:
+        return zeros
+
+    ac = history.get(&#x27;adjusted_close&#x27;)
+    if ac is None or ac.empty:
+        ac = history.get(&#x27;close&#x27;)
+    if ac is None or ac.empty:
+        return zeros
+
+    cols = [t for t in u if t in ac.columns]
+    if len(cols) &lt; 2:
+        return zeros
+
+    px = ac.loc[:, cols].astype(float)
+    if not px.index.is_monotonic_increasing:
+        px = px.sort_index()
+
+    has = px.notna().any(axis=1)
+    if not has.any():
+        return zeros
+    t = px.index[has][-1]
+    px = px.loc[:t]
+    if len(px) &lt; 30:
+        return zeros
+
+    try:
+        nb = t + pd.offsets.BDay(1)
+        at_month_end = (nb.year != t.year) or (nb.month != t.month)
+    except Exception:
+        at_month_end = False
+
+    if at_month_end:
+        sig = t
+    else:
+        mask = (px.index.year &lt; t.year) | ((px.index.year == t.year) &amp; (px.index.month &lt; t.month))
+        prior = px.index[mask]
+        if len(prior) == 0:
+            return zeros
+        sig = prior[-1]
+
+    sub = px.loc[:sig]
+    n = len(sub)
+    if n &lt; 30:
+        return zeros
+    p0 = sub.iloc[-1]
+
+    def ret(offset):
+        if n - 1 - offset &lt; 0:
+            return pd.Series(np.nan, index=cols)
+        return sub.iloc[-1] / sub.iloc[-1 - offset] - 1.0
+
+    ret21 = ret(21)
+    ret5 = ret(5)
+    rev21 = -ret21
+    rev5 = -ret5
+
+    recent = sub.tail(127)
+    rets = recent.pct_change()
+    if len(rets) &gt; 1:
+        r126 = rets.tail(126)
+        vol = r126.std()
+    else:
+        r126 = pd.DataFrame(index=rets.index, columns=cols, dtype=float)
+        vol = pd.Series(np.nan, index=cols)
+
+    beta = pd.Series(1.0, index=cols)
+    mkt21 = np.nan
+    if len(r126) &gt;= 20:
+        m = r126.mean(axis=1)
+        mv = m.var()
+        if pd.notna(mv) and mv &gt; 1e-12:
+            mean_r = r126.mean(axis=0)
+            cov = r126.mul(m, axis=0).mean(axis=0) - mean_r * m.mean()
+            beta = cov / mv
+        if len(m) &gt;= 21:
+            mkt21 = (1.0 + m.tail(21)).prod() - 1.0
+
+    if pd.notna(mkt21):
+        resid21 = ret21 - beta * mkt21
+    else:
+        resid21 = ret21
+    rev_resid = -resid21
+
+    dvol = pd.Series(np.nan, index=cols)
+    v = history.get(&#x27;volume&#x27;)
+    c = history.get(&#x27;close&#x27;)
+    if v is not None and c is not None:
+        vv = v.reindex(columns=cols).loc[:sig]
+        cc = c.reindex(columns=cols).loc[:sig]
+        if len(vv) &gt; 0 and len(cc) &gt; 0:
+            vv = vv.tail(20)
+            cc = cc.tail(20)
+            dvol = (vv * cc).median(axis=0, skipna=True)
+
+    eligible = pd.Series(True, index=cols)
+    e = history.get(&#x27;eligible&#x27;)
+    if e is not None:
+        e = e.reindex(columns=cols)
+        if sig in e.index:
+            eligible = e.loc[sig].fillna(False).astype(bool)
+        elif t in e.index:
+            eligible = e.loc[t].fillna(False).astype(bool)
+
+    valid = p0.notna() &amp; (p0 &gt; 0.5) &amp; rev21.notna() &amp; rev5.notna() &amp; vol.notna() &amp; (vol &gt; 0)
+    valid = valid &amp; eligible.reindex(cols).fillna(False)
+
+    if dvol.notna().any():
+        pos = dvol[dvol &gt; 0]
+        if len(pos) &gt; 0:
+            thresh = pos.quantile(0.20)
+            valid = valid &amp; dvol.notna() &amp; (dvol &gt;= thresh)
+        else:
+            valid = valid &amp; dvol.notna()
+    valid = valid.fillna(False)
+
+    if int(valid.sum()) &lt; 10:
+        return zeros
+
+    z_resid = _rank_z(rev_resid, valid)
+    z_rev21 = _rank_z(rev21, valid)
+    z_rev5 = _rank_z(rev5, valid)
+    z_vol = _rank_z(vol, valid)
+
+    score = 0.55 * z_resid + 0.20 * z_rev21 + 0.15 * z_rev5 - 0.15 * z_vol
+    score = score.replace([np.inf, -np.inf], np.nan)
+    score[~valid] = np.nan
+    score = score.dropna()
+    if len(score) &lt; 10:
+        return zeros
+
+    n_side = min(50, len(score) // 2)
+    if n_side &lt; 1:
+        return zeros
+
+    ranked = score.sort_values()
+    shorts = ranked.index[:n_side].tolist()
+    longs = ranked.index[-n_side:].tolist()
+
+    w_side = min(0.02, 0.5 / float(n_side))
+    w = pd.Series(0.0, index=u)
+    w.loc[longs] = w_side
+    w.loc[shorts] = -w_side
+    w = w.replace([np.inf, -np.inf], 0.0).fillna(0.0).clip(-0.02, 0.02)
+    return w</code></pre></details></details><details class="strategy"><summary>去中心化 · 17 · 测试Sharpe 0.88</summary><p>A dollar-neutral cross-sectional equity portfolio that combines medium-term momentum (12-1 and 6-1), one-month reversal, and low volatility should earn a robust premium. Rebalancing every 21 trading days with liquidity and eligibility filters, equal weights of at most 2% per name, and 25 long/25 short positions keeps gross near 1 and net near 0 while limiting turnover and single-name risk.</p><details><summary>完整Python代码</summary><pre><code>import numpy as np
+import pandas as pd
+
+
+def generate_weights(history, universe):
+    empty = pd.Series(0.0, index=universe, dtype=float)
+    if len(universe) == 0:
+        return empty
+
+    ac = history.get(&#x27;adjusted_close&#x27;)
+    if not isinstance(ac, pd.DataFrame) or ac.empty:
+        ac = history.get(&#x27;close&#x27;)
+    if not isinstance(ac, pd.DataFrame) or ac.empty:
+        return empty
+
+    cols = [c for c in universe if c in ac.columns]
+    if len(cols) &lt; 4:
+        return empty
+
+    index = ac.index
+    n = len(index)
+    if n &lt; 260:
+        return empty
+
+    last_pos = n - 1
+    reb_pos = last_pos - (last_pos % 21)
+    if reb_pos &lt; 252:
+        return empty
+
+    prices = ac.loc[:, cols].iloc[:reb_pos + 1].copy().ffill()
+    last = prices.iloc[-1]
+    valid = last.notna() &amp; (last &gt; 0.5)
+
+    vol_df = history.get(&#x27;volume&#x27;)
+    if isinstance(vol_df, pd.DataFrame):
+        v = vol_df.reindex(index=index, columns=cols).iloc[:reb_pos + 1].ffill()
+        if len(v) &gt;= 20:
+            dollar_vol = (v.iloc[-20:] * prices.iloc[-20:]).median()
+            valid = valid &amp; dollar_vol.notna() &amp; (dollar_vol &gt; 1e6)
+
+    eligible_df = history.get(&#x27;eligible&#x27;)
+    if isinstance(eligible_df, pd.DataFrame):
+        e = eligible_df.reindex(index=index, columns=cols).iloc[:reb_pos + 1].ffill().iloc[-1]
+        valid = valid &amp; e.fillna(False).astype(bool)
+
+    prices = prices.loc[:, valid]
+    if prices.shape[1] &lt; 4:
+        return empty
+
+    p = prices.replace([np.inf, -np.inf], np.nan)
+
+    mom12 = p.iloc[-21] / p.iloc[-252] - 1.0
+    mom6 = p.iloc[-21] / p.iloc[-126] - 1.0
+    rev21 = -(p.iloc[-1] / p.iloc[-21] - 1.0)
+
+    rets = p.pct_change().iloc[-60:]
+    vol60 = rets.std()
+
+    r_mom12 = mom12.rank(method=&#x27;average&#x27;, pct=True)
+    r_mom6 = mom6.rank(method=&#x27;average&#x27;, pct=True)
+    r_rev = rev21.rank(method=&#x27;average&#x27;, pct=True)
+    r_lowvol = (-vol60).rank(method=&#x27;average&#x27;, pct=True)
+
+    score = (
+        0.45 * r_mom12
+        + 0.25 * r_mom6
+        + 0.20 * r_rev
+        + 0.10 * r_lowvol
+    )
+    score = score.replace([np.inf, -np.inf], np.nan).dropna()
+    if len(score) &lt; 4:
+        return empty
+
+    n_each = min(25, len(score) // 2)
+    if n_each &lt; 1:
+        return empty
+
+    ranked = pd.DataFrame({&#x27;score&#x27;: score})
+    ranked[&#x27;ticker&#x27;] = ranked.index.astype(str)
+    ranked = ranked.sort_values([&#x27;score&#x27;, &#x27;ticker&#x27;], ascending=[False, True])
+
+    longs = ranked.index[:n_each].tolist()
+    shorts = ranked.index[-n_each:].tolist()
+
+    weight = min(0.02, 1.0 / (2.0 * n_each))
+    if weight * 2.0 * n_each &gt; 1.0:
+        weight = (1.0 - 1e-12) / (2.0 * n_each)
+
+    w = pd.Series(0.0, index=universe, dtype=float)
+    for t in longs:
+        if t in w.index:
+            w.loc[t] = weight
+    for t in shorts:
+        if t in w.index:
+            w.loc[t] = -weight
+
+    return w</code></pre></details></details><details class="strategy"><summary>混合 · 7 · 测试Sharpe 0.84</summary><p>Short-horizon residual reversal was killed by high turnover and the 2022 regime; I pivot to the opposite sign with a low-turnover monthly residual momentum portfolio. At each month-end, rank eligible liquid stocks by their 12-1 (or 6-1 if history is short) cumulative market-residual return scaled by idiosyncratic volatility, using beta estimated over the prior 252 days. Go dollar-neutral long the top residual winners and short the bottom residual losers, equal-weight up to 50 names per side with a 2% cap, and hold the target weights for the full month to cut turnover and transaction costs.</p><details><summary>完整Python代码</summary><pre><code>import numpy as np
+import pandas as pd
+
+
+def generate_weights(history, universe):
+    u = pd.Index(universe)
+    zeros = pd.Series(0.0, index=u, dtype=float)
+    if len(u) == 0:
+        return zeros
+
+    ac = history.get(&#x27;adjusted_close&#x27;)
+    if ac is None or not isinstance(ac, pd.DataFrame) or ac.empty:
+        ac = history.get(&#x27;close&#x27;)
+    if ac is None or not isinstance(ac, pd.DataFrame) or ac.empty:
+        return zeros
+
+    ac = ac.reindex(columns=u)
+    dates = pd.DatetimeIndex(ac.index)
+    if len(dates) &lt; 126:
+        return zeros
+
+    cur = dates[-1]
+    ym = dates.year.to_numpy() * 12 + dates.month.to_numpy()
+    cur_ym = cur.year * 12 + cur.month
+    mask = ym &lt; cur_ym
+    if not mask.any():
+        return zeros
+
+    sig_pos = int(np.where(mask)[0][-1])
+    start = max(0, sig_pos + 1 - 300)
+    sub = ac.iloc[start:sig_pos + 1]
+    if sub.shape[0] &lt; 60:
+        return zeros
+
+    prices = sub.to_numpy(dtype=float)
+    with np.errstate(divide=&#x27;ignore&#x27;, invalid=&#x27;ignore&#x27;):
+        rets = prices[1:] / prices[:-1] - 1.0
+    rets = np.clip(rets, -0.5, 0.5)
+    rets[~np.isfinite(rets)] = np.nan
+    T = rets.shape[0]
+    if T &lt; 126:
+        return zeros
+
+    mkt = np.nanmean(rets, axis=1)
+    mkt = np.where(np.isfinite(mkt), mkt, 0.0)
+
+    bwin = min(252, T)
+    rb = rets[-bwin:]
+    mb = mkt[-bwin:]
+    mb_mean = np.nanmean(mb)
+    if not np.isfinite(mb_mean):
+        mb_mean = 0.0
+    mb_dev = mb - mb_mean
+    den = np.nanmean(mb_dev ** 2)
+    if not np.isfinite(den) or den &lt;= 0:
+        beta = np.ones(prices.shape[1])
+    else:
+        rmean = np.nanmean(rb, axis=0)
+        num = np.nanmean((rb - rmean) * mb_dev[:, None], axis=0)
+        beta = num / den
+        beta = np.where(np.isfinite(beta), beta, 1.0)
+        beta = np.clip(beta, 0.2, 3.0)
+
+    resid = rets - beta[None, :] * mkt[:, None]
+
+    if T &gt;= 252:
+        rwin = resid[-252:-21]
+    else:
+        rwin = resid[-126:-21]
+    if rwin.shape[0] &lt; 20:
+        return zeros
+
+    score_raw = np.nansum(rwin, axis=0)
+    vol = np.nanstd(rwin, axis=0, ddof=1)
+    obs = np.sum(np.isfinite(rwin), axis=0)
+    med_vol = np.nanmedian(vol)
+    if not np.isfinite(med_vol) or med_vol &lt;= 0:
+        med_vol = 0.02
+    vol = np.where(np.isfinite(vol) &amp; (vol &gt; 0), vol, med_vol)
+    vol = np.clip(vol, 0.005, 0.20)
+    score = score_raw / vol
+
+    last = prices[-1]
+
+    dollar = None
+    vdf = history.get(&#x27;volume&#x27;)
+    if vdf is not None and isinstance(vdf, pd.DataFrame) and not vdf.empty:
+        vdf = vdf.reindex(columns=u)
+        vsub = vdf.iloc[start:sig_pos + 1].tail(60)
+        psub = sub.tail(vsub.shape[0])
+        if vsub.shape[0] == psub.shape[0] and vsub.shape[0] &gt; 0:
+            dv = psub.to_numpy(dtype=float) * vsub.to_numpy(dtype=float)
+            with np.errstate(all=&#x27;ignore&#x27;):
+                dollar = np.nanmedian(dv, axis=0)
+
+    valid = np.isfinite(score) &amp; np.isfinite(last) &amp; (last &gt; 5.0) &amp; (obs &gt;= max(20, rwin.shape[0] * 0.8))
+
+    edf = history.get(&#x27;eligible&#x27;)
+    if edf is not None and isinstance(edf, pd.DataFrame) and len(edf) &gt; 0:
+        e = edf.reindex(columns=u).iloc[-1].to_numpy(dtype=float)
+        valid &amp;= np.isfinite(e) &amp; (e &gt; 0.5)
+
+    if dollar is not None:
+        valid &amp;= np.isfinite(dollar) &amp; (dollar &gt; 0)
+        if valid.sum() &gt;= 20:
+            thr = np.nanpercentile(dollar[valid], 20)
+            valid &amp;= (dollar &gt;= thr)
+
+    n_valid = int(valid.sum())
+    if n_valid &lt; 20:
+        return zeros
+
+    idx = np.where(valid)[0]
+    order = idx[np.argsort(score[idx], kind=&#x27;mergesort&#x27;)]
+    n_side = min(50, n_valid // 2)
+    if n_side &lt; 5:
+        return zeros
+
+    longs = order[-n_side:]
+    shorts = order[:n_side]
+    side_gross = min(0.5, 0.02 * n_side)
+    w = side_gross / n_side
+
+    weights = np.zeros(len(u), dtype=float)
+    weights[longs] = w
+    weights[shorts] = -w
+    weights = np.clip(weights, -0.02, 0.02)
+    g = np.abs(weights).sum()
+    if g &gt; 1.0 and g &gt; 0:
+        weights *= 1.0 / g
+    weights = np.nan_to_num(weights, nan=0.0, posinf=0.0, neginf=0.0)
+    return pd.Series(weights, index=u)</code></pre></details></details><details class="strategy"><summary>混合 · 17 · 测试Sharpe 0.80</summary><p>Peer results show that fast long/short reversal and momentum books are dominated by turnover and borrow costs. I test a slower, lower-turnover regime-switching volatility spread. Using only the most recent completed month-end data, I compute 60-day realized volatility and an equal-weight market index. If the market index is above its 200-day moving average, the portfolio is risk-on: long the highest-volatility names and short the lowest-volatility names. If below, it is risk-off: long the lowest-volatility names and short the highest-volatility names. Equal 1% weights per name (capped at 2%), equal long/short counts, gross exposure 0.5, dollar-neutral, monthly rebalance. This keeps turnover and costs low while allowing the book to adapt to the market regime rather than paying for daily cross-sectional churn.</p><details><summary>完整Python代码</summary><pre><code>import numpy as np
+import pandas as pd
+
+
+def generate_weights(history, universe):
+    u = pd.Index(universe)
+    zeros = pd.Series(0.0, index=u, dtype=float)
+    if len(u) == 0:
+        return zeros
+
+    ac = history.get(&#x27;adjusted_close&#x27;)
+    if ac is None or ac.empty:
+        ac = history.get(&#x27;close&#x27;)
+    if ac is None or ac.empty:
+        return zeros
+
+    ac = ac.reindex(columns=u)
+    if ac.shape[0] &lt; 60:
+        return zeros
+
+    idx = ac.index
+    current_month = (idx[-1].year, idx[-1].month)
+    prev_dates = [d for d in idx if (d.year, d.month) &lt; current_month]
+    if not prev_dates:
+        return zeros
+
+    reb_date = prev_dates[-1]
+    try:
+        pos = idx.get_loc(reb_date)
+    except Exception:
+        return zeros
+
+    ac_hist = ac.iloc[:pos + 1]
+    if len(ac_hist) &lt; 60:
+        return zeros
+
+    ret = ac_hist.pct_change()
+    if len(ret) &lt; 20:
+        return zeros
+
+    vol = ret.tail(60).std(ddof=0)
+    vol = vol.replace([np.inf, -np.inf], np.nan)
+    last_vol = vol.copy()
+
+    mkt = ret.mean(axis=1, skipna=True).fillna(0.0)
+    cum = (1.0 + mkt).cumprod()
+    if len(cum) &gt;= 200:
+        ma = cum.tail(200).mean()
+    elif len(cum) &gt;= 100:
+        ma = cum.tail(100).mean()
+    else:
+        return zeros
+    risk_on = bool(cum.iloc[-1] &gt; ma)
+
+    elig_df = history.get(&#x27;eligible&#x27;)
+    if elig_df is not None and not elig_df.empty:
+        try:
+            cur_elig = elig_df.reindex(columns=u).iloc[-1].fillna(False).astype(bool)
+        except Exception:
+            cur_elig = pd.Series(True, index=u)
+    else:
+        cur_elig = pd.Series(True, index=u)
+
+    if elig_df is not None and not elig_df.empty:
+        try:
+            reb_elig = elig_df.reindex(columns=u).loc[reb_date].fillna(False).astype(bool)
+        except Exception:
+            reb_elig = pd.Series(True, index=u)
+    else:
+        reb_elig = pd.Series(True, index=u)
+
+    last_ac_current = ac.iloc[-1]
+    last_ac_reb = ac_hist.iloc[-1]
+
+    valid = (
+        cur_elig
+        &amp; reb_elig
+        &amp; last_vol.notna()
+        &amp; np.isfinite(last_vol)
+        &amp; (last_vol &gt; 0)
+        &amp; last_ac_current.notna()
+        &amp; last_ac_reb.notna()
+    )
+    valid_names = last_vol[valid].dropna()
+    if len(valid_names) &lt; 6:
+        return zeros
+
+    n_side = min(25, len(valid_names) // 2)
+    if n_side &lt; 1:
+        return zeros
+
+    ordered = valid_names.sort_values(kind=&#x27;mergesort&#x27;)
+    if risk_on:
+        longs = ordered.index[-n_side:]
+        shorts = ordered.index[:n_side]
+    else:
+        longs = ordered.index[:n_side]
+        shorts = ordered.index[-n_side:]
+
+    w = min(0.02, 0.25 / float(n_side))
+    weights = zeros.copy()
+    weights.loc[longs] = w
+    weights.loc[shorts] = -w
+    weights = weights.clip(-0.02, 0.02).replace([np.inf, -np.inf], 0.0).fillna(0.0)
+    return weights
+</code></pre></details></details><p class="source">假设是模型原始表述，应结合代码和实际收益阅读；程序、假设、回测和最终测试不代表相同层次的有效性。</p></section>
+<section id="v3-methods"><div class="section-no">09</div><h2>V3实验设定与边界</h2><div class="table-wrap"><table><thead><tr><th scope="col">项目</th><th scope="col">设定</th></tr></thead><tbody><tr><td>数据</td><td>500只当前标普成分股的真实Yahoo行情；存在幸存者和未来成分信息偏差</td></tr><tr><td>时间划分</td><td>2016–2021训练、2022–2023验证、2024–2025测试</td></tr><tr><td>预算</td><td>每次研究上限17万token、12候选；本次补跑另计</td></tr><tr><td>选优</td><td>每次按验证净Sharpe选一份，平分按策略SHA；冻结后各评估一次</td></tr><tr><td>交易</td><td>收盘决策，下个有效开盘执行，随后开盘结算；总敞口≤1、单股≤2%、净敞口绝对值≤1%</td></tr><tr><td>成本与限制</td><td>交易5bp，空头借券年化30bp；决策10秒、每段回测180秒；未模拟冲击、真实借券可得性、保证金融资或现金担保利息</td></tr><tr><td>数据质量</td><td>跳过2021-05-05和2025-11-12不完整会话，执行价格不填补；500个测试区间，仍按252年化</td></tr></tbody></table></div><details><summary>五种拓扑结构与信息流图</summary><p>五组使用同一类研究者、数据接口和回测器，区别在于<strong>下一次提案能读取哪些信息</strong>。图中的 W 是生成策略代码的研究者，M 是负责分工的管理者；评估器与数据属于公共实验设施，不计入 Agent 数。</p><div class="topology-legend"><span><i class="management-key"></i>管理者 → 研究者：研究分工</span><span><i class="peer-key"></i>研究者 ↔ 研究者：同伴有效结果</span><span><i class="feedback-key"></i>虚线：历史结果 / 下一轮反馈</span></div><article class="topology-figure"><div class="topology-drawing"><svg class="topology-svg" viewBox="0 0 560 320" role="img" aria-label="单 Agent：一个研究者读取自己的历史反馈"><title>单 Agent：一个研究者读取自己的历史反馈</title><defs><marker id="single-management" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-management" d="M 0 0 L 10 5 L 0 10 Z"/></marker><marker id="single-feedback" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-feedback" d="M 0 0 L 10 5 L 0 10 Z"/></marker><marker id="single-peer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-peer" d="M 0 0 L 10 5 L 0 10 Z"/></marker></defs><path class="edge feedback" d="M 290 114 L 290 197" marker-end="url(#single-feedback)"/><path class="edge feedback" d="M 183 220 C 85 220 90 90 203 90" marker-end="url(#single-feedback)"/><g class="worker"><rect x="207.5" y="66" width="145" height="48" rx="7"/><text x="280" y="95" text-anchor="middle">W0 · 研究者</text></g><rect class="context-box" x="180" y="198" width="200" height="44" rx="5"/><text class="context-label" x="280" y="225" text-anchor="middle">自身最近 3 条候选结果</text><text class="edge-label" x="365" y="158">回测反馈</text><text class="edge-label" x="95" y="167">下次提案读取</text><text class="node-sub" x="280" y="285" text-anchor="middle">1 名研究者，无管理者、无同伴共享</text></svg></div><div class="topology-explanation"><div class="eyebrow">SINGLE</div><h3>单 Agent</h3><p class="fleet-count">1 名研究者</p><p>每次提案读取自己最近 3 条候选结果，包括错误记录。用同一份训练与验证反馈进行下一次尝试。</p></div></article><article class="topology-figure"><div class="topology-drawing"><svg class="topology-svg" viewBox="0 0 560 320" role="img" aria-label="独立并行：四个研究者互不共享消息"><title>独立并行：四个研究者互不共享消息</title><defs><marker id="independent-management" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-management" d="M 0 0 L 10 5 L 0 10 Z"/></marker><marker id="independent-feedback" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-feedback" d="M 0 0 L 10 5 L 0 10 Z"/></marker><marker id="independent-peer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-peer" d="M 0 0 L 10 5 L 0 10 Z"/></marker></defs><g class="worker"><rect x="85.0" y="61" width="100" height="48" rx="7"/><text x="135" y="90" text-anchor="middle">W0</text></g><text class="node-sub" x="135" y="130" text-anchor="middle">仅自身最近 3 条结果</text><g class="worker"><rect x="375.0" y="61" width="100" height="48" rx="7"/><text x="425" y="90" text-anchor="middle">W1</text></g><text class="node-sub" x="425" y="130" text-anchor="middle">仅自身最近 3 条结果</text><g class="worker"><rect x="85.0" y="191" width="100" height="48" rx="7"/><text x="135" y="220" text-anchor="middle">W2</text></g><text class="node-sub" x="135" y="260" text-anchor="middle">仅自身最近 3 条结果</text><g class="worker"><rect x="375.0" y="191" width="100" height="48" rx="7"/><text x="425" y="220" text-anchor="middle">W3</text></g><text class="node-sub" x="425" y="260" text-anchor="middle">仅自身最近 3 条结果</text><text class="node-sub" x="280" y="300" text-anchor="middle">W 之间无消息边，不共享同伴策略或回测结果</text></svg></div><div class="topology-explanation"><div class="eyebrow">INDEPENDENT</div><h3>独立并行</h3><p class="fleet-count">4 名研究者，无管理者</p><p>各自只看自身历史。12 次候选上限按每人最多 3 次分配，共享一组 token 预算；实际可能提前耗尽。</p></div></article><article class="topology-figure"><div class="topology-drawing"><svg class="topology-svg" viewBox="0 0 560 350" role="img" aria-label="中心化：管理者读取上轮结果并向四个研究者分配方向，研究者不直接互通"><title>中心化：管理者读取上轮结果并向四个研究者分配方向，研究者不直接互通</title><defs><marker id="centralized-management" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-management" d="M 0 0 L 10 5 L 0 10 Z"/></marker><marker id="centralized-feedback" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-feedback" d="M 0 0 L 10 5 L 0 10 Z"/></marker><marker id="centralized-peer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-peer" d="M 0 0 L 10 5 L 0 10 Z"/></marker></defs><path class="edge management" d="M 252 77 L 70 147" marker-end="url(#centralized-management)"/><path class="edge management" d="M 270 77 L 210 147" marker-end="url(#centralized-management)"/><path class="edge management" d="M 288 77 L 350 147" marker-end="url(#centralized-management)"/><path class="edge management" d="M 306 77 L 490 147" marker-end="url(#centralized-management)"/><path class="edge feedback" d="M 130 305 L 18 305 L 18 53 L 205 53" marker-end="url(#centralized-feedback)"/><path class="edge feedback" d="M 70 199 L 70 277" marker-end="url(#centralized-feedback)"/><path class="edge feedback" d="M 210 199 L 210 277" marker-end="url(#centralized-feedback)"/><path class="edge feedback" d="M 350 199 L 350 277" marker-end="url(#centralized-feedback)"/><path class="edge feedback" d="M 490 199 L 490 277" marker-end="url(#centralized-feedback)"/><g class="manager"><rect x="205.0" y="29" width="150" height="48" rx="7"/><text x="280" y="58" text-anchor="middle">M · 管理者</text></g><g class="worker"><rect x="20.0" y="148" width="100" height="48" rx="7"/><text x="70" y="177" text-anchor="middle">W0</text></g><g class="worker"><rect x="160.0" y="148" width="100" height="48" rx="7"/><text x="210" y="177" text-anchor="middle">W1</text></g><g class="worker"><rect x="300.0" y="148" width="100" height="48" rx="7"/><text x="350" y="177" text-anchor="middle">W2</text></g><g class="worker"><rect x="440.0" y="148" width="100" height="48" rx="7"/><text x="490" y="177" text-anchor="middle">W3</text></g><rect class="context-box" x="46" y="279" width="468" height="51" rx="5"/><text class="context-label" x="280" y="301" text-anchor="middle">上一轮：每个 W 最近一次有效结果</text><text class="node-sub" x="280" y="319" text-anchor="middle">软件整理的快照，不是额外的 Agent</text><text class="edge-label" x="340" y="108">本轮分工</text><text class="edge-label" x="24" y="262">下轮读取</text></svg></div><div class="topology-explanation"><div class="eyebrow">CENTRALIZED</div><h3>中心化</h3><p class="fleet-count">4 名研究者 + 1 名管理者</p><p>每轮开始时，管理者读取各 W 截至上一轮的最近有效结果并给每人分工。W 读取分工和自身历史，不直接读取其他 W 的结果。</p></div></article><article class="topology-figure"><div class="topology-drawing"><svg class="topology-svg" viewBox="0 0 560 320" role="img" aria-label="去中心化：四个研究者按上一轮快照相互共享有效结果"><title>去中心化：四个研究者按上一轮快照相互共享有效结果</title><defs><marker id="decentralized-management" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-management" d="M 0 0 L 10 5 L 0 10 Z"/></marker><marker id="decentralized-feedback" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-feedback" d="M 0 0 L 10 5 L 0 10 Z"/></marker><marker id="decentralized-peer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-peer" d="M 0 0 L 10 5 L 0 10 Z"/></marker></defs><path class="edge peer" d="M 162 85 L 398 85" marker-end="url(#decentralized-peer)" marker-start="url(#decentralized-peer)"/><path class="edge peer" d="M 162 230 L 398 230" marker-end="url(#decentralized-peer)" marker-start="url(#decentralized-peer)"/><path class="edge peer" d="M 105 114 L 105 201" marker-end="url(#decentralized-peer)" marker-start="url(#decentralized-peer)"/><path class="edge peer" d="M 455 114 L 455 201" marker-end="url(#decentralized-peer)" marker-start="url(#decentralized-peer)"/><path class="edge peer" d="M 161 110 L 399 205" marker-end="url(#decentralized-peer)" marker-start="url(#decentralized-peer)"/><path class="edge peer" d="M 399 110 L 161 205" marker-end="url(#decentralized-peer)" marker-start="url(#decentralized-peer)"/><g class="worker"><rect x="55.0" y="61" width="100" height="48" rx="7"/><text x="105" y="90" text-anchor="middle">W0</text></g><g class="worker"><rect x="405.0" y="61" width="100" height="48" rx="7"/><text x="455" y="90" text-anchor="middle">W1</text></g><g class="worker"><rect x="55.0" y="206" width="100" height="48" rx="7"/><text x="105" y="235" text-anchor="middle">W2</text></g><g class="worker"><rect x="405.0" y="206" width="100" height="48" rx="7"/><text x="455" y="235" text-anchor="middle">W3</text></g><text class="node-sub" x="280" y="291" text-anchor="middle">同伴边：上一轮快照 → 下一轮提案，不是实时群聊</text></svg></div><div class="topology-explanation"><div class="eyebrow">DECENTRALIZED</div><h3>去中心化</h3><p class="fleet-count">4 名研究者，无管理者</p><p>每名 W 可读取其他 W 在上一轮结束前最近一次有效结果，里面包含假设、代码和训练/验证指标。软件只负责整理快照。</p></div></article><article class="topology-figure"><div class="topology-drawing"><svg class="topology-svg" viewBox="0 0 560 350" role="img" aria-label="混合：管理者分工，加上研究者之间的同伴结果共享"><title>混合：管理者分工，加上研究者之间的同伴结果共享</title><defs><marker id="hybrid-management" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-management" d="M 0 0 L 10 5 L 0 10 Z"/></marker><marker id="hybrid-feedback" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-feedback" d="M 0 0 L 10 5 L 0 10 Z"/></marker><marker id="hybrid-peer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="arrow-peer" d="M 0 0 L 10 5 L 0 10 Z"/></marker></defs><path class="edge management" d="M 252 77 L 70 147" marker-end="url(#hybrid-management)"/><path class="edge management" d="M 270 77 L 210 147" marker-end="url(#hybrid-management)"/><path class="edge management" d="M 288 77 L 350 147" marker-end="url(#hybrid-management)"/><path class="edge management" d="M 306 77 L 490 147" marker-end="url(#hybrid-management)"/><path class="edge feedback" d="M 130 305 L 18 305 L 18 53 L 205 53" marker-end="url(#hybrid-feedback)"/><path class="edge feedback" d="M 70 199 L 70 277" marker-end="url(#hybrid-feedback)"/><path class="edge feedback" d="M 210 199 L 210 277" marker-end="url(#hybrid-feedback)"/><path class="edge feedback" d="M 350 199 L 350 277" marker-end="url(#hybrid-feedback)"/><path class="edge feedback" d="M 490 199 L 490 277" marker-end="url(#hybrid-feedback)"/><path class="edge peer" d="M 78 197 Q 140.0 231 202 197" marker-end="url(#hybrid-peer)" marker-start="url(#hybrid-peer)"/><path class="edge peer" d="M 78 197 Q 210.0 254 342 197" marker-end="url(#hybrid-peer)" marker-start="url(#hybrid-peer)"/><path class="edge peer" d="M 78 197 Q 280.0 277 482 197" marker-end="url(#hybrid-peer)" marker-start="url(#hybrid-peer)"/><path class="edge peer" d="M 218 197 Q 280.0 231 342 197" marker-end="url(#hybrid-peer)" marker-start="url(#hybrid-peer)"/><path class="edge peer" d="M 218 197 Q 350.0 254 482 197" marker-end="url(#hybrid-peer)" marker-start="url(#hybrid-peer)"/><path class="edge peer" d="M 358 197 Q 420.0 231 482 197" marker-end="url(#hybrid-peer)" marker-start="url(#hybrid-peer)"/><g class="manager"><rect x="205.0" y="29" width="150" height="48" rx="7"/><text x="280" y="58" text-anchor="middle">M · 管理者</text></g><g class="worker"><rect x="20.0" y="148" width="100" height="48" rx="7"/><text x="70" y="177" text-anchor="middle">W0</text></g><g class="worker"><rect x="160.0" y="148" width="100" height="48" rx="7"/><text x="210" y="177" text-anchor="middle">W1</text></g><g class="worker"><rect x="300.0" y="148" width="100" height="48" rx="7"/><text x="350" y="177" text-anchor="middle">W2</text></g><g class="worker"><rect x="440.0" y="148" width="100" height="48" rx="7"/><text x="490" y="177" text-anchor="middle">W3</text></g><rect class="context-box" x="46" y="279" width="468" height="51" rx="5"/><text class="context-label" x="280" y="301" text-anchor="middle">上一轮：每个 W 最近一次有效结果</text><text class="node-sub" x="280" y="319" text-anchor="middle">软件整理的快照，不是额外的 Agent</text><text class="edge-label" x="340" y="108">本轮分工</text><text class="edge-label" x="24" y="262">下轮读取</text></svg></div><div class="topology-explanation"><div class="eyebrow">HYBRID</div><h3>混合</h3><p class="fleet-count">4 名研究者 + 1 名管理者</p><p>同时保留管理者分工和同伴共享：每名 W 读取本轮分工、自身历史，以及上轮其他 W 的最近有效结果。</p></div></article><div class="note"><strong>图示需要结合三条实际执行规则理解。</strong><ul><li>所有 W 都只收到自身最近 3 条候选结果；图中未在每个 W 下重复画本地历史。</li><li>同伴与管理者读取的是“截至上一轮的快照”。本轮先调用的 W 即使已产生新结果，也不会立即分享给同轮其他 W；没有有效结果时，相应上下文为空。</li><li>W 在每组内按编号顺序调用，不是四路同时执行；实验并发 4 路指不同实验组。每组最后统一按验证 Sharpe 选 1 份策略，不把多名 W 的策略自动组合成投资组合。</li></ul></div><p class="source">图源：正式实验冻结的 research.py 信息流。实线和虚线表示逻辑信息关系，不代表同一时刻通信或额外模型调用。管理者和同伴内容均计入该组统一 token 预算。</p></details><p>管理者和同伴只拿完成回测的候选，包括亏损策略，不共享执行错误详情；研究者仅保留自身最近3条结果。组内worker按编号顺序调用，组间并发；每组最终选择一个策略，不自动组合多名worker的仓位。</p><p>每种结构最多两份完整测试结果。测试年份已反复使用，补跑也不是新盲测。当前结果适合研究过程分析，不足以确定稳定拓扑排名或可部署投资结论。</p></section>
+<footer>仅展示V3数据。<p><a href="v3-results-with-supplement.json">V3完整数据与补跑账目</a><a href="v3-topology-analysis-with-supplement.json">拓扑过程与风险分析</a><a href="supplement-single-n1-s17/completed.json">本次补跑结果</a></p></footer></main>
+<script id="report-data" type="application/json">{"aggregates": [{"topology": "single", "label": "单 Agent", "planned": 2, "tested": 2, "research_attempts": 3, "attempts": 18, "submitted": 18, "valid": 15, "unique_valid": 15, "tokens": 290668, "input_tokens": 102719, "output_tokens": 187949, "reasoning_tokens": 149748, "manager_tokens": 0, "repair_calls": 0, "tokens_per_valid": 19377.866666666665, "validation_sharpe_mean": 0.3915544731333058, "test_sharpe_mean": -0.7861506211693411, "test_annualized_return_mean": -0.09464111245574541, "test_max_drawdown_mean": 0.19864017412481128}, {"topology": "independent", "label": "独立并行", "planned": 2, "tested": 2, "research_attempts": 2, "attempts": 24, "submitted": 23, "valid": 20, "unique_valid": 20, "tokens": 267817, "input_tokens": 62901, "output_tokens": 204916, "reasoning_tokens": 174318, "manager_tokens": 0, "repair_calls": 0, "tokens_per_valid": 13390.85, "validation_sharpe_mean": 0.11585217339739275, "test_sharpe_mean": -0.824105168442475, "test_annualized_return_mean": -0.0933151866681628, "test_max_drawdown_mean": 0.22183323780014086}, {"topology": "centralized", "label": "中心化", "planned": 2, "tested": 2, "research_attempts": 2, "attempts": 20, "submitted": 19, "valid": 14, "unique_valid": 14, "tokens": 309573, "input_tokens": 82513, "output_tokens": 227060, "reasoning_tokens": 191066, "manager_tokens": 38714, "repair_calls": 2, "tokens_per_valid": 22112.35714285714, "validation_sharpe_mean": 0.16199749856825232, "test_sharpe_mean": 0.24568826821250733, "test_annualized_return_mean": 0.06900403010004197, "test_max_drawdown_mean": 0.21017616681990436}, {"topology": "decentralized", "label": "去中心化", "planned": 2, "tested": 2, "research_attempts": 2, "attempts": 20, "submitted": 20, "valid": 16, "unique_valid": 16, "tokens": 290504, "input_tokens": 90122, "output_tokens": 200382, "reasoning_tokens": 170769, "manager_tokens": 0, "repair_calls": 0, "tokens_per_valid": 18156.5, "validation_sharpe_mean": 0.10193936916917465, "test_sharpe_mean": -0.278050711223613, "test_annualized_return_mean": -0.02696438265608725, "test_max_drawdown_mean": 0.19273492467313003}, {"topology": "hybrid", "label": "混合", "planned": 2, "tested": 2, "research_attempts": 2, "attempts": 17, "submitted": 16, "valid": 13, "unique_valid": 13, "tokens": 293836, "input_tokens": 113592, "output_tokens": 180244, "reasoning_tokens": 151515, "manager_tokens": 36608, "repair_calls": 0, "tokens_per_valid": 22602.76923076923, "validation_sharpe_mean": 0.05464666963223012, "test_sharpe_mean": 0.82038854581887, "test_annualized_return_mean": 0.07996794968899024, "test_max_drawdown_mean": 0.0924860033829703}], "runs": [{"label": "单 Agent · 7", "topology": "single", "nav": {"dates": ["2024-01-02", "2024-01-31", "2024-02-29", "2024-03-28", "2024-04-30", "2024-05-31", "2024-06-28", "2024-07-31", "2024-08-30", "2024-09-30", "2024-10-31", "2024-11-29", "2024-12-31", "2025-01-31", "2025-02-28", "2025-03-31", "2025-04-30", "2025-05-30", "2025-06-30", "2025-07-31", "2025-08-29", "2025-09-30", "2025-10-31", "2025-11-28", "2025-12-31"], "values": [1.0, 1.0129152795937446, 0.9951864360842287, 0.9822717489093544, 0.9733908644327203, 0.9423265825597403, 0.967687177453635, 0.9965405281837695, 1.0018708956892162, 0.9882894530218326, 0.9593747227655143, 0.8845220822347833, 0.883688272247591, 0.8743797920403177, 0.9167592545649144, 0.9200317975071713, 0.9296003163248142, 0.9305364851480153, 0.8965051775367598, 0.8621358263616179, 0.8716893450989492, 0.8588298946551707, 0.8080910679842916, 0.8163426603908034, 0.8142357605226086]}}, {"label": "单 Agent · 17（补跑）", "topology": "single", "nav": {"dates": ["2024-01-02", "2024-01-31", "2024-02-29", "2024-03-28", "2024-04-30", "2024-05-31", "2024-06-28", "2024-07-31", "2024-08-30", "2024-09-30", "2024-10-31", "2024-11-29", "2024-12-31", "2025-01-31", "2025-02-28", "2025-03-31", "2025-04-30", "2025-05-30", "2025-06-30", "2025-07-31", "2025-08-29", "2025-09-30", "2025-10-31", "2025-11-28", "2025-12-31"], "values": [1.0, 0.9728088821073161, 0.9664811000554857, 0.9765944963661846, 0.9903259306949901, 0.9678962895643373, 0.9870612067290142, 0.9569584908672192, 0.9625213816855535, 0.9448099256635015, 0.9449634567183204, 0.9633107755166529, 0.9423736177952698, 0.9197083439609982, 0.9217761654240934, 0.947874487329567, 0.9691821777928232, 0.9159891886019765, 0.9139681720752324, 0.9344330819330324, 0.9172299252522561, 0.8768924960254588, 0.8726069019773143, 0.8520506035894448, 0.827730367549068]}}, {"label": "独立并行 · 7", "topology": "independent", "nav": {"dates": ["2024-01-02", "2024-01-31", "2024-02-29", "2024-03-28", "2024-04-30", "2024-05-31", "2024-06-28", "2024-07-31", "2024-08-30", "2024-09-30", "2024-10-31", "2024-11-29", "2024-12-31", "2025-01-31", "2025-02-28", "2025-03-31", "2025-04-30", "2025-05-30", "2025-06-30", "2025-07-31", "2025-08-29", "2025-09-30", "2025-10-31", "2025-11-28", "2025-12-31"], "values": [1.0, 0.9963935386038498, 0.9884527379502459, 1.0023187359479016, 0.9969135973055097, 0.975756723626406, 0.999249261179271, 0.9714448680467525, 0.9845252649153998, 0.9777676220456849, 0.9727601390019626, 0.9585031868387194, 0.9481057271991558, 0.9468328594538036, 0.9484174110653815, 0.9336000472269168, 0.928151456624774, 0.9075427250635382, 0.9030192689240654, 0.8965945021774052, 0.8955509001784098, 0.863747150862141, 0.861639980833272, 0.8397914472905194, 0.8405232196256033]}}, {"label": "独立并行 · 17", "topology": "independent", "nav": {"dates": ["2024-01-02", "2024-01-31", "2024-02-29", "2024-03-28", "2024-04-30", "2024-05-31", "2024-06-28", "2024-07-31", "2024-08-30", "2024-09-30", "2024-10-31", "2024-11-29", "2024-12-31", "2025-01-31", "2025-02-28", "2025-03-31", "2025-04-30", "2025-05-30", "2025-06-30", "2025-07-31", "2025-08-29", "2025-09-30", "2025-10-31", "2025-11-28", "2025-12-31"], "values": [1.0, 1.0549850819261275, 1.0573348573759007, 1.0512035979151797, 1.0414320336507459, 1.005159684732219, 1.0317373804445633, 1.0502400110176549, 1.0662432055588158, 1.0347251715367891, 1.0100634243267868, 0.9640826010393748, 0.9488778886478881, 0.949722472820396, 0.9833762086201318, 0.9406304304534743, 0.9483345866602264, 0.9197943338664116, 0.8793083750973075, 0.8385998943919232, 0.8530028009722644, 0.8569116339169225, 0.8170595464782976, 0.8201802191805375, 0.8063657246950975]}}, {"label": "中心化 · 7", "topology": "centralized", "nav": {"dates": ["2024-01-02", "2024-01-31", "2024-02-29", "2024-03-28", "2024-04-30", "2024-05-31", "2024-06-28", "2024-07-31", "2024-08-30", "2024-09-30", "2024-10-31", "2024-11-29", "2024-12-31", "2025-01-31", "2025-02-28", "2025-03-31", "2025-04-30", "2025-05-30", "2025-06-30", "2025-07-31", "2025-08-29", "2025-09-30", "2025-10-31", "2025-11-28", "2025-12-31"], "values": [1.0, 0.9876061322141788, 0.9691220415246461, 0.9622473614094319, 0.9505915770570637, 0.9202258449832087, 0.9483477937120973, 0.9894520230217768, 0.9829624129190363, 0.9980033276883801, 0.9712799842441108, 0.9081400602976476, 0.9106416946086564, 0.888002508630487, 0.9192427430780846, 0.9463446094515208, 0.9458188517701455, 0.9723524057094602, 0.9742633767069782, 0.9402918700429675, 0.9377420056653297, 0.9042644796759991, 0.8301360185999931, 0.8390367436888893, 0.8423919911980939]}}, {"label": "中心化 · 17", "topology": "centralized", "nav": {"dates": ["2024-01-02", "2024-01-31", "2024-02-29", "2024-03-28", "2024-04-30", "2024-05-31", "2024-06-28", "2024-07-31", "2024-08-30", "2024-09-30", "2024-10-31", "2024-11-29", "2024-12-31", "2025-01-31", "2025-02-28", "2025-03-31", "2025-04-30", "2025-05-30", "2025-06-30", "2025-07-31", "2025-08-29", "2025-09-30", "2025-10-31", "2025-11-28", "2025-12-31"], "values": [1.0, 0.9904631288897389, 1.0495437431188577, 1.068826050991448, 1.0726640576323907, 1.127134789311604, 1.0894226661837514, 1.0443951195155932, 1.045480810438047, 1.0751207689187434, 1.145546598807456, 1.2529209096960532, 1.2762294276131176, 1.3294737866166602, 1.2156894255664075, 1.12068325375672, 1.0567374774076812, 1.1258010443535889, 1.199887562139446, 1.256440172880146, 1.2601124476041194, 1.3492576850867002, 1.4693946918765717, 1.431783634778378, 1.4856848231496032]}}, {"label": "去中心化 · 7", "topology": "decentralized", "nav": {"dates": ["2024-01-02", "2024-01-31", "2024-02-29", "2024-03-28", "2024-04-30", "2024-05-31", "2024-06-28", "2024-07-31", "2024-08-30", "2024-09-30", "2024-10-31", "2024-11-29", "2024-12-31", "2025-01-31", "2025-02-28", "2025-03-31", "2025-04-30", "2025-05-30", "2025-06-30", "2025-07-31", "2025-08-29", "2025-09-30", "2025-10-31", "2025-11-28", "2025-12-31"], "values": [1.0, 1.0240062451519205, 0.9994211370921756, 0.9901839017281953, 0.9709292437265613, 0.9403294238461066, 0.9574124333673576, 0.9714744453427215, 0.9578605170243902, 0.9453353163599357, 0.916310025077001, 0.8592041665251133, 0.8574946778278482, 0.8531501666218329, 0.8805032288950687, 0.8394408064850283, 0.8457352488823654, 0.8384076251072708, 0.8072425202132094, 0.768194557115541, 0.7737704946628572, 0.7716933934936787, 0.7209463748230001, 0.7228691167813117, 0.7215145864382939]}}, {"label": "去中心化 · 17", "topology": "decentralized", "nav": {"dates": ["2024-01-02", "2024-01-31", "2024-02-29", "2024-03-28", "2024-04-30", "2024-05-31", "2024-06-28", "2024-07-31", "2024-08-30", "2024-09-30", "2024-10-31", "2024-11-29", "2024-12-31", "2025-01-31", "2025-02-28", "2025-03-31", "2025-04-30", "2025-05-30", "2025-06-30", "2025-07-31", "2025-08-29", "2025-09-30", "2025-10-31", "2025-11-28", "2025-12-31"], "values": [1.0, 1.0447470757974837, 1.0834922485533887, 1.0898139566883789, 1.068846733811868, 1.0962148398270437, 1.1122709011454952, 1.0896556776055466, 1.120824561037583, 1.108598187154422, 1.1664144650583093, 1.1219661039449462, 1.1210239489052103, 1.1670058479691077, 1.1555202648522858, 1.131166552672962, 1.1829705304902711, 1.2213776359773092, 1.1962742705277045, 1.150564896172629, 1.1607222472322454, 1.1871194381319228, 1.2140326198184321, 1.2015882231418398, 1.2032928592300258]}}, {"label": "混合 · 7", "topology": "hybrid", "nav": {"dates": ["2024-01-02", "2024-01-31", "2024-02-29", "2024-03-28", "2024-04-30", "2024-05-31", "2024-06-28", "2024-07-31", "2024-08-30", "2024-09-30", "2024-10-31", "2024-11-29", "2024-12-31", "2025-01-31", "2025-02-28", "2025-03-31", "2025-04-30", "2025-05-30", "2025-06-30", "2025-07-31", "2025-08-29", "2025-09-30", "2025-10-31", "2025-11-28", "2025-12-31"], "values": [1.0, 1.039222062440555, 1.0870385492761734, 1.0890080292600728, 1.0887502937717473, 1.1173316415376577, 1.1134973363265894, 1.0891751765086595, 1.1037162449470177, 1.0819510799089613, 1.1103079225067365, 1.1406033409361136, 1.1400938290898561, 1.1599190235047308, 1.1642689310410148, 1.1585604114958457, 1.1917761696788252, 1.183923062053553, 1.1527381416121594, 1.1536947971411686, 1.1378508328297896, 1.1736431059025627, 1.1644573796448807, 1.171900470603586, 1.16431181789283]}}, {"label": "混合 · 17", "topology": "hybrid", "nav": {"dates": ["2024-01-02", "2024-01-31", "2024-02-29", "2024-03-28", "2024-04-30", "2024-05-31", "2024-06-28", "2024-07-31", "2024-08-30", "2024-09-30", "2024-10-31", "2024-11-29", "2024-12-31", "2025-01-31", "2025-02-28", "2025-03-31", "2025-04-30", "2025-05-30", "2025-06-30", "2025-07-31", "2025-08-29", "2025-09-30", "2025-10-31", "2025-11-28", "2025-12-31"], "values": [1.0, 0.9814022703670541, 1.0015579888561394, 1.0174687536289895, 1.0146889037657156, 1.0419277548294947, 1.031787758371633, 1.0206685074098876, 1.0128739762020715, 1.0220183261591038, 1.032603102482331, 1.064768647926103, 1.072009960935504, 1.0911987768280138, 1.0428379659126803, 1.012918155491036, 1.033551287968075, 1.0110829921112174, 1.0501277894083918, 1.0650870908886192, 1.075768700859261, 1.1042111466442335, 1.1372034016330115, 1.1386474088151655, 1.1655031269200369]}}]}</script>
+<script>
+const D=JSON.parse(document.getElementById('report-data').textContent), NS='http://www.w3.org/2000/svg';
+function svgEl(tag,attrs,text){const el=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs||{}))el.setAttribute(k,v);if(text!==undefined)el.textContent=text;return el}
+function makeSvg(parent,label){const s=svgEl('svg',{viewBox:'0 0 860 330',role:'img','aria-label':label});parent.replaceChildren(s);return s}
+function text(s,x,y,value,attrs={}){s.append(svgEl('text',{x,y,fill:'#65727d','font-size':12,'font-family':'system-ui, sans-serif',...attrs},value))}
+function line(s,x1,y1,x2,y2,color='#dce3e7',dash){s.append(svgEl('line',{x1,y1,x2,y2,stroke:color,'stroke-width':1,...(dash?{'stroke-dasharray':dash}:{})}))}
+function bars(){const s=makeSvg(document.getElementById('sharpe-chart'),'五种结构的验证和测试年化Sharpe均值');const min=-.6,max=.9,left=60,right=842,top=22,bottom=270,y=v=>bottom-(v-min)/(max-min)*(bottom-top);for(const v of [-.6,-.3,0,.3,.6,.9]){line(s,left,y(v),right,y(v),v===0?'#9aabb2':'#e7ecef');text(s,left-12,y(v)+4,v.toFixed(1),{'text-anchor':'end'})}D.aggregates.forEach((a,i)=>{const x=left+(i+.5)*(right-left)/5;for(const [key,offset,color] of [['validation_sharpe_mean',-18,'#9aabb2'],['test_sharpe_mean',18,'#176275']]){if(typeof a[key]!=='number')continue;const val=a[key],rect=svgEl('rect',{x:x+offset-13,y:Math.min(y(val),y(0)),width:26,height:Math.abs(y(val)-y(0)),fill:color,rx:2});rect.append(svgEl('title',{},`${a.label} ${key.startsWith('test')?'测试':'验证'} Sharpe：${val.toFixed(3)}`));s.append(rect);text(s,x+offset,val>=0?y(val)-8:y(val)+17,val.toFixed(2),{'text-anchor':'middle','font-size':11})}if(a.tested===0)text(s,x,y(.1),'无有效提交',{'text-anchor':'middle','font-size':11});text(s,x,298,a.label,{'text-anchor':'middle'});text(s,x,317,`${a.tested} / ${a.planned} 组完成`,{'text-anchor':'middle','font-size':10})})}
+function navChart(){const selected=D.runs.filter(r=>r.topology===document.getElementById('nav-select').value),s=makeSvg(document.getElementById('nav-chart'),'所选结构在2024至2025年的月末策略净值');let lo=Math.min(1,...selected.flatMap(r=>r.nav.values)),hi=Math.max(1,...selected.flatMap(r=>r.nav.values));const pad=(hi-lo)*.13;lo-=pad;hi+=pad;const l=60,r=842,t=22,b=276,x=i=>l+i*(r-l)/(selected[0].nav.values.length-1),y=v=>b-(v-lo)/(hi-lo)*(b-t);for(let i=0;i<5;i++){const v=lo+i*(hi-lo)/4;line(s,l,y(v),r,y(v));text(s,l-12,y(v)+4,v.toFixed(2),{'text-anchor':'end'})}line(s,l,y(1),r,y(1),'#9aabb2','4 4');const legend=document.getElementById('nav-legend');legend.replaceChildren();selected.forEach((a,j)=>{const c=j===0?'#176275':'#8798a2';s.append(svgEl('polyline',{points:a.nav.values.map((v,i)=>`${x(i)},${y(v)}`).join(' '),fill:'none',stroke:c,'stroke-width':2.5}));a.nav.values.forEach((v,i)=>{const dot=svgEl('circle',{cx:x(i),cy:y(v),r:3,fill:c});dot.append(svgEl('title',{},`${a.label} · ${a.nav.dates[i]} · 净值 ${v.toFixed(4)}`));s.append(dot)});const item=document.createElement('span'),swatch=document.createElement('i');swatch.style.background=c;item.append(swatch,document.createTextNode(a.label));legend.append(item)});const dates=selected[0].nav.dates;for(let i=0;i<dates.length;i+=6)text(s,x(i),306,dates[i].slice(0,7),{'text-anchor':'middle'});text(s,451,328,'月末日期',{'text-anchor':'middle','font-size':11})}
+navChart();document.getElementById('nav-select').addEventListener('change',navChart);
+const links=[...document.querySelectorAll('nav a')];
+if('IntersectionObserver'in window){const observer=new IntersectionObserver(entries=>{const seen=entries.find(e=>e.isIntersecting);if(seen)links.forEach(a=>a.classList.toggle('active',a.hash==='#'+seen.target.id))},{rootMargin:'-5% 0px -75% 0px'});document.querySelectorAll('main>section').forEach(s=>observer.observe(s))}
+</script></body></html>

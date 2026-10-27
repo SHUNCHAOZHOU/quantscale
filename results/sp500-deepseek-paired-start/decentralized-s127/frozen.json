@@ -1,0 +1,102 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 400000,
+        "max_turn_tokens": 131072,
+        "seed": 127,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024,
+        "manager_max_format_repairs": 1,
+        "manager_max_failed_rounds": 2
+      },
+      "topology": "decentralized",
+      "fleet_size": 4,
+      "manager_count": 0,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768,
+        "role_settings": {
+          "researcher": {
+            "reasoning_effort": "low",
+            "max_output_tokens": 32768
+          },
+          "manager": {
+            "reasoning_effort": "none",
+            "max_output_tokens": 8192
+          }
+        },
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      },
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "seed": 127,
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "selection": "highest net validation Sharpe including initial four; SHA256 ascending tie-break",
+      "budget_mode": "paired-start, 8 additional candidate attempts in exactly two scheduled rounds",
+      "initial_state_sha256": "81cd8c9f8480a3606628d2e062269b78ab72bd65761c9dcb9400b4dab070ea9e",
+      "study_source_sha256": "b9e1493cda5da1f72b077348fb8363309e2ddb7140844f1d330281210c751012",
+      "initial_cost_accounting": "Initial four generated once, recorded separately; not charged four times",
+      "manager_failure_policy": "Skip failed scheduled round; at most two scheduled rounds; retain best initial strategy",
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ]
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\n\n\ndef generate_weights(history, universe):\n    universe = pd.Index(universe)\n    zero = pd.Series(0.0, index=universe, dtype=float)\n    if len(universe) == 0:\n        return zero\n\n    adj = history.get('adjusted_close')\n    if not isinstance(adj, pd.DataFrame) or adj.empty:\n        adj = history.get('close')\n    if not isinstance(adj, pd.DataFrame) or adj.empty:\n        return zero\n\n    cols = [c for c in universe if c in adj.columns]\n    if len(cols) < 20:\n        return zero\n\n    adj = adj[cols].sort_index()\n    n = len(adj)\n    if n < 120:\n        return zero\n\n    rebalance = 21\n    anchor = ((n - 1) // rebalance) * rebalance\n    if anchor < 100:\n        return zero\n\n    px = adj.iloc[:anchor + 1].ffill()\n    if len(px) < 100:\n        return zero\n\n    last = px.iloc[-1]\n    valid = last.notna() & (last > 1.0)\n    valid = valid & np.isfinite(last.astype(float))\n\n    elig = history.get('eligible')\n    if isinstance(elig, pd.DataFrame) and not elig.empty:\n        e = elig.reindex(index=adj.index, columns=cols)\n        if anchor < len(e):\n            ev = e.iloc[anchor].fillna(False).astype(bool)\n        else:\n            ev = e.iloc[-1].fillna(False).astype(bool)\n        valid = valid & ev\n\n    vol = history.get('volume')\n    close = history.get('close')\n    if isinstance(vol, pd.DataFrame) and not vol.empty:\n        v = vol.reindex(index=adj.index, columns=cols).iloc[:anchor + 1]\n        if isinstance(close, pd.DataFrame) and not close.empty:\n            c = close.reindex(index=adj.index, columns=cols).iloc[:anchor + 1]\n        else:\n            c = px\n        dv = v * c\n        med = dv.tail(60).median()\n        valid = valid & med.notna() & (med >= 1.0e6)\n\n    ret = px.pct_change()\n    ret = ret.replace([np.inf, -np.inf], np.nan)\n    mkt = ret.mean(axis=1, skipna=True)\n    if mkt.notna().sum() < 60:\n        return zero\n\n    window = min(252, len(ret) - 1)\n    if window < 60:\n        return zero\n    r = ret.tail(window)\n    m = mkt.tail(window)\n    mm = m.dropna()\n    if len(mm) < 60:\n        return zero\n    r = r.loc[mm.index]\n    m = mm\n\n    R = r.to_numpy(dtype=float, copy=False)\n    M = m.to_numpy(dtype=float, copy=False)\n    betas = np.full(R.shape[1], np.nan, dtype=float)\n    for j in range(R.shape[1]):\n        x = R[:, j]\n        good = np.isfinite(x) & np.isfinite(M)\n        if good.sum() < 60:\n            continue\n        xg = x[good]\n        mg = M[good]\n        varm = np.var(mg, ddof=1)\n        if not np.isfinite(varm) or varm <= 0.0:\n            continue\n        cov = np.cov(xg, mg, ddof=1)[0, 1]\n        if np.isfinite(cov):\n            betas[j] = cov / varm\n\n    beta = pd.Series(betas, index=cols)\n    valid = valid & beta.notna() & np.isfinite(beta)\n\n    mkt_index = (1.0 + mkt.fillna(0.0)).cumprod()\n    ma_len = min(200, len(mkt_index))\n    if ma_len < 20:\n        return zero\n    ma = mkt_index.tail(ma_len).mean()\n    if not np.isfinite(ma) or ma <= 0.0:\n        return zero\n    trend = mkt_index.iloc[-1] / ma - 1.0\n    risk_on = bool(trend >= 0.0)\n\n    cand = beta[valid].dropna().sort_values()\n    if len(cand) < 20:\n        return zero\n    n_side = min(50, len(cand) // 2)\n    if n_side < 5:\n        return zero\n\n    if risk_on:\n        shorts = cand.index[:n_side]\n        longs = cand.index[-n_side:]\n    else:\n        longs = cand.index[:n_side]\n        shorts = cand.index[-n_side:]\n\n    w = min(0.02, 0.5 / float(n_side))\n    weights = pd.Series(0.0, index=universe, dtype=float)\n    for t in longs:\n        weights.loc[t] = weights.loc[t] + w\n    for t in shorts:\n        weights.loc[t] = weights.loc[t] - w\n\n    weights = weights.replace([np.inf, -np.inf], 0.0).fillna(0.0).clip(-0.02, 0.02)\n    net = float(weights.sum())\n    if abs(net) > 1e-12:\n        weights = weights - net / float(len(universe))\n        weights = weights.clip(-0.02, 0.02)\n    gross = float(weights.abs().sum())\n    if gross > 1.0 and gross > 0.0:\n        weights = weights * (1.0 / gross)\n    return weights.astype(float)"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": 0.7193147235345678,
+      "annualized_return": 0.11774559679892094,
+      "total_return": 0.24714970036196449,
+      "volatility": 0.17632612051464955,
+      "max_drawdown": 0.1657015634240343,
+      "downside_risk": 0.11772143572454473,
+      "average_daily_turnover": 0.047079021758579045,
+      "total_cost": 0.011769755439644761,
+      "total_borrow_cost": 0.002976190476190477,
+      "active_days": 500
+    },
+    "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "d395bebce16b2832ef811b66f4a53632283287c80648786593439fe6019485b2"
+}

@@ -1,0 +1,43 @@
+{
+  "agent": 2,
+  "round": 1,
+  "hypothesis": "Peer results show that fast long/short reversal and momentum books are dominated by turnover and borrow costs. I test a slower, lower-turnover regime-switching volatility spread. Using only the most recent completed month-end data, I compute 60-day realized volatility and an equal-weight market index. If the market index is above its 200-day moving average, the portfolio is risk-on: long the highest-volatility names and short the lowest-volatility names. If below, it is risk-off: long the lowest-volatility names and short the highest-volatility names. Equal 1% weights per name (capped at 2%), equal long/short counts, gross exposure 0.5, dollar-neutral, monthly rebalance. This keeps turnover and costs low while allowing the book to adapt to the market regime rather than paying for daily cross-sectional churn.",
+  "source_file": "strategies/db8fc8f41fc6c7e6681893b6212ffddd5a0250e8ab47cef90ada45163e4d9a41.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\n\ndef generate_weights(history, universe):\n    u = pd.Index(universe)\n    zeros = pd.Series(0.0, index=u, dtype=float)\n    if len(u) == 0:\n        return zeros\n\n    ac = history.get('adjusted_close')\n    if ac is None or ac.empty:\n        ac = history.get('close')\n    if ac is None or ac.empty:\n        return zeros\n\n    ac = ac.reindex(columns=u)\n    if ac.shape[0] < 60:\n        return zeros\n\n    idx = ac.index\n    current_month = (idx[-1].year, idx[-1].month)\n    prev_dates = [d for d in idx if (d.year, d.month) < current_month]\n    if not prev_dates:\n        return zeros\n\n    reb_date = prev_dates[-1]\n    try:\n        pos = idx.get_loc(reb_date)\n    except Exception:\n        return zeros\n\n    ac_hist = ac.iloc[:pos + 1]\n    if len(ac_hist) < 60:\n        return zeros\n\n    ret = ac_hist.pct_change()\n    if len(ret) < 20:\n        return zeros\n\n    vol = ret.tail(60).std(ddof=0)\n    vol = vol.replace([np.inf, -np.inf], np.nan)\n    last_vol = vol.copy()\n\n    mkt = ret.mean(axis=1, skipna=True).fillna(0.0)\n    cum = (1.0 + mkt).cumprod()\n    if len(cum) >= 200:\n        ma = cum.tail(200).mean()\n    elif len(cum) >= 100:\n        ma = cum.tail(100).mean()\n    else:\n        return zeros\n    risk_on = bool(cum.iloc[-1] > ma)\n\n    elig_df = history.get('eligible')\n    if elig_df is not None and not elig_df.empty:\n        try:\n            cur_elig = elig_df.reindex(columns=u).iloc[-1].fillna(False).astype(bool)\n        except Exception:\n            cur_elig = pd.Series(True, index=u)\n    else:\n        cur_elig = pd.Series(True, index=u)\n\n    if elig_df is not None and not elig_df.empty:\n        try:\n            reb_elig = elig_df.reindex(columns=u).loc[reb_date].fillna(False).astype(bool)\n        except Exception:\n            reb_elig = pd.Series(True, index=u)\n    else:\n        reb_elig = pd.Series(True, index=u)\n\n    last_ac_current = ac.iloc[-1]\n    last_ac_reb = ac_hist.iloc[-1]\n\n    valid = (\n        cur_elig\n        & reb_elig\n        & last_vol.notna()\n        & np.isfinite(last_vol)\n        & (last_vol > 0)\n        & last_ac_current.notna()\n        & last_ac_reb.notna()\n    )\n    valid_names = last_vol[valid].dropna()\n    if len(valid_names) < 6:\n        return zeros\n\n    n_side = min(25, len(valid_names) // 2)\n    if n_side < 1:\n        return zeros\n\n    ordered = valid_names.sort_values(kind='mergesort')\n    if risk_on:\n        longs = ordered.index[-n_side:]\n        shorts = ordered.index[:n_side]\n    else:\n        longs = ordered.index[:n_side]\n        shorts = ordered.index[-n_side:]\n\n    w = min(0.02, 0.25 / float(n_side))\n    weights = zeros.copy()\n    weights.loc[longs] = w\n    weights.loc[shorts] = -w\n    weights = weights.clip(-0.02, 0.02).replace([np.inf, -np.inf], 0.0).fillna(0.0)\n    return weights\n"
+  },
+  "strategy_id": "db8fc8f41fc6c7e6681893b6212ffddd5a0250e8ab47cef90ada45163e4d9a41",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": 0.4976497697664504,
+    "annualized_return": 0.037039107632990564,
+    "total_return": 0.24314013933812118,
+    "volatility": 0.07942918010122578,
+    "max_drawdown": 0.16265342743576894,
+    "downside_risk": 0.056696991818327755,
+    "average_daily_turnover": 0.027571412958938685,
+    "total_cost": 0.02078884537103977,
+    "total_borrow_cost": 0.0041815476190476195,
+    "active_days": 1405
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.04007454993666701,
+    "annualized_return": -0.001489124207970205,
+    "total_return": -0.002952446533830755,
+    "volatility": 0.10799276561839755,
+    "max_drawdown": 0.10477952865770102,
+    "downside_risk": 0.07509049630227099,
+    "average_daily_turnover": 0.03139566614079624,
+    "total_cost": 0.00784891653519906,
+    "total_borrow_cost": 0.0014880952380952384,
+    "active_days": 500
+  }
+}

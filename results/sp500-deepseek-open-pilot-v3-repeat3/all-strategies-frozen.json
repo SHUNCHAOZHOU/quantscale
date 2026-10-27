@@ -1,0 +1,12 @@
+{
+  "frozen_before_any_evaluation_utc": "2026-10-26T11:58:55.094821+00:00",
+  "submissions": {
+    "decentralized-n4-s27": "8734ae196d0fc491bc875c9f1b8769cced3cf3555e6e0f0b4dbb57ba6b9d503e",
+    "centralized-n4-s27": "56b68a04e896705c46b91e3706ccadabb1bb6b7a92c19f0df800c6d8efb4a628",
+    "single-n1-s27": "a0d5ac750f60e57f2d7a9966a2746ac99b74887481201b30deab43e5d6311fea",
+    "hybrid-n4-s27": "94688d82a04d87a38c1def9b46e86d71fc653840dc5b4dbfcd9d314297d18eb1",
+    "independent-n4-s27": "1584cef0594af03aeffecd8c611fd7445c56a49ccd734a879fabb28d83b4afff"
+  },
+  "no_submission": [],
+  "all_scheduled_research_attempts_finished": true
+}

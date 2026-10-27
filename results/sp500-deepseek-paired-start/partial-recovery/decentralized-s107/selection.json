@@ -1,0 +1,38 @@
+{
+  "agent": 1,
+  "cached_backtest": false,
+  "hypothesis": "Prior market-neutral defensive and momentum long-short policies lost in both train and validation, indicating cross-sectional premia were inverted in this sample: high-beta, high-volatility, lottery-like names outperformed low-beta defensive names, and short legs in high-beta/high-vol names were especially costly. I will test a reverse-defensive market-neutral policy that is long liquid eligible stocks with high market beta, high realized volatility, high maximum daily return, and positive recent 21-day price thrust, and short the opposite low-beta/low-volatility/low-lottery basket. Monthly anchored rebalancing with up to 50 names per side, dollar neutrality, gross exposure near 1, and a 2% per-name cap should keep turnover and borrowing costs low while expressing the inverted factor signs.",
+  "round": 2,
+  "source_file": "strategies/d81f9f227fb33e5b6ab148a35dc5ec250662d25b6d12dc2ff6148d74702fc267.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\n\ndef generate_weights(history, universe):\n    tickers = pd.Index(list(universe))\n    if len(tickers) == 0:\n        return pd.Series(dtype=float)\n    zero = pd.Series(0.0, index=tickers, dtype=float)\n\n    ac = history.get('adjusted_close')\n    if ac is None:\n        ac = history.get('close')\n    if ac is None or not isinstance(ac, pd.DataFrame) or len(ac.index) == 0:\n        return zero\n    ac = ac.sort_index()\n\n    n = len(ac.index)\n    if n < 260:\n        return zero\n\n    reb = ((n - 1) // 21) * 21\n    if reb < 252:\n        return zero\n\n    cols = [c for c in tickers if c in ac.columns]\n    if len(cols) < 20:\n        return zero\n\n    start = max(0, reb - 300)\n    px = ac.iloc[start:reb + 1][cols].astype(float).copy()\n    px = px.replace([np.inf, -np.inf], np.nan)\n    if px.shape[0] < 180:\n        return zero\n\n    last = px.iloc[-1]\n    ret = px.pct_change()\n    ret = ret.replace([np.inf, -np.inf], np.nan)\n\n    r = ret.tail(126).copy()\n    cnt = r.notna().sum(axis=0)\n    r_fill = r.fillna(0.0)\n\n    mkt = ret.mean(axis=1, skipna=True).tail(126)\n    mkt = mkt.reindex(r.index).fillna(0.0)\n    r_dm = r_fill.sub(r_fill.mean(axis=0), axis=1)\n    m_dm = mkt - mkt.mean()\n    var_m = float((m_dm ** 2).sum())\n    if var_m <= 0.0:\n        return zero\n\n    beta = r_dm.mul(m_dm, axis=0).sum(axis=0) / var_m\n    vol = r.std(axis=0, ddof=1) * np.sqrt(252.0)\n    vol = vol.replace([np.inf, -np.inf], np.nan)\n    maxret = r.max(axis=0)\n\n    if px.shape[0] > 22:\n        ret21 = px.iloc[-1] / px.iloc[-22] - 1.0\n    else:\n        ret21 = pd.Series(np.nan, index=cols)\n    ret21 = ret21.replace([np.inf, -np.inf], np.nan)\n\n    valid = (\n        last.notna()\n        & (last > 0)\n        & (cnt >= 90)\n        & beta.notna()\n        & vol.notna()\n        & (vol > 0)\n        & maxret.notna()\n    )\n\n    elig = history.get('eligible')\n    if isinstance(elig, pd.DataFrame) and len(elig.index) > 0:\n        edf = elig.sort_index()\n        esub = edf.reindex(index=px.index, columns=cols)\n        if len(esub) > 0:\n            e_last = esub.iloc[-1].fillna(False).astype(bool)\n            valid = valid & e_last\n\n    vdf = history.get('volume')\n    if isinstance(vdf, pd.DataFrame) and len(vdf.index) > 0:\n        v = vdf.sort_index()\n        vsub = v.reindex(index=px.index, columns=cols).astype(float)\n        dollar = vsub.mul(px, axis=1)\n        liq = dollar.tail(60).median(axis=0)\n        liq = liq.replace([np.inf, -np.inf], np.nan)\n        valid = valid & liq.notna() & (liq > 0)\n        if liq.notna().sum() >= 30:\n            thresh = liq.quantile(0.20)\n            valid = valid & (liq >= thresh)\n\n    cand = [c for c in cols if bool(valid.get(c, False))]\n    if len(cand) < 20:\n        return zero\n\n    b = beta.loc[cand]\n    vv = vol.loc[cand]\n    mr = maxret.loc[cand]\n    r21 = ret21.reindex(cand).fillna(0.0)\n\n    def rp(s):\n        return s.replace([np.inf, -np.inf], np.nan).rank(method='average', pct=True)\n\n    score = (\n        0.40 * rp(b)\n        + 0.30 * rp(vv)\n        + 0.15 * rp(mr)\n        + 0.15 * rp(r21)\n    )\n    score = score.replace([np.inf, -np.inf], np.nan).dropna()\n    if len(score) < 10:\n        return zero\n\n    k = min(50, len(score) // 2)\n    if k < 5:\n        return zero\n\n    order = score.sort_values(ascending=False)\n    longs = order.index[:k]\n    shorts = order.index[-k:]\n\n    wmag = min(0.02, 0.5 / float(k))\n    w = zero.copy()\n    w.loc[longs] = wmag\n    w.loc[shorts] = -wmag\n\n    gross = float(w.abs().sum())\n    if gross > 1.0:\n        w = w * (1.0 / gross)\n    w = w.clip(-0.02, 0.02)\n\n    return w.replace([np.inf, -np.inf], 0.0).fillna(0.0).reindex(tickers).fillna(0.0)"
+  },
+  "strategy_id": "d81f9f227fb33e5b6ab148a35dc5ec250662d25b6d12dc2ff6148d74702fc267",
+  "train": {
+    "active_days": 1249,
+    "annualized_return": 0.047075570471468486,
+    "average_daily_turnover": 0.039449669294295615,
+    "downside_risk": 0.08888773305450524,
+    "max_drawdown": 0.17373786903015165,
+    "observations": 1508,
+    "sharpe": 0.4223252169366733,
+    "total_borrow_cost": 0.007434523809523811,
+    "total_cost": 0.029745050647898896,
+    "total_return": 0.3168947037875558,
+    "volatility": 0.12844942058396874
+  },
+  "validation": {
+    "active_days": 500,
+    "annualized_return": 0.08095877540771212,
+    "average_daily_turnover": 0.04891685133914648,
+    "downside_risk": 0.1126660069106304,
+    "max_drawdown": 0.18831849800405887,
+    "observations": 500,
+    "sharpe": 0.5538574589217261,
+    "total_borrow_cost": 0.002976190476190477,
+    "total_cost": 0.01222921283478662,
+    "total_return": 0.16702889809439836,
+    "volatility": 0.16512324186219374
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "completed_at_utc": "2026-10-26T12:01:24.111834+00:00",
+  "runs": 5,
+  "planned_runs": 5,
+  "research_failures": [],
+  "evaluation_failures": [],
+  "actual_model_tokens": 708598,
+  "actual_model_calls": 52,
+  "actual_candidate_trials": 45,
+  "aggregate": [
+    {
+      "topology": "centralized",
+      "repetitions": 1,
+      "validation_sharpe_mean": 0.4038786739803361,
+      "hidden_sharpe_mean": -0.3448589465046784,
+      "hidden_sharpe_min": -0.3448589465046784,
+      "hidden_sharpe_max": -0.3448589465046784,
+      "hidden_annualized_return_mean": -0.04291620218970038,
+      "hidden_max_drawdown_mean": 0.1435805639025226,
+      "mean_total_tokens": 116137.0,
+      "mean_duplicate_variant_rate": 0.0,
+      "planned_repetitions": 1
+    },
+    {
+      "topology": "decentralized",
+      "repetitions": 1,
+      "validation_sharpe_mean": 0.5029173573055283,
+      "hidden_sharpe_mean": 1.2009423528239052,
+      "hidden_sharpe_min": 1.2009423528239052,
+      "hidden_sharpe_max": 1.2009423528239052,
+      "hidden_annualized_return_mean": 0.16327144275073335,
+      "hidden_max_drawdown_mean": 0.09447008680780677,
+      "mean_total_tokens": 144189.0,
+      "mean_duplicate_variant_rate": 0.0,
+      "planned_repetitions": 1
+    },
+    {
+      "topology": "hybrid",
+      "repetitions": 1,
+      "validation_sharpe_mean": 0.09527526430712716,
+      "hidden_sharpe_mean": 0.6027223977627562,
+      "hidden_sharpe_min": 0.6027223977627562,
+      "hidden_sharpe_max": 0.6027223977627562,
+      "hidden_annualized_return_mean": 0.06275863450889063,
+      "hidden_max_drawdown_mean": 0.09673944169810322,
+      "mean_total_tokens": 137495.0,
+      "mean_duplicate_variant_rate": 0.0,
+      "planned_repetitions": 1
+    },
+    {
+      "topology": "independent",
+      "repetitions": 1,
+      "validation_sharpe_mean": 0.3668847219937128,
+      "hidden_sharpe_mean": 0.9421246967257901,
+      "hidden_sharpe_min": 0.9421246967257901,
+      "hidden_sharpe_max": 0.9421246967257901,
+      "hidden_annualized_return_mean": 0.12692238897609354,
+      "hidden_max_drawdown_mean": 0.11309790620533999,
+      "mean_total_tokens": 160941.0,
+      "mean_duplicate_variant_rate": 0.0,
+      "planned_repetitions": 1
+    },
+    {
+      "topology": "single",
+      "repetitions": 1,
+      "validation_sharpe_mean": 0.41044830293912044,
+      "hidden_sharpe_mean": -0.7284671036544792,
+      "hidden_sharpe_min": -0.7284671036544792,
+      "hidden_sharpe_max": -0.7284671036544792,
+      "hidden_annualized_return_mean": -0.03583519666333401,
+      "hidden_max_drawdown_mean": 0.09899548509066292,
+      "mean_total_tokens": 149836.0,
+      "mean_duplicate_variant_rate": 0.0,
+      "planned_repetitions": 1
+    }
+  ]
+}

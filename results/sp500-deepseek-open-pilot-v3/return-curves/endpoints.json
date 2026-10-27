@@ -1,0 +1,107 @@
+[
+  {
+    "run": "single-n1-s7",
+    "label": "单 Agent · 7",
+    "topology": "single",
+    "seed": 7,
+    "total_return": -0.1857642394773914
+  },
+  {
+    "run": "single-n1-s17-supplement",
+    "label": "单 Agent · 17（补跑）",
+    "topology": "single",
+    "seed": 17,
+    "total_return": -0.17226963245093196
+  },
+  {
+    "run": "single-n1-s27",
+    "label": "单 Agent · 27（第3次）",
+    "topology": "single",
+    "seed": 27,
+    "total_return": -0.06984759294576814
+  },
+  {
+    "run": "independent-n4-s7",
+    "label": "独立并行 · 7",
+    "topology": "independent",
+    "seed": 7,
+    "total_return": -0.15947678037439672
+  },
+  {
+    "run": "independent-n4-s17",
+    "label": "独立并行 · 17",
+    "topology": "independent",
+    "seed": 17,
+    "total_return": -0.19363427530490251
+  },
+  {
+    "run": "independent-n4-s27",
+    "label": "独立并行 · 27（第3次）",
+    "topology": "independent",
+    "seed": 27,
+    "total_return": 0.26754766661424045
+  },
+  {
+    "run": "centralized-n4-s7",
+    "label": "中心化 · 7",
+    "topology": "centralized",
+    "seed": 7,
+    "total_return": -0.15760800880190606
+  },
+  {
+    "run": "centralized-n4-s17",
+    "label": "中心化 · 17",
+    "topology": "centralized",
+    "seed": 17,
+    "total_return": 0.48568482314960315
+  },
+  {
+    "run": "centralized-n4-s27",
+    "label": "中心化 · 27（第3次）",
+    "topology": "centralized",
+    "seed": 27,
+    "total_return": -0.08335260193640892
+  },
+  {
+    "run": "decentralized-n4-s7",
+    "label": "去中心化 · 7",
+    "topology": "decentralized",
+    "seed": 7,
+    "total_return": -0.2784854135617061
+  },
+  {
+    "run": "decentralized-n4-s17",
+    "label": "去中心化 · 17",
+    "topology": "decentralized",
+    "seed": 17,
+    "total_return": 0.20329285923002582
+  },
+  {
+    "run": "decentralized-n4-s27",
+    "label": "去中心化 · 27（第3次）",
+    "topology": "decentralized",
+    "seed": 27,
+    "total_return": 0.34995588588727466
+  },
+  {
+    "run": "hybrid-n4-s7",
+    "label": "混合 · 7",
+    "topology": "hybrid",
+    "seed": 7,
+    "total_return": 0.16431181789283
+  },
+  {
+    "run": "hybrid-n4-s17",
+    "label": "混合 · 17",
+    "topology": "hybrid",
+    "seed": 17,
+    "total_return": 0.16550312692003688
+  },
+  {
+    "run": "hybrid-n4-s27",
+    "label": "混合 · 27（第3次）",
+    "topology": "hybrid",
+    "seed": 27,
+    "total_return": 0.128365208281922
+  }
+]

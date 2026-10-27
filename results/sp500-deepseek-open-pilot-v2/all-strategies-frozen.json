@@ -1,0 +1,33 @@
+{
+  "frozen_before_any_evaluation_utc": "2026-10-26T05:44:22.233204+00:00",
+  "submissions": {
+    "hybrid-n4-s7": "b71ec6ff0d33dd04c515fc330736ad0bd9ab5594ba5f95f341ed31c298e2d572",
+    "independent-n4-s7": "f2f8796ae3fae3f101cd85a76ae0a55accc2d301b9b4ab5039383b38dbf5b663",
+    "single-n1-s17": "f26f0e82c1c0d4567e437d67c5dcfd618eced55f5958378180708ac3f68c89d1",
+    "decentralized-n4-s17": "99cb69d509fd4292f5d460cd56b75e2dd64fbb385b864f17160b50cf681e170d",
+    "single-n1-s7": "a4fb45327b5f3baf8b202418e840c4759bc952f4065e55ab448b607645911519",
+    "independent-n4-s17": "2180ced548205586804523d2ac777ccab981d58cfb7542870b73cc9450560a29",
+    "decentralized-n4-s7": "fdbce6fd7c3b1319c3181534bb63ec5e3debef179c7d7d9c4b14a07632cbe421"
+  },
+  "no_submission": [
+    {
+      "topology": "centralized",
+      "fleet_size": 4,
+      "seed": 17,
+      "error": "'directions'"
+    },
+    {
+      "topology": "centralized",
+      "fleet_size": 4,
+      "seed": 7,
+      "error": "'directions'"
+    },
+    {
+      "topology": "hybrid",
+      "fleet_size": 4,
+      "seed": 17,
+      "error": "Manager must return one nonempty research assignment per worker"
+    }
+  ],
+  "all_scheduled_research_attempts_finished": true
+}

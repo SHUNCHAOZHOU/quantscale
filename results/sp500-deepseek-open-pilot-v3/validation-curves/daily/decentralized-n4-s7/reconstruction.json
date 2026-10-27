@@ -1,0 +1,36 @@
+{
+  "run": "decentralized-n4-s7",
+  "label": "\u53bb\u4e2d\u5fc3\u5316 \u00b7 7",
+  "topology": "decentralized",
+  "seed": 7,
+  "artifact_sha256": "ea984c43e69f111a447cb7225e09312f8bef2525118b9a2d18b118ca92f0ca46",
+  "metrics": {
+    "observations": 500,
+    "sharpe": -0.011894353462109071,
+    "annualized_return": -0.00468207628078865,
+    "total_return": -0.009268430708215813,
+    "volatility": 0.08581279973317106,
+    "max_drawdown": 0.08149419600812491,
+    "downside_risk": 0.058729241931511425,
+    "average_daily_turnover": 0.10438947003683492,
+    "total_cost": 0.02609736750920873,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  },
+  "original_validation": {
+    "observations": 500,
+    "sharpe": -0.011894353462109071,
+    "annualized_return": -0.00468207628078865,
+    "total_return": -0.009268430708215813,
+    "volatility": 0.08581279973317106,
+    "max_drawdown": 0.08149419600812491,
+    "downside_risk": 0.058729241931511425,
+    "average_daily_turnover": 0.10438947003683492,
+    "total_cost": 0.02609736750920873,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  },
+  "matched_original": true,
+  "differences": {},
+  "reconstructed_at_utc": "2026-10-26T13:08:45.330146+00:00"
+}

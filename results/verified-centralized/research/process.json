@@ -1,0 +1,14 @@
+{
+  "total_tokens": 1101,
+  "communication_turn_tokens_upper_bound": 139,
+  "total_backtests": 4,
+  "agent_turns": 5,
+  "communication_calls": 1,
+  "hypotheses": 4,
+  "successful_candidates": 4,
+  "unique_strategy_variants": 4,
+  "duplicate_variant_rate": 0.0,
+  "unique_families": 4,
+  "family_entropy": 1.3862943611198906,
+  "mean_trials_per_active_researcher": 1.0
+}

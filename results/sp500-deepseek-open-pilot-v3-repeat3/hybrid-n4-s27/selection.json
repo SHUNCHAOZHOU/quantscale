@@ -1,0 +1,43 @@
+{
+  "agent": 1,
+  "round": 0,
+  "hypothesis": "A blended, volatility-normalized time-series momentum signal across 21/63/126/252-session horizons, smoothed over the last five closes, identifies persistent relative trends. Long the top 50 and short the bottom 50 eligible names with equal weights capped at 2% and gross at 1.0 yields a dollar-neutral portfolio designed to capture trend persistence while limiting single-name risk and turnover.",
+  "source_file": "strategies/b3400e39ee37189817d12d094bcbccae9bc67beb837d058e788128f950044f77.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import math\nimport numpy as np\nimport pandas as pd\n\n\ndef _price_frame(history):\n    for name in ('adjusted_close', 'close'):\n        df = history.get(name)\n        if isinstance(df, pd.DataFrame) and df.shape[0] > 0 and df.shape[1] > 0:\n            return df\n    return None\n\n\ndef generate_weights(history, universe):\n    universe = pd.Index(list(universe))\n    weights = pd.Series(0.0, index=universe, dtype=float)\n    if len(universe) == 0:\n        return weights\n\n    raw_prices = _price_frame(history)\n    if raw_prices is None:\n        return weights\n\n    prices = raw_prices.reindex(columns=universe).astype(float)\n    if prices.shape[0] < 2:\n        return weights\n\n    prices = prices.ffill()\n    last = prices.iloc[-1]\n\n    elig_df = history.get('eligible')\n    if isinstance(elig_df, pd.DataFrame):\n        elig = elig_df.reindex(columns=universe).ffill().iloc[-1]\n        elig = elig.fillna(False).astype(bool)\n    else:\n        elig = pd.Series(True, index=universe)\n\n    base_valid = last.notna() & np.isfinite(last) & (last > 0.0) & elig\n    if not base_valid.any():\n        return weights\n\n    max_lookback = 252\n    smooth_days = 5\n    need = max_lookback + 80\n    px = prices.tail(need)\n\n    if px.shape[0] < 25:\n        L = min(20, max(1, px.shape[0] - 1))\n        if L < 1:\n            return weights\n        signal = px.iloc[-1] / px.iloc[-1 - L] - 1.0\n        signal = signal.replace([np.inf, -np.inf], np.nan)\n    else:\n        ret = px.pct_change()\n        ret = ret.replace([np.inf, -np.inf], np.nan)\n        vol = ret.rolling(63, min_periods=20).std(ddof=0)\n        vol = vol.where(vol > 1e-8)\n\n        lookbacks = [21, 63, 126, 252]\n        lb_weights = [0.15, 0.30, 0.30, 0.25]\n        comps = []\n        for L, wt in zip(lookbacks, lb_weights):\n            if px.shape[0] <= L:\n                continue\n            mom = px / px.shift(L) - 1.0\n            mom = mom.replace([np.inf, -np.inf], np.nan)\n            comp = mom / (vol * math.sqrt(float(L)))\n            comp = comp.replace([np.inf, -np.inf], np.nan)\n            mu = comp.mean(axis=1, skipna=True)\n            sd = comp.std(axis=1, ddof=0, skipna=True)\n            sd = sd.where(sd > 1e-12)\n            z = comp.sub(mu, axis=0).div(sd, axis=0)\n            z = z.replace([np.inf, -np.inf], np.nan)\n            z_s = z.tail(smooth_days).mean(axis=0, skipna=True)\n            comps.append(z_s * wt)\n\n        if comps:\n            signal = pd.concat(comps, axis=1).sum(axis=1, min_count=1)\n        else:\n            L = min(20, max(1, px.shape[0] - 1))\n            signal = px.iloc[-1] / px.iloc[-1 - L] - 1.0\n            signal = signal.replace([np.inf, -np.inf], np.nan)\n\n    signal = signal.reindex(universe)\n    valid = base_valid & signal.notna() & np.isfinite(signal)\n    candidates = signal[valid]\n    n = int(candidates.shape[0])\n    if n < 2:\n        return weights\n\n    N = min(50, n // 2)\n    if N < 1:\n        return weights\n\n    ordered = candidates.sort_values(ascending=False, kind='mergesort')\n    longs = ordered.index[:N]\n    shorts = ordered.index[-N:]\n\n    per_name = min(0.02, 1.0 / (2.0 * float(N)))\n    weights.loc[longs] = per_name\n    weights.loc[shorts] = -per_name\n\n    weights = weights.clip(-0.02, 0.02)\n    gross = float(weights.abs().sum())\n    if gross > 1.0 + 1e-12:\n        weights = weights * (1.0 / gross)\n\n    return weights.fillna(0.0).astype(float)\n"
+  },
+  "strategy_id": "b3400e39ee37189817d12d094bcbccae9bc67beb837d058e788128f950044f77",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.5411201478779741,
+    "annualized_return": -0.06521074739687815,
+    "total_return": -0.33204512265037933,
+    "volatility": 0.11276421035918212,
+    "max_drawdown": 0.3801449925840843,
+    "downside_risk": 0.08865186284884502,
+    "average_daily_turnover": 0.13786541996111673,
+    "total_cost": 0.103950526650682,
+    "total_borrow_cost": 0.008970238095238097,
+    "active_days": 1507
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.09527526430712716,
+    "annualized_return": 0.004387889399993128,
+    "total_return": 0.00872492690643245,
+    "volatility": 0.11301073055673147,
+    "max_drawdown": 0.11423146453275057,
+    "downside_risk": 0.08410149649679792,
+    "average_daily_turnover": 0.12606887916528647,
+    "total_cost": 0.03151721979132162,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

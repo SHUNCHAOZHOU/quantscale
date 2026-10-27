@@ -1,0 +1,66 @@
+{
+  "artifact_sha256": "f1407de0c63b3703b3ee9e48c39bb7d7f32b5c436bee455e287183ac90829afd",
+  "evaluated_at": "2026-10-26T15:17:55.588401+00:00",
+  "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+  "hidden": {
+    "observations": 500,
+    "sharpe": -0.5989989514900113,
+    "annualized_return": -0.025127465554546702,
+    "total_return": -0.04923956398485296,
+    "volatility": 0.0410782038532081,
+    "max_drawdown": 0.06405552971926232,
+    "downside_risk": 0.028785567455651292,
+    "average_daily_turnover": 0.043760334049359216,
+    "total_cost": 0.010940083512339806,
+    "total_borrow_cost": 0.002678571443043671,
+    "active_days": 500
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.3226573581598807,
+    "annualized_return": 0.01173737280845133,
+    "total_return": 0.02342293291853248,
+    "volatility": 0.03845133375422783,
+    "max_drawdown": 0.03375560405428646,
+    "downside_risk": 0.025378552429826416,
+    "average_daily_turnover": 0.04533317565021348,
+    "total_cost": 0.011333293912553371,
+    "total_borrow_cost": 0.002678571442700227,
+    "active_days": 500
+  },
+  "validation_test_sharpe_gap": 0.921656309649892,
+  "positive_hidden_sharpe": false,
+  "by_calendar_year": {
+    "2024": {
+      "observations": 251,
+      "sharpe": -0.3856765418814393,
+      "annualized_return": -0.01574274734270642,
+      "total_return": -0.015680768507000842,
+      "volatility": 0.03916364524473516,
+      "max_drawdown": 0.04183472744534944,
+      "downside_risk": 0.02635963582589071,
+      "average_daily_turnover": 0.04325410618106865,
+      "total_cost": 0.005428390325724116,
+      "total_borrow_cost": 0.0013446428716150992,
+      "active_days": 251
+    },
+    "2025": {
+      "observations": 249,
+      "sharpe": -0.7951005042662441,
+      "annualized_return": -0.03449700274574352,
+      "total_return": -0.0340934062894912,
+      "volatility": 0.04299257553269377,
+      "max_drawdown": 0.058276505530901135,
+      "downside_risk": 0.031039682869856634,
+      "average_daily_turnover": 0.044270628004945294,
+      "total_cost": 0.005511693186615689,
+      "total_borrow_cost": 0.0013339285714285716,
+      "active_days": 249
+    }
+  },
+  "excluded_data_sessions": [
+    "2021-05-05",
+    "2025-11-12"
+  ],
+  "backend": "deepseek-flash"
+}

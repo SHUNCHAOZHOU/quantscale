@@ -1,0 +1,40 @@
+{
+  "agent": 0,
+  "round": 1,
+  "hypothesis": "Both 12-1 and 60-day cross-sectional momentum produced negative validation Sharpe in this liquid universe, indicating that recent relative winners have underperformed rather than continued. A 60-day reversal signal that buys recent losers with a one-day skip should exploit this observed cross-sectional reversal while maintaining similar turnover to the failed 60-day momentum trial; disabling volatility scaling keeps the test focused on the reversal effect and avoids extra estimation noise.",
+  "strategy": {
+    "family": "reversal",
+    "lookback": 60,
+    "skip": 1,
+    "fraction": 0.25,
+    "volatility_scale": false
+  },
+  "strategy_id": "9563ee2f8e73aa04c05ae7ecae6bacb6d767b17370bfa4f6fc5d57ca39a7948c",
+  "cached_backtest": false,
+  "train": {
+    "observations": 1508,
+    "sharpe": 0.12543629865973663,
+    "annualized_return": 0.0072216150457447,
+    "total_return": 0.04400029016505891,
+    "volatility": 0.08786126518496469,
+    "max_drawdown": 0.20720353484303733,
+    "downside_risk": 0.05460282205076389,
+    "average_daily_turnover": 0.19147314891794753,
+    "total_cost": 0.14437075428413243,
+    "total_borrow_cost": 0.00861309523809524,
+    "active_days": 1447
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.446901376858866,
+    "annualized_return": 0.03587102470047521,
+    "total_return": 0.07242868784038037,
+    "volatility": 0.08736357757380916,
+    "max_drawdown": 0.06334412826726621,
+    "downside_risk": 0.055689702749539195,
+    "average_daily_turnover": 0.19783860998427252,
+    "total_cost": 0.04945965249606813,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "agent": 0,
+  "round": 2,
+  "hypothesis": "Monthly rebalanced dollar-neutral cross-sectional strategy. At each previous month-end I rank liquid stocks with sufficient history by a composite of 12-1 momentum, 5-day reversal (long recent losers), low 60-day volatility, and price trend versus the 100-day mean. I buy the top 30 and short the bottom 30, equal weight within each side, target gross 1.0 and net 0.0; a liquidity filter requires median 20-day dollar volume above 1 million. This seeks to harvest momentum, short-term reversal and low-volatility premia while controlling turnover and single-name risk.",
+  "source_file": "strategies/4ecde3d9b7efe9f67918828309476f8dc6c72de863d1859de5389c80061f96bd.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\ndef generate_weights(history, universe):\n    universe = pd.Index([str(t) for t in universe])\n    if len(universe) == 0:\n        return pd.Series(dtype=float)\n    ac = history.get('adjusted_close')\n    if ac is None:\n        ac = history.get('close')\n    if ac is None:\n        return pd.Series(0.0, index=universe)\n    ac = ac.reindex(columns=universe)\n    dates = ac.index\n    if len(dates) == 0:\n        return pd.Series(0.0, index=universe)\n    latest = dates[-1]\n    months = dates.year * 100 + dates.month\n    cur = latest.year * 100 + latest.month\n    prior = dates[months < cur]\n    if len(prior) > 0:\n        sig = prior[-1]\n    else:\n        sig = dates[0]\n    pos = dates.get_loc(sig)\n    if isinstance(pos, slice):\n        pos = pos.start\n    pos = int(pos)\n    w = ac.iloc[max(0, pos - 260):pos + 1]\n    rets = w.pct_change()\n    vol = rets.tail(60).std(ddof=1)\n    if len(w) >= 253:\n        mom = w.iloc[-22] / w.iloc[-253] - 1.0\n    elif len(w) >= 130:\n        mom = w.iloc[-1] / w.iloc[-126] - 1.0\n    else:\n        mom = pd.Series(np.nan, index=universe)\n    if len(w) >= 6:\n        rev = w.iloc[-1] / w.iloc[-6] - 1.0\n    else:\n        rev = pd.Series(np.nan, index=universe)\n    trend = pd.Series(0.0, index=universe)\n    if len(w) >= 100:\n        trend = w.iloc[-1] / w.tail(100).mean() - 1.0\n    volume = history.get('volume')\n    if volume is not None:\n        volume = volume.reindex(columns=universe)\n        dwin = ac.iloc[max(0, pos - 19):pos + 1] * volume.iloc[max(0, pos - 19):pos + 1]\n        dv = dwin.median(axis=0)\n    else:\n        dv = pd.Series(np.inf, index=universe)\n    valid = mom.notna() & rev.notna() & vol.notna() & (vol > 0) & (dv > 1e6)\n    if int(valid.sum()) < 4:\n        return pd.Series(0.0, index=universe)\n    sub = pd.DataFrame({'mom': mom[valid], 'rev': rev[valid], 'vol': vol[valid], 'trend': trend[valid]})\n    score = (0.40 * sub['mom'].rank(pct=True) +\n             0.30 * (-sub['rev']).rank(pct=True) +\n             0.20 * (-sub['vol']).rank(pct=True) +\n             0.10 * sub['trend'].rank(pct=True))\n    ordered = score.sort_values(ascending=False)\n    n = min(30, len(ordered) // 2)\n    weights = pd.Series(0.0, index=universe)\n    if n <= 0:\n        return weights\n    wgt = min(0.02, 1.0 / (2.0 * n))\n    long_names = ordered.index[:n]\n    short_names = ordered.index[-n:]\n    weights.loc[long_names] = wgt\n    weights.loc[short_names] = -wgt\n    return weights.astype(float)"
+  },
+  "strategy_id": "4ecde3d9b7efe9f67918828309476f8dc6c72de863d1859de5389c80061f96bd",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.5171527841519866,
+    "annualized_return": -0.0659806139210688,
+    "total_return": -0.335330296582815,
+    "volatility": 0.11836238560744045,
+    "max_drawdown": 0.35733584591687895,
+    "downside_risk": 0.09132109289175804,
+    "average_daily_turnover": 0.08619336010566869,
+    "total_cost": 0.06498979351967421,
+    "total_borrow_cost": 0.008113095238095239,
+    "active_days": 1363
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": -0.4768251453755066,
+    "annualized_return": -0.07422106246517157,
+    "total_return": -0.14188356070838715,
+    "volatility": 0.14088198886718353,
+    "max_drawdown": 0.20556637795915444,
+    "downside_risk": 0.10566161230178625,
+    "average_daily_turnover": 0.09684473966233045,
+    "total_cost": 0.024211184915582613,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

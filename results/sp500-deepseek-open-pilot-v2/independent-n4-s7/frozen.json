@@ -1,0 +1,86 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 170000,
+        "max_turn_tokens": 65536,
+        "seed": 7,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024
+      },
+      "topology": "independent",
+      "fleet_size": 4,
+      "manager_count": 0,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 7,
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "high",
+        "max_output_tokens": 16384,
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\n\ndef generate_weights(history, universe):\n    universe = pd.Index([str(t) for t in universe])\n    if len(universe) == 0:\n        return pd.Series(dtype=float)\n    ac = history.get('adjusted_close')\n    if ac is None:\n        ac = history.get('close')\n    if ac is None:\n        return pd.Series(0.0, index=universe)\n    ac = ac.reindex(columns=universe)\n    dates = ac.index\n    if len(dates) == 0:\n        return pd.Series(0.0, index=universe)\n    latest = dates[-1]\n    months = dates.year * 100 + dates.month\n    cur = latest.year * 100 + latest.month\n    prior = dates[months < cur]\n    if len(prior) > 0:\n        sig = prior[-1]\n    else:\n        sig = dates[0]\n    pos = dates.get_loc(sig)\n    if isinstance(pos, slice):\n        pos = pos.start\n    pos = int(pos)\n    w = ac.iloc[max(0, pos - 260):pos + 1]\n    rets = w.pct_change()\n    vol = rets.tail(60).std(ddof=1)\n    if len(w) >= 253:\n        mom = w.iloc[-22] / w.iloc[-253] - 1.0\n    elif len(w) >= 130:\n        mom = w.iloc[-1] / w.iloc[-126] - 1.0\n    else:\n        mom = pd.Series(np.nan, index=universe)\n    if len(w) >= 6:\n        rev = w.iloc[-1] / w.iloc[-6] - 1.0\n    else:\n        rev = pd.Series(np.nan, index=universe)\n    trend = pd.Series(0.0, index=universe)\n    if len(w) >= 100:\n        trend = w.iloc[-1] / w.tail(100).mean() - 1.0\n    volume = history.get('volume')\n    if volume is not None:\n        volume = volume.reindex(columns=universe)\n        dwin = ac.iloc[max(0, pos - 19):pos + 1] * volume.iloc[max(0, pos - 19):pos + 1]\n        dv = dwin.median(axis=0)\n    else:\n        dv = pd.Series(np.inf, index=universe)\n    valid = mom.notna() & rev.notna() & vol.notna() & (vol > 0) & (dv > 1e6)\n    if int(valid.sum()) < 4:\n        return pd.Series(0.0, index=universe)\n    sub = pd.DataFrame({'mom': mom[valid], 'rev': rev[valid], 'vol': vol[valid], 'trend': trend[valid]})\n    score = (0.40 * sub['mom'].rank(pct=True) +\n             0.30 * (-sub['rev']).rank(pct=True) +\n             0.20 * (-sub['vol']).rank(pct=True) +\n             0.10 * sub['trend'].rank(pct=True))\n    ordered = score.sort_values(ascending=False)\n    n = min(30, len(ordered) // 2)\n    weights = pd.Series(0.0, index=universe)\n    if n <= 0:\n        return weights\n    wgt = min(0.02, 1.0 / (2.0 * n))\n    long_names = ordered.index[:n]\n    short_names = ordered.index[-n:]\n    weights.loc[long_names] = wgt\n    weights.loc[short_names] = -wgt\n    return weights.astype(float)"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": -0.4768251453755066,
+      "annualized_return": -0.07422106246517157,
+      "total_return": -0.14188356070838715,
+      "volatility": 0.14088198886718353,
+      "max_drawdown": 0.20556637795915444,
+      "downside_risk": 0.10566161230178625,
+      "average_daily_turnover": 0.09684473966233045,
+      "total_cost": 0.024211184915582613,
+      "total_borrow_cost": 0.002976190476190477,
+      "active_days": 500
+    },
+    "implementation_sha256": "3dcdcbf48932278e4d8bcfd98c1d2d667766243069c20221a77a745f89f744f3",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "f2f8796ae3fae3f101cd85a76ae0a55accc2d301b9b4ab5039383b38dbf5b663"
+}

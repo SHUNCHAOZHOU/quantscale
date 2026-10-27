@@ -1,0 +1,40 @@
+{
+  "agent": 1,
+  "round": 2,
+  "hypothesis": "The 60-day reversal trial was the only positive validation Sharpe, while all peer momentum variants were negative after costs. Keeping the same lookback, skip, and selection fraction but enabling volatility scaling may reduce risk from extreme losers and improve net validation Sharpe without materially increasing turnover.",
+  "strategy": {
+    "family": "reversal",
+    "lookback": 60,
+    "skip": 1,
+    "fraction": 0.25,
+    "volatility_scale": true
+  },
+  "strategy_id": "cd12a9e886768aef0034a526f3c6488b7c3b9750793a5a43a95c09d5dd3c57f8",
+  "cached_backtest": false,
+  "train": {
+    "observations": 1508,
+    "sharpe": 0.06411620041096336,
+    "annualized_return": 0.0018824057938928718,
+    "total_return": 0.011317530465667636,
+    "volatility": 0.08453007906960644,
+    "max_drawdown": 0.2150151703567813,
+    "downside_risk": 0.052519357898453974,
+    "average_daily_turnover": 0.21393508698631503,
+    "total_cost": 0.16130705558768155,
+    "total_borrow_cost": 0.00861309523809524,
+    "active_days": 1447
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.468155575958749,
+    "annualized_return": 0.03499656623820058,
+    "total_return": 0.07063316494679173,
+    "volatility": 0.08034517665196023,
+    "max_drawdown": 0.06183340836902884,
+    "downside_risk": 0.05132587053721213,
+    "average_daily_turnover": 0.2196761309956234,
+    "total_cost": 0.05491903274890585,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

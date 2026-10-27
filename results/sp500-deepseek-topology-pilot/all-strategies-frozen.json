@@ -1,0 +1,15 @@
+{
+  "frozen_before_any_evaluation_utc": "2026-10-26T04:02:06.356149+00:00",
+  "submissions": {
+    "independent-n4-s7": "4e134f09a7d4d0940cb95399f1a85041445831326ee6b43e9c3f4531c65bcd70",
+    "hybrid-n4-s7": "21b306e03dc0c5c4e3add9f46e568a1b043ee4912df69235f56d46aa0a7eeff7",
+    "centralized-n4-s17": "e2a975ded078ff16564506f0356e042d7845640ec143a4e20ffb6066ab635a3f",
+    "decentralized-n4-s17": "f17293f06107e417473478831a38d25a464f91f58620be4c2f0e76f484a45c70",
+    "single-n1-s17": "8ed168d32cf93a78d1e306fe4f5d50f94a30b32068495457b92725555b5fda20",
+    "single-n1-s7": "ae7be579ce9671652dd88c993d5915ea5f3d64b46db4e2118f55a70232caa2d6",
+    "independent-n4-s17": "fabccbe4f2c84b37785ee3785fdf31b4041cfc38654e2fd54bde03e57962b69a",
+    "centralized-n4-s7": "cc175cafcc54dd1adfb7b313a4e8e8c5f5ea4adf33fc638a0033044b8bff2e37",
+    "decentralized-n4-s7": "b63e46613e463698241891384eb17ec4c055de0eb021ef3ffec4f00dbfb91a12",
+    "hybrid-n4-s17": "eeb374cdc52a0084a89a9ca672f4fef4770dd01eb3baebf0df1d301260527a10"
+  }
+}

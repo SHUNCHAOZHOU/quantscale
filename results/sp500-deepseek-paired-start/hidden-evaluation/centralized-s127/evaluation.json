@@ -1,0 +1,66 @@
+{
+  "artifact_sha256": "cfb13960ba149db41022669a23cd8d595930c46e1b362fe9435616e5a559713b",
+  "evaluated_at": "2026-10-26T15:21:53.631333+00:00",
+  "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+  "hidden": {
+    "observations": 500,
+    "sharpe": 0.0,
+    "annualized_return": 0.0,
+    "total_return": 0.0,
+    "volatility": 0.0,
+    "max_drawdown": 0.0,
+    "downside_risk": 0.0,
+    "average_daily_turnover": 0.0,
+    "total_cost": 0.0,
+    "total_borrow_cost": 0.0,
+    "active_days": 0
+  },
+  "validation": {
+    "active_days": 0,
+    "annualized_return": 0.0,
+    "average_daily_turnover": 0.0,
+    "downside_risk": 0.0,
+    "max_drawdown": 0.0,
+    "observations": 500,
+    "sharpe": 0.0,
+    "total_borrow_cost": 0.0,
+    "total_cost": 0.0,
+    "total_return": 0.0,
+    "volatility": 0.0
+  },
+  "validation_test_sharpe_gap": 0.0,
+  "positive_hidden_sharpe": false,
+  "by_calendar_year": {
+    "2024": {
+      "observations": 251,
+      "sharpe": 0.0,
+      "annualized_return": 0.0,
+      "total_return": 0.0,
+      "volatility": 0.0,
+      "max_drawdown": 0.0,
+      "downside_risk": 0.0,
+      "average_daily_turnover": 0.0,
+      "total_cost": 0.0,
+      "total_borrow_cost": 0.0,
+      "active_days": 0
+    },
+    "2025": {
+      "observations": 249,
+      "sharpe": 0.0,
+      "annualized_return": 0.0,
+      "total_return": 0.0,
+      "volatility": 0.0,
+      "max_drawdown": 0.0,
+      "downside_risk": 0.0,
+      "average_daily_turnover": 0.0,
+      "total_cost": 0.0,
+      "total_borrow_cost": 0.0,
+      "active_days": 0
+    }
+  },
+  "excluded_data_sessions": [
+    "2021-05-05",
+    "2025-11-12"
+  ],
+  "backend": "deepseek-flash"
+}

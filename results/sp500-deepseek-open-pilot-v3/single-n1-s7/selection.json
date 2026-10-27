@@ -1,0 +1,43 @@
+{
+  "agent": 0,
+  "round": 3,
+  "hypothesis": "The prior weekly short-horizon reversal strategy had positive gross returns but was consumed by roughly 0.30 daily turnover and transaction costs. The revised experiment keeps the reversal premise but harvests it more slowly: rebalance only once per month using the last completed month-end close, rank stocks on 21-day and 63-day reversal plus a low-volatility tilt, and hold equal-weighted dollar-neutral long/short baskets until the next month-end signal. Slower formation windows and monthly holding should cut turnover by roughly an order of magnitude while retaining the reversal premium. Liquidity and eligibility screens remain, and position sizing respects the 2% cap, gross limit and net tolerance.",
+  "source_file": "strategies/66f75b9614ffaa36b3f2c60d3ef60c050d59145da0a66a2a5d9b3a6a816fbbac.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\n\ndef _zeros(tickers):\n    return pd.Series(0.0, index=pd.Index(tickers), dtype=float)\n\n\ndef generate_weights(history, universe):\n    tickers = pd.Index(universe)\n    if len(tickers) == 0:\n        return pd.Series(dtype=float)\n\n    adj_full = history.get('adjusted_close')\n    if adj_full is None:\n        adj_full = history.get('close')\n    if adj_full is None or len(adj_full.index) == 0:\n        return _zeros(tickers)\n\n    adj = adj_full.reindex(columns=tickers)\n    dates = adj.index\n    if len(dates) < 70:\n        return _zeros(tickers)\n\n    periods = np.asarray(dates.year) * 12 + np.asarray(dates.month)\n    if len(periods) >= 2:\n        changes = periods[1:] != periods[:-1]\n        month_ends = np.where(changes)[0]\n    else:\n        month_ends = np.array([], dtype=int)\n\n    if len(month_ends) > 0:\n        sig_idx = int(month_ends[-1])\n    else:\n        sig_idx = len(dates) - 1\n\n    start_idx = max(0, sig_idx - 140)\n    sub = adj.iloc[start_idx:sig_idx + 1].ffill(limit=5)\n    sub = sub.where(sub > 0)\n    n = len(sub)\n    if n < 25:\n        return _zeros(tickers)\n\n    elig = None\n    if 'eligible' in history and history['eligible'] is not None:\n        try:\n            elig = history['eligible'].reindex(index=dates, columns=tickers)\n        except Exception:\n            elig = None\n\n    sig_ok = sub.iloc[-1].notna()\n    latest_ok = adj.iloc[-1].notna()\n    if elig is not None:\n        sig_ok = sig_ok & elig.iloc[sig_idx].fillna(False).astype(bool)\n        latest_ok = latest_ok & elig.iloc[-1].fillna(False).astype(bool)\n\n    liq_ok = pd.Series(True, index=tickers, dtype=bool)\n    if 'volume' in history and 'close' in history:\n        try:\n            vol = history['volume'].reindex(index=dates, columns=tickers).iloc[start_idx:sig_idx + 1]\n            close = history['close'].reindex(index=dates, columns=tickers).iloc[start_idx:sig_idx + 1]\n            liq = (close * vol).tail(60).median()\n            liq_rank = liq.rank(pct=True, na_option='keep')\n            liq_ok = liq.notna() & (liq > 0) & (liq_rank >= 0.20)\n        except Exception:\n            liq_ok = pd.Series(True, index=tickers, dtype=bool)\n\n    last = sub.iloc[-1]\n\n    rev21 = pd.Series(np.nan, index=tickers, dtype=float)\n    if n >= 22:\n        rev21 = -(last / sub.iloc[-22] - 1.0)\n\n    rev63 = pd.Series(np.nan, index=tickers, dtype=float)\n    if n >= 64:\n        rev63 = -(last / sub.iloc[-64] - 1.0)\n    elif n >= 22:\n        rev63 = rev21\n\n    vola = pd.Series(np.nan, index=tickers, dtype=float)\n    try:\n        rets = sub.pct_change(fill_method=None)\n        vola = rets.tail(80).std(skipna=True) * np.sqrt(252.0)\n    except Exception:\n        vola = pd.Series(np.nan, index=tickers, dtype=float)\n\n    r21 = rev21.rank(pct=True, na_option='keep')\n    r63 = rev63.rank(pct=True, na_option='keep')\n    rvol = (-vola).rank(pct=True, na_option='keep')\n    score = 0.55 * r21 + 0.30 * r63 + 0.15 * rvol\n\n    valid = (\n        sig_ok & latest_ok & liq_ok &\n        rev21.notna() & rev63.notna() & vola.notna() &\n        last.notna()\n    )\n    score = score[valid].replace([np.inf, -np.inf], np.nan).dropna()\n    if len(score) < 20:\n        return _zeros(tickers)\n\n    n_side = min(50, len(score) // 2)\n    if n_side < 10:\n        return _zeros(tickers)\n\n    ranked = score.sort_values(ascending=False)\n    longs = ranked.index[:n_side]\n    shorts = ranked.index[-n_side:]\n\n    per_side = min(0.49, 0.02 * n_side)\n    w = per_side / float(n_side)\n\n    weights = pd.Series(0.0, index=tickers, dtype=float)\n    weights.loc[longs] = w\n    weights.loc[shorts] = -w\n    weights = weights.clip(-0.02, 0.02)\n    weights = weights.replace([np.inf, -np.inf], 0.0).fillna(0.0)\n    return weights.reindex(tickers)\n"
+  },
+  "strategy_id": "66f75b9614ffaa36b3f2c60d3ef60c050d59145da0a66a2a5d9b3a6a816fbbac",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.26048052441954794,
+    "annualized_return": -0.028345200105077795,
+    "total_return": -0.15808116673035133,
+    "volatility": 0.0936372154826107,
+    "max_drawdown": 0.25198406437655385,
+    "downside_risk": 0.06266411108929942,
+    "average_daily_turnover": 0.08642096303312535,
+    "total_cost": 0.06516140612697652,
+    "total_borrow_cost": 0.008394166666666664,
+    "active_days": 1439
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.4320707754115901,
+    "annualized_return": 0.03612614542374781,
+    "total_return": 0.07295280764088541,
+    "volatility": 0.09186709822214992,
+    "max_drawdown": 0.07766355817686643,
+    "downside_risk": 0.059478703131028064,
+    "average_daily_turnover": 0.09506735761983955,
+    "total_cost": 0.023766839404959883,
+    "total_borrow_cost": 0.002916666666666666,
+    "active_days": 500
+  }
+}

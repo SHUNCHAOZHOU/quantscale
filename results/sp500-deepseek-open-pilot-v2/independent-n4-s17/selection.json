@@ -1,0 +1,43 @@
+{
+  "agent": 3,
+  "round": 0,
+  "hypothesis": "Cross-sectional weekly reversal with volatility scaling: after controlling for the equal-weighted market move, stocks with unusually negative five-day residual returns tend to rebound over the next week, while unusually positive ones tend to fade. I rank eligible liquid stocks by demeaned five-day return divided by 21-day volatility, exclude the least liquid quintile and most volatile decile, and form a weekly dollar-neutral portfolio long the lowest scores and short the highest. Equal weights use up to 50 names per side, capped at 2 percent and gross 100 percent, with a weekly Friday-close cutoff to limit turnover.",
+  "source_file": "strategies/63823549d0cfc4b68d3a0c267ac3f4097cf2c397454cc7b2c4b5eee24abb3ae9.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\ndef generate_weights(history, universe):\n    tickers = pd.Index(universe)\n    zeros = pd.Series(0.0, index=tickers, dtype=float)\n    if len(tickers) == 0:\n        return zeros\n    ac = history.get('adjusted_close', None)\n    if ac is None or not isinstance(ac, pd.DataFrame) or len(ac.index) == 0:\n        return zeros\n    dates = ac.index\n    last_date = dates[-1]\n    wd = int(last_date.weekday())\n    if wd == 4:\n        target = last_date\n    elif wd > 4:\n        target = last_date - pd.Timedelta(days=wd - 4)\n    else:\n        target = last_date - pd.Timedelta(days=wd + 3)\n    pos = int(dates.searchsorted(target, side='right')) - 1\n    if pos < 0:\n        return zeros\n    cutoff = dates[pos]\n    px_all = ac.loc[:cutoff]\n    if len(px_all.index) < 27:\n        return zeros\n    window = px_all.tail(32)\n    if len(window.index) < 27:\n        return zeros\n    rets = window.pct_change()\n    rets = rets.replace([np.inf, -np.inf], np.nan)\n    vol = rets.tail(21).std(axis=0, ddof=1)\n    vol_count = rets.tail(21).notna().sum(axis=0)\n    vol = vol.where(vol_count >= 12)\n    p_end = window.iloc[-1]\n    p_start = window.iloc[-6]\n    ret5 = p_end / p_start - 1.0\n    ret5 = ret5.replace([np.inf, -np.inf], np.nan)\n    mean_ret = ret5.mean(skipna=True)\n    if not np.isfinite(mean_ret):\n        mean_ret = 0.0\n    score = (ret5 - mean_ret) / (vol * np.sqrt(5.0))\n    score = score.replace([np.inf, -np.inf], np.nan)\n    score_u = score.reindex(tickers)\n    vol_u = vol.reindex(tickers)\n    p_end_u = p_end.reindex(tickers)\n    p_start_u = p_start.reindex(tickers)\n    valid = score_u.notna() & np.isfinite(score_u) & vol_u.notna() & (vol_u > 0.0)\n    valid = valid & p_end_u.notna() & p_start_u.notna() & (p_end_u > 0.0) & (p_start_u > 0.0)\n    elig = history.get('eligible', None)\n    if isinstance(elig, pd.DataFrame) and len(elig.index) > 0:\n        try:\n            e_sub = elig.loc[:cutoff]\n            if len(e_sub.index) > 0:\n                e_last = e_sub.iloc[-1].reindex(tickers)\n                valid = valid & e_last.fillna(False).astype(bool)\n        except Exception:\n            pass\n    close = history.get('close', None)\n    volume = history.get('volume', None)\n    if isinstance(close, pd.DataFrame) and isinstance(volume, pd.DataFrame):\n        try:\n            c_sub = close.loc[:cutoff].tail(20)\n            v_sub = volume.loc[:cutoff].tail(20)\n            dollar = c_sub * v_sub\n            cnt = dollar.notna().sum(axis=0)\n            adv = dollar.mean(axis=0)\n            adv = adv.where(cnt >= 10)\n            adv_u = adv.reindex(tickers)\n            valid = valid & adv_u.notna() & (adv_u > 0.0)\n            if valid.sum() > 0:\n                adv_valid = adv_u[valid]\n                if len(adv_valid) > 10:\n                    q = adv_valid.quantile(0.20)\n                    if np.isfinite(q):\n                        valid = valid & (adv_u >= q)\n        except Exception:\n            pass\n    if valid.sum() > 0:\n        vol_valid = vol_u[valid]\n        if len(vol_valid) > 10:\n            qv = vol_valid.quantile(0.90)\n            if np.isfinite(qv) and qv > 0.0:\n                valid = valid & (vol_u <= qv)\n    valid_scores = score_u[valid].replace([np.inf, -np.inf], np.nan).dropna()\n    n = len(valid_scores)\n    if n < 4:\n        return zeros\n    n_side = min(50, n // 2)\n    if n_side < 1:\n        return zeros\n    ordered = valid_scores.sort_values(kind='mergesort')\n    idx = ordered.index\n    longs = idx[:n_side]\n    shorts = idx[-n_side:]\n    per = min(0.02, 0.5 / float(n_side))\n    w = zeros.copy()\n    if len(longs) > 0:\n        w.loc[longs] = per\n    if len(shorts) > 0:\n        w.loc[shorts] = -per\n    w = w.replace([np.inf, -np.inf], 0.0).fillna(0.0).astype(float)\n    w = w.clip(lower=-0.02, upper=0.02)\n    return w"
+  },
+  "strategy_id": "63823549d0cfc4b68d3a0c267ac3f4097cf2c397454cc7b2c4b5eee24abb3ae9",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": 0.17717665563659538,
+    "annualized_return": 0.011700109820568905,
+    "total_return": 0.07208839653224586,
+    "volatility": 0.08668944600812566,
+    "max_drawdown": 0.25908222541547343,
+    "downside_risk": 0.05506724242153213,
+    "average_daily_turnover": 0.3566046071176294,
+    "total_cost": 0.26887987376669265,
+    "total_borrow_cost": 0.008809523809523812,
+    "active_days": 1480
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.1347337586479808,
+    "annualized_return": 0.007976797654339451,
+    "total_return": 0.015889099189550393,
+    "volatility": 0.0870057604050282,
+    "max_drawdown": 0.07968409329448256,
+    "downside_risk": 0.061430618138144794,
+    "average_daily_turnover": 0.36666252418182305,
+    "total_cost": 0.09166563104545578,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

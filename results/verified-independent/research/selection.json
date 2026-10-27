@@ -1,0 +1,39 @@
+{
+  "agent": 3,
+  "round": 0,
+  "hypothesis": "low_volatility with a 120-day horizon",
+  "strategy": {
+    "family": "low_volatility",
+    "lookback": 120,
+    "skip": 1,
+    "fraction": 0.5,
+    "volatility_scale": false
+  },
+  "strategy_id": "d47e4297fb65f4df895034a093c59874f63d20726c31df107f2eeee20c9daa39",
+  "train": {
+    "observations": 129,
+    "sharpe": 2.1518889858369072,
+    "annualized_return": 0.0820127377873745,
+    "total_return": 0.04117496022025646,
+    "volatility": 0.03695008777645873,
+    "max_drawdown": 0.023830072295285887,
+    "downside_risk": 0.023435235009322444,
+    "average_daily_turnover": 0.10723905446322358,
+    "total_cost": 0.0069169190128779215,
+    "total_borrow_cost": 0.000737142857142857,
+    "active_days": 129
+  },
+  "validation": {
+    "observations": 130,
+    "sharpe": -0.2380461395631468,
+    "annualized_return": -0.009362277317010226,
+    "total_return": -0.004840742714272039,
+    "volatility": 0.03670528734823965,
+    "max_drawdown": 0.027765228875156867,
+    "downside_risk": 0.02691161834460231,
+    "average_daily_turnover": 0.09426496081757585,
+    "total_cost": 0.00612722245314243,
+    "total_borrow_cost": 0.0007428571428571428,
+    "active_days": 130
+  }
+}

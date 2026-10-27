@@ -1,0 +1,49 @@
+{
+  "artifact_sha256": "87880b5935f21765dd9f751606765e54006df4d5bbca56a60e0122732ee7cd10",
+  "evaluated_at": "2026-10-26T03:11:00.835813+00:00",
+  "evaluator_data_sha256": "59cfecbbcbb30e0ade08cdb9817f774e7411e55c17cb46b035cf34016e76e138",
+  "hidden": {
+    "observations": 128,
+    "sharpe": 0.8531600167576195,
+    "annualized_return": 0.03424383631796446,
+    "total_return": 0.01724959534632098,
+    "volatility": 0.040417930825711774,
+    "max_drawdown": 0.022414639078743304,
+    "downside_risk": 0.026575671271486724,
+    "average_daily_turnover": 0.09321371269658456,
+    "total_cost": 0.005965677612581412,
+    "total_borrow_cost": 0.0007314285714285716,
+    "active_days": 128
+  },
+  "validation": {
+    "observations": 130,
+    "sharpe": -0.2380461395631468,
+    "annualized_return": -0.009362277317010226,
+    "total_return": -0.004840742714272039,
+    "volatility": 0.03670528734823965,
+    "max_drawdown": 0.027765228875156867,
+    "downside_risk": 0.02691161834460231,
+    "average_daily_turnover": 0.09426496081757585,
+    "total_cost": 0.00612722245314243,
+    "total_borrow_cost": 0.0007428571428571428,
+    "active_days": 130
+  },
+  "validation_test_sharpe_gap": -1.0912061563207662,
+  "positive_hidden_sharpe": true,
+  "by_calendar_year": {
+    "2019": {
+      "observations": 128,
+      "sharpe": 0.8531600167576195,
+      "annualized_return": 0.03424383631796446,
+      "total_return": 0.01724959534632098,
+      "volatility": 0.040417930825711774,
+      "max_drawdown": 0.022414639078743304,
+      "downside_risk": 0.026575671271486724,
+      "average_daily_turnover": 0.09321371269658456,
+      "total_cost": 0.005965677612581412,
+      "total_borrow_cost": 0.0007314285714285716,
+      "active_days": 128
+    }
+  },
+  "backend": "scripted-demo"
+}

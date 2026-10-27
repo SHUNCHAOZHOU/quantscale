@@ -1,0 +1,98 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 170000,
+        "max_turn_tokens": 65536,
+        "seed": 17,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024,
+        "manager_max_format_repairs": 1,
+        "manager_max_failed_rounds": 2
+      },
+      "topology": "independent",
+      "fleet_size": 4,
+      "manager_count": 0,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 17,
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768,
+        "role_settings": {
+          "researcher": {
+            "reasoning_effort": "low",
+            "max_output_tokens": 32768
+          },
+          "manager": {
+            "reasoning_effort": "none",
+            "max_output_tokens": 8192
+          }
+        },
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import pandas as pd\nimport numpy as np\n\ndef generate_weights(history, universe):\n    universe = pd.Index(universe)\n    if len(universe) == 0:\n        return pd.Series(dtype=float)\n    adj_all = history.get('adjusted_close')\n    vol_all = history.get('volume')\n    if adj_all is None or vol_all is None:\n        return pd.Series(0.0, index=universe)\n    common = universe.intersection(adj_all.columns).intersection(vol_all.columns)\n    if len(common) == 0:\n        return pd.Series(0.0, index=universe)\n    adj = adj_all[common]\n    vol = vol_all[common]\n    idx = adj.index\n    if len(idx) == 0:\n        return pd.Series(0.0, index=universe)\n    if not idx.is_monotonic_increasing:\n        adj = adj.sort_index()\n        vol = vol.sort_index()\n        idx = adj.index\n    periods = idx.to_period('M')\n    first_mask = ~periods.duplicated(keep='first')\n    rebal_dates = idx[first_mask]\n    if len(rebal_dates) == 0:\n        return pd.Series(0.0, index=universe)\n    rebal_date = rebal_dates[-1]\n    adj_r = adj.loc[:rebal_date]\n    vol_r = vol.loc[:rebal_date]\n    n = len(adj_r)\n    if n < 30:\n        return pd.Series(0.0, index=universe)\n    ret = adj_r.pct_change()\n    if n >= 22:\n        ret21 = adj_r.iloc[-1] / adj_r.iloc[-22] - 1.0\n    else:\n        ret21 = pd.Series(np.nan, index=common)\n    if n >= 6:\n        ret5 = adj_r.iloc[-1] / adj_r.iloc[-6] - 1.0\n    else:\n        ret5 = pd.Series(np.nan, index=common)\n    if n >= 127:\n        mom126 = adj_r.iloc[-22] / adj_r.iloc[-127] - 1.0\n    else:\n        mom126 = pd.Series(np.nan, index=common)\n    if n >= 60:\n        vol60 = ret.iloc[-60:].std()\n    else:\n        vol60 = ret.std()\n    if n >= 20:\n        dv = (adj_r.iloc[-20:] * vol_r.iloc[-20:]).median()\n    else:\n        dv = (adj_r * vol_r).median()\n    df = pd.DataFrame({'ret21': ret21, 'ret5': ret5, 'mom126': mom126, 'vol': vol60, 'dv': dv})\n    df = df.replace([np.inf, -np.inf], np.nan).dropna()\n    df = df[df['vol'] > 0]\n    if len(df) < 20:\n        return pd.Series(0.0, index=universe)\n    dv_cut = df['dv'].quantile(0.2)\n    df = df[df['dv'] >= dv_cut]\n    if len(df) < 20:\n        return pd.Series(0.0, index=universe)\n    df = df[df['ret21'].abs() < 0.75]\n    if len(df) < 20:\n        return pd.Series(0.0, index=universe)\n    def zscore(s):\n        std = s.std(ddof=0)\n        if std == 0 or not np.isfinite(std):\n            return s * 0.0\n        return (s - s.mean()) / std\n    score = (-1.0 * zscore(df['ret21']) - 0.25 * zscore(df['vol']) + 0.15 * zscore(df['mom126']) - 0.2 * zscore(df['ret5']))\n    df = df.assign(score=score)\n    k = min(30, len(df) // 2)\n    if k < 1:\n        return pd.Series(0.0, index=universe)\n    df_sorted = df.sort_values('score', ascending=False)\n    longs = df_sorted.index[:k]\n    shorts = df_sorted.index[-k:]\n    w = min(0.02, 0.96 / (2.0 * k))\n    weights = pd.Series(0.0, index=universe)\n    weights.loc[longs] = w\n    weights.loc[shorts] = -w\n    return weights.fillna(0.0)"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": -0.0001513174206487354,
+      "annualized_return": -0.005156340441893059,
+      "total_return": -0.010204875348758358,
+      "volatility": 0.10165862186609498,
+      "max_drawdown": 0.08930221097036162,
+      "downside_risk": 0.07045584163206162,
+      "average_daily_turnover": 0.10683311031375282,
+      "total_cost": 0.026708277578438203,
+      "total_borrow_cost": 0.002857142857142857,
+      "active_days": 500
+    },
+    "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "854aeebb0316a1825966f638b98061f5f87098f18eec3e709d7b8a841e9577e1"
+}

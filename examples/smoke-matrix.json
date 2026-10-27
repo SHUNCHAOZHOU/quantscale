@@ -1,0 +1,7 @@
+{
+  "budget_mode": "fixed-total",
+  "topologies": ["single", "independent", "centralized"],
+  "fleet_sizes": [2],
+  "backtest_budgets": [2],
+  "seeds": [7, 17]
+}

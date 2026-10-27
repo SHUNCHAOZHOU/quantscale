@@ -1,0 +1,43 @@
+{
+  "agent": 0,
+  "round": 0,
+  "hypothesis": "A dollar-neutral, liquidity-aware cross-sectional equity portfolio can profit from persistent 12-1 and 6-1 momentum while controlling risk by tilting toward lower-volatility names and incorporating a mild short-term reversal adjustment. Long the top-ranked and short the bottom-ranked eligible stocks, equal-weighted on each side, to keep gross exposure at 1.0 and net exposure near zero under the 2% single-name cap.",
+  "source_file": "strategies/38a8433e2cec04b394103ebd74bc71a3203b0504eba2b550c9c895ef3aab1447.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\ndef generate_weights(history, universe):\n    universe = pd.Index(universe)\n    if len(universe) == 0:\n        return pd.Series(dtype=float)\n\n    adj = history.get('adjusted_close')\n    if adj is None:\n        adj = history.get('close')\n    if adj is None or not isinstance(adj, pd.DataFrame):\n        return pd.Series(0.0, index=universe)\n\n    cols = [c for c in universe if c in adj.columns]\n    if len(cols) == 0:\n        return pd.Series(0.0, index=universe)\n\n    if not adj.index.is_monotonic_increasing:\n        adj = adj.sort_index()\n    px = adj[cols].tail(320).copy()\n    n = len(px)\n    if n < 40:\n        return pd.Series(0.0, index=universe)\n\n    def _mom(start_lag, end_lag):\n        if n <= end_lag + 2:\n            return pd.Series(np.nan, index=cols)\n        end_pos = n - 1 - end_lag\n        start_pos = max(0, n - 1 - start_lag)\n        if end_pos <= start_pos:\n            return pd.Series(np.nan, index=cols)\n        return px.iloc[end_pos] / px.iloc[start_pos] - 1.0\n\n    mom12 = _mom(252, 21)\n    mom6 = _mom(126, 21)\n    if n > 21:\n        ret21 = px.iloc[-1] / px.iloc[n - 1 - 21] - 1.0\n    else:\n        ret21 = pd.Series(np.nan, index=cols)\n\n    rets = px.pct_change()\n    vol_window = min(126, max(2, n - 1))\n    vol = rets.tail(vol_window).std() * np.sqrt(252.0)\n    vol = vol.replace([np.inf, -np.inf], np.nan)\n\n    last_price = px.iloc[-1]\n    valid = last_price.notna() & (last_price > 0) & mom12.notna()\n    valid = valid & (px.notna().sum() >= 60)\n\n    if 'eligible' in history:\n        edf = history['eligible']\n        if isinstance(edf, pd.DataFrame):\n            if not edf.index.is_monotonic_increasing:\n                edf = edf.sort_index()\n            ecols = [c for c in cols if c in edf.columns]\n            if ecols:\n                e_last = edf[ecols].tail(1)\n                if len(e_last) > 0:\n                    e = e_last.iloc[-1].reindex(cols).fillna(False).astype(bool)\n                    valid = valid & e\n\n    idx_valid = valid[valid].index\n    if len(idx_valid) < 10:\n        return pd.Series(0.0, index=universe)\n\n    mom6 = mom6.where(mom6.notna(), mom12)\n    mom12_v = mom12.loc[idx_valid]\n    mom6_v = mom6.loc[idx_valid]\n    vol_v = vol.loc[idx_valid].fillna(vol.loc[idx_valid].median())\n    if vol_v.isna().all():\n        vol_v = pd.Series(1.0, index=idx_valid)\n    ret21_v = ret21.loc[idx_valid].fillna(ret21.loc[idx_valid].median())\n    if ret21_v.isna().all():\n        ret21_v = pd.Series(0.0, index=idx_valid)\n\n    def rp(s):\n        return s.rank(method='average', pct=True)\n\n    score = (0.55 * rp(mom12_v) +\n             0.25 * rp(mom6_v) +\n             0.20 * (1.0 - rp(vol_v)) -\n             0.20 * rp(ret21_v))\n    score = score.replace([np.inf, -np.inf], np.nan).dropna()\n    if len(score) < 10:\n        return pd.Series(0.0, index=universe)\n\n    n_side = min(50, len(score) // 2)\n    if n_side < 1:\n        return pd.Series(0.0, index=universe)\n\n    longs = score.nlargest(n_side).index\n    shorts = score.nsmallest(n_side).index\n    w = min(0.02, 0.5 / float(n_side))\n    weights = pd.Series(0.0, index=universe)\n    weights.loc[longs] = w\n    weights.loc[shorts] = -w\n\n    gross = weights.abs().sum()\n    if gross > 1.0 + 1e-12:\n        weights = weights * (1.0 / gross)\n    weights = weights.clip(-0.02, 0.02)\n    return weights.reindex(universe).fillna(0.0)"
+  },
+  "strategy_id": "38a8433e2cec04b394103ebd74bc71a3203b0504eba2b550c9c895ef3aab1447",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.4752763709798604,
+    "annualized_return": -0.06220468585420358,
+    "total_return": -0.3190878565066436,
+    "volatility": 0.11993012407231168,
+    "max_drawdown": 0.34654262258743596,
+    "downside_risk": 0.09171542939119337,
+    "average_daily_turnover": 0.24904100657406258,
+    "total_cost": 0.18777691895684323,
+    "total_borrow_cost": 0.008625,
+    "active_days": 1449
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": -0.2517821847330097,
+    "annualized_return": -0.04006240199292266,
+    "total_return": -0.07792157320046844,
+    "volatility": 0.12920956772150258,
+    "max_drawdown": 0.1668864884308755,
+    "downside_risk": 0.09596443506933039,
+    "average_daily_turnover": 0.2514703049788024,
+    "total_cost": 0.0628675762447006,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

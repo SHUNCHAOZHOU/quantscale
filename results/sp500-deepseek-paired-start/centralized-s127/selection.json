@@ -1,0 +1,43 @@
+{
+  "agent": 2,
+  "cached_backtest": false,
+  "execution_limits": {
+    "cpu_seconds": 180,
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024
+  },
+  "hypothesis": "Cross-sectional 6-month momentum with a volatility penalty and liquidity filter captures persistent return continuation while avoiding high-risk and illiquid names. A dollar-neutral, equal-weighted long/short portfolio of the top and bottom ranked stocks should earn positive risk-adjusted returns after costs, with per-name weights capped at 2% and gross exposure at or below 100%.",
+  "round": 0,
+  "source_file": "strategies/2a94c96b93347a655b49fd10c6960f39a6e1e9f0ec976a53f5e3e761379443e3.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import pandas as pd\nimport numpy as np\n\ndef generate_weights(history, universe):\n    universe = pd.Index(universe)\n    if len(universe) == 0:\n        return pd.Series(dtype=float)\n\n    adj_close = {}\n    volume = {}\n    eligible_last = {}\n    for t in universe:\n        df = history.get(t)\n        if df is None or len(df) == 0:\n            eligible_last[t] = False\n            continue\n        if 'adjusted_close' in df.columns:\n            adj_close[t] = df['adjusted_close']\n        elif 'close' in df.columns:\n            adj_close[t] = df['close']\n        else:\n            eligible_last[t] = False\n            continue\n        if 'volume' in df.columns:\n            volume[t] = df['volume']\n        if 'eligible' in df.columns and len(df) > 0:\n            eligible_last[t] = bool(df['eligible'].iloc[-1])\n        else:\n            eligible_last[t] = True\n\n    if not adj_close:\n        return pd.Series(0.0, index=universe)\n\n    close_df = pd.DataFrame(adj_close).reindex(columns=universe).sort_index()\n    if len(close_df) < 150:\n        return pd.Series(0.0, index=universe)\n\n    rets = close_df.pct_change()\n    mom = close_df.shift(5) / close_df.shift(126) - 1.0\n    vol = rets.rolling(20).std()\n\n    if volume:\n        vol_df = pd.DataFrame(volume).reindex(columns=universe).sort_index()\n        dollar_vol = close_df * vol_df\n        liq = dollar_vol.rolling(20).median()\n    else:\n        liq = pd.DataFrame(np.nan, index=close_df.index, columns=universe)\n\n    last_mom = mom.iloc[-1]\n    last_vol = vol.iloc[-1]\n    last_liq = liq.iloc[-1] if len(liq) > 0 else pd.Series(np.nan, index=universe)\n    last_close = close_df.iloc[-1]\n    elig = pd.Series(eligible_last).reindex(universe).fillna(False).astype(bool)\n\n    valid = (\n        last_close.notna()\n        & last_mom.notna()\n        & last_vol.notna()\n        & (last_vol > 0)\n        & (last_vol < 0.15)\n        & (last_liq > 1e6)\n        & elig\n    )\n    candidates = universe[valid]\n    if len(candidates) < 20:\n        return pd.Series(0.0, index=universe)\n\n    m = last_mom[candidates]\n    v = last_vol[candidates]\n    mom_rank = m.rank(pct=True)\n    vol_rank = v.rank(pct=True)\n    score = mom_rank - 0.3 * vol_rank\n\n    n_side = min(50, len(candidates) // 2)\n    if n_side < 10:\n        return pd.Series(0.0, index=universe)\n\n    ranked = score.sort_values(ascending=False)\n    longs = ranked.head(n_side).index\n    shorts = ranked.tail(n_side).index\n\n    w = min(0.5 / n_side, 0.02)\n    weights = pd.Series(0.0, index=universe)\n    weights[longs] = w\n    weights[shorts] = -w\n    return weights.fillna(0.0)\n"
+  },
+  "strategy_id": "2a94c96b93347a655b49fd10c6960f39a6e1e9f0ec976a53f5e3e761379443e3",
+  "train": {
+    "active_days": 0,
+    "annualized_return": 0.0,
+    "average_daily_turnover": 0.0,
+    "downside_risk": 0.0,
+    "max_drawdown": 0.0,
+    "observations": 1508,
+    "sharpe": 0.0,
+    "total_borrow_cost": 0.0,
+    "total_cost": 0.0,
+    "total_return": 0.0,
+    "volatility": 0.0
+  },
+  "validation": {
+    "active_days": 0,
+    "annualized_return": 0.0,
+    "average_daily_turnover": 0.0,
+    "downside_risk": 0.0,
+    "max_drawdown": 0.0,
+    "observations": 500,
+    "sharpe": 0.0,
+    "total_borrow_cost": 0.0,
+    "total_cost": 0.0,
+    "total_return": 0.0,
+    "volatility": 0.0
+  }
+}

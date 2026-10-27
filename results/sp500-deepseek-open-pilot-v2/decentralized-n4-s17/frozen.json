@@ -1,0 +1,86 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 170000,
+        "max_turn_tokens": 65536,
+        "seed": 17,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024
+      },
+      "topology": "decentralized",
+      "fleet_size": 4,
+      "manager_count": 0,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 17,
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "high",
+        "max_output_tokens": 16384,
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\n\n\ndef _zscore(x, mask):\n    v = np.where(mask, x, np.nan)\n    m = np.isfinite(v)\n    out = np.zeros(v.shape[0], dtype=float)\n    if int(m.sum()) < 10:\n        return out\n    mu = np.nanmean(v)\n    sd = np.nanstd(v)\n    if (not np.isfinite(sd)) or sd <= 1e-12:\n        return out\n    z = (v - mu) / sd\n    z = np.clip(z, -3.0, 3.0)\n    z = np.where(m, z, 0.0)\n    return z\n\n\ndef generate_weights(history, universe):\n    tickers = pd.Index(list(universe))\n    n = len(tickers)\n    if n == 0:\n        return pd.Series(dtype=float)\n    empty = pd.Series(0.0, index=tickers, dtype=float)\n\n    open_key = None\n    for k in ('adjusted_open', 'adjusted_close', 'close'):\n        if k in history:\n            open_key = k\n            break\n    close_key = None\n    for k in ('adjusted_close', 'close'):\n        if k in history:\n            close_key = k\n            break\n    if open_key is None or close_key is None:\n        return empty\n\n    try:\n        op_full = history[open_key].reindex(columns=tickers)\n        cl_full = history[close_key].reindex(columns=tickers)\n    except Exception:\n        return empty\n\n    if op_full.shape[0] < 80:\n        return empty\n    op = op_full.iloc[-320:].astype(float)\n    cl = cl_full.reindex(index=op.index).astype(float)\n    op = op.where(op > 0.0)\n    cl = cl.where(cl > 0.0)\n    if op.shape[0] < 80:\n        return empty\n\n    try:\n        vol_df = history['volume'].reindex(columns=tickers).reindex(index=op.index).astype(float)\n    except Exception:\n        vol_df = pd.DataFrame(np.nan, index=op.index, columns=tickers)\n\n    if op.shape[0] >= 260:\n        mom_series = op.shift(21) / op.shift(252) - 1.0\n    elif op.shape[0] >= 140:\n        mom_series = op.shift(21) / op.shift(126) - 1.0\n    else:\n        mom_series = op.shift(5) / op.shift(63) - 1.0\n    mom = mom_series.iloc[-5:].mean()\n\n    if op.shape[0] >= 140:\n        mom6_series = op.shift(21) / op.shift(126) - 1.0\n    else:\n        mom6_series = op.shift(5) / op.shift(63) - 1.0\n    mom6 = mom6_series.iloc[-5:].mean()\n\n    ret = op / op.shift(1) - 1.0\n    vol60 = ret.rolling(60, min_periods=40).std().iloc[-1]\n\n    last_px = cl.iloc[-1]\n    dv = (cl * vol_df).iloc[-60:].median()\n\n    p_last = last_px.values.astype(float)\n    volv = vol60.values.astype(float)\n    momv = mom.values.astype(float)\n    mom6v = mom6.values.astype(float)\n    dvv = dv.values.astype(float)\n\n    base = (np.isfinite(p_last) & (p_last > 1.0)\n            & np.isfinite(volv) & (volv > 1e-6)\n            & np.isfinite(momv))\n    liquid = base & np.isfinite(dvv) & (dvv >= 1e6)\n    mask = liquid if int(liquid.sum()) >= 40 else base\n\n    if 'eligible' in history:\n        try:\n            el = history['eligible'].reindex(columns=tickers).reindex(index=op.index).iloc[-1]\n            el_bool = np.nan_to_num(el.values.astype(float), nan=0.0) > 0.5\n            m2 = mask & el_bool\n            if int(m2.sum()) >= 20:\n                mask = m2\n        except Exception:\n            pass\n\n    if int(mask.sum()) < 4:\n        return empty\n\n    z_mom = _zscore(momv, mask)\n    z_mom6 = _zscore(mom6v, mask)\n    z_lowvol = _zscore(-volv, mask)\n    score = 0.65 * z_mom + 0.15 * z_mom6 + 0.20 * z_lowvol\n    score = np.where(mask, score, np.nan)\n\n    idx = np.where(mask)[0]\n    if idx.size < 2:\n        return empty\n    s_sel = score[idx]\n    order = idx[np.argsort(-s_sel, kind='mergesort')]\n\n    k = int(min(50, idx.size // 2))\n    if k < 1:\n        return empty\n\n    w_side = float(min(0.02, 0.98 / (2.0 * k)))\n    w = np.zeros(n, dtype=float)\n    w[order[:k]] = w_side\n    w[order[-k:]] = -w_side\n\n    w = np.clip(w, -0.02, 0.02)\n    w = np.where(np.isfinite(w), w, 0.0)\n    return pd.Series(w, index=tickers, dtype=float)\n"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": -0.01415288459450331,
+      "annualized_return": -0.010950159438678497,
+      "total_return": -0.021609433828841174,
+      "volatility": 0.1348544795052032,
+      "max_drawdown": 0.1535543182785094,
+      "downside_risk": 0.09993291030958383,
+      "average_daily_turnover": 0.08905459509135406,
+      "total_cost": 0.022263648772838512,
+      "total_borrow_cost": 0.0029166666666666664,
+      "active_days": 500
+    },
+    "implementation_sha256": "3dcdcbf48932278e4d8bcfd98c1d2d667766243069c20221a77a745f89f744f3",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "99cb69d509fd4292f5d460cd56b75e2dd64fbb385b864f17160b50cf681e170d"
+}

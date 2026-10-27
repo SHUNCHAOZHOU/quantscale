@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "config": {
+    "train": {
+      "start": "2016-01-01",
+      "end": "2021-12-31"
+    },
+    "validation": {
+      "start": "2022-01-01",
+      "end": "2023-12-31"
+    },
+    "test": {
+      "start": "2024-01-01",
+      "end": "2025-12-31"
+    },
+    "universe_size": 500,
+    "min_price": 5.0,
+    "min_volume": 100000.0,
+    "gross_limit": 1.0,
+    "max_weight": 0.02,
+    "net_tolerance": 0.01,
+    "cost_bps": 5.0,
+    "annual_borrow_bps": 30.0,
+    "annualization": 252,
+    "backtests": 12,
+    "tokens": 400000,
+    "max_turn_tokens": 131072,
+    "seed": 107,
+    "lookback_days": 300,
+    "universe_mode": "fixed",
+    "missing_data_policy": "skip_incomplete_sessions",
+    "strategy_mode": "python",
+    "code_history_days": null,
+    "code_call_timeout_seconds": 10,
+    "code_backtest_timeout_seconds": 180,
+    "code_memory_mb": 1024,
+    "manager_max_format_repairs": 1,
+    "manager_max_failed_rounds": 2
+  },
+  "topology": "hybrid",
+  "fleet_size": 4,
+  "manager_count": 1,
+  "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+  "backend": "deepseek-flash",
+  "backend_configuration": {
+    "provider": "deepseek",
+    "model": "deepseek-flash",
+    "reasoning_effort": "low",
+    "max_output_tokens": 32768,
+    "role_settings": {
+      "researcher": {
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768
+      },
+      "manager": {
+        "reasoning_effort": "none",
+        "max_output_tokens": 8192
+      }
+    },
+    "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+  },
+  "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+  "seed": 107,
+  "execution": "close t -> next open -> following open; each split starts flat",
+  "selection": "highest net validation Sharpe including initial four; SHA256 ascending tie-break",
+  "budget_mode": "paired-start, 8 additional candidate attempts in exactly two scheduled rounds",
+  "initial_state_sha256": "ec183411d006c3f4845aca90a39ff992f7c0257789bf7740a1e6836a7133ea9c",
+  "study_source_sha256": "b9e1493cda5da1f72b077348fb8363309e2ddb7140844f1d330281210c751012",
+  "initial_cost_accounting": "Initial four generated once, recorded separately; not charged four times",
+  "manager_failure_policy": "Skip failed scheduled round; at most two scheduled rounds; retain best initial strategy",
+  "excluded_data_sessions": [
+    "2021-05-05"
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 170000,
+        "max_turn_tokens": 65536,
+        "seed": 7,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024,
+        "manager_max_format_repairs": 1,
+        "manager_max_failed_rounds": 2
+      },
+      "topology": "independent",
+      "fleet_size": 4,
+      "manager_count": 0,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 7,
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768,
+        "role_settings": {
+          "researcher": {
+            "reasoning_effort": "low",
+            "max_output_tokens": 32768
+          },
+          "manager": {
+            "reasoning_effort": "none",
+            "max_output_tokens": 8192
+          }
+        },
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\n\n\ndef generate_weights(history, universe):\n    tickers = pd.Index(universe)\n    n_assets = len(tickers)\n    if n_assets == 0:\n        return pd.Series(dtype=float)\n\n    ac = history.get('adjusted_close')\n    if ac is None:\n        ac = history.get('close')\n    if ac is None:\n        return pd.Series(0.0, index=tickers, dtype=float)\n\n    ac = ac.reindex(columns=tickers)\n    dates = ac.index\n    if len(dates) == 0:\n        return pd.Series(0.0, index=tickers, dtype=float)\n\n    current = dates[-1]\n    wd = dates.weekday\n    fri_idx = np.where(wd == 4)[0]\n    if len(fri_idx) > 0 and dates[fri_idx[-1]] <= current:\n        asof = dates[fri_idx[-1]]\n    else:\n        asof = current\n\n    ac_hist = ac.loc[:asof].tail(300)\n    if ac_hist.shape[0] < 30:\n        return pd.Series(0.0, index=tickers, dtype=float)\n\n    hist_index = ac_hist.index\n    C = ac_hist.to_numpy(dtype=float)\n    n = C.shape[0]\n\n    elig = history.get('eligible')\n    if elig is not None:\n        elig_hist = elig.reindex(columns=tickers).loc[:asof]\n        if len(elig_hist) > 0:\n            elig_last = elig_hist.iloc[-1].fillna(False).astype(bool)\n        else:\n            elig_last = pd.Series(True, index=tickers)\n    else:\n        elig_last = pd.Series(True, index=tickers)\n\n    last_close = C[-1, :]\n    valid = np.isfinite(last_close) & (last_close > 0)\n    valid &= elig_last.to_numpy(dtype=bool)\n\n    vol = history.get('volume')\n    close_raw = history.get('close')\n    if vol is not None:\n        vol_hist = vol.reindex(columns=tickers).reindex(index=hist_index)\n        V = vol_hist.to_numpy(dtype=float)\n        if close_raw is not None:\n            CR = close_raw.reindex(columns=tickers).reindex(index=hist_index).to_numpy(dtype=float)\n        else:\n            CR = C.copy()\n        with np.errstate(all='ignore'):\n            DV = CR * V\n            med_dv = np.nanmedian(DV[-63:, :], axis=0)\n        valid &= np.isfinite(med_dv) & (med_dv >= 1e6)\n\n    if close_raw is not None:\n        CR_last = close_raw.reindex(columns=tickers).loc[:asof].iloc[-1].to_numpy(dtype=float)\n        valid &= np.isfinite(CR_last) & (CR_last >= 3.0)\n    else:\n        valid &= np.isfinite(last_close) & (last_close >= 3.0)\n\n    score = np.full(n_assets, np.nan, dtype=float)\n    if n >= 22:\n        with np.errstate(all='ignore'):\n            ret5 = C[-1, :] / C[-6, :] - 1.0\n            ret21 = C[-1, :] / C[-22, :] - 1.0\n            sub = C[-22:, :]\n            rets = sub[1:, :] / sub[:-1, :] - 1.0\n            vola = np.nanstd(rets, axis=0)\n            score = -(0.7 * ret5 + 0.3 * ret21) / (vola + 0.01)\n    elif n >= 6:\n        with np.errstate(all='ignore'):\n            ret5 = C[-1, :] / C[-6, :] - 1.0\n            sub = C[-6:, :]\n            rets = sub[1:, :] / sub[:-1, :] - 1.0\n            vola = np.nanstd(rets, axis=0)\n            score = -ret5 / (vola + 0.01)\n    else:\n        return pd.Series(0.0, index=tickers, dtype=float)\n\n    score = np.where(valid & np.isfinite(score), score, np.nan)\n    finite = np.isfinite(score)\n    if finite.sum() < 2:\n        return pd.Series(0.0, index=tickers, dtype=float)\n\n    idx = np.where(finite)[0]\n    order = np.argsort(score[idx])\n    sorted_idx = idx[order]\n    M = len(sorted_idx)\n    N = min(50, M // 2)\n    if N == 0:\n        return pd.Series(0.0, index=tickers, dtype=float)\n\n    longs = sorted_idx[-N:]\n    shorts = sorted_idx[:N]\n    w = min(0.02, 0.5 / float(N))\n\n    weights = np.zeros(n_assets, dtype=float)\n    weights[longs] = w\n    weights[shorts] = -w\n\n    return pd.Series(weights, index=tickers, dtype=float)\n"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": 0.23185566421543422,
+      "annualized_return": 0.018983457469300635,
+      "total_return": 0.03801739182513497,
+      "volatility": 0.10469805040792021,
+      "max_drawdown": 0.07371004287737026,
+      "downside_risk": 0.07325869587665079,
+      "average_daily_turnover": 0.3157339451876476,
+      "total_cost": 0.07893348629691191,
+      "total_borrow_cost": 0.002976190476190477,
+      "active_days": 500
+    },
+    "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "502a185ace3461eeb4e09e0d40d3c3ed7366da60c846cff988056dc98dadafaa"
+}

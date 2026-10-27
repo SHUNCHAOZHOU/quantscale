@@ -1,0 +1,650 @@
+{
+  "runs": [
+    {
+      "run": "single-n1-s17",
+      "topology": "single",
+      "valid": 11,
+      "unique": 10,
+      "exact_repeats": 1,
+      "self_repeats": 1,
+      "other_agent_only_repeats": 0,
+      "unique_signal_cores": 8,
+      "rounds": {
+        "0": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "momentum"
+          ]
+        },
+        "1": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "reversal"
+          ]
+        },
+        "2": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "low_volatility"
+          ]
+        },
+        "3": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "volume"
+          ]
+        },
+        "4": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "reversal"
+          ]
+        },
+        "5": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "reversal"
+          ]
+        },
+        "6": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "reversal"
+          ]
+        },
+        "7": {
+          "valid": 1,
+          "duplicates": 1,
+          "families": [
+            "momentum"
+          ]
+        },
+        "9": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "reversal"
+          ]
+        },
+        "10": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "reversal"
+          ]
+        },
+        "11": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "low_volatility"
+          ]
+        }
+      },
+      "final_strategy": {
+        "family": "reversal",
+        "lookback": 5,
+        "skip": 0,
+        "fraction": 0.25,
+        "volatility_scale": false
+      }
+    },
+    {
+      "run": "single-n1-s7",
+      "topology": "single",
+      "valid": 12,
+      "unique": 10,
+      "exact_repeats": 2,
+      "self_repeats": 2,
+      "other_agent_only_repeats": 0,
+      "unique_signal_cores": 4,
+      "rounds": {
+        "0": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "momentum"
+          ]
+        },
+        "1": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "reversal"
+          ]
+        },
+        "2": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "low_volatility"
+          ]
+        },
+        "3": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "momentum"
+          ]
+        },
+        "4": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "momentum"
+          ]
+        },
+        "5": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "momentum"
+          ]
+        },
+        "6": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "momentum"
+          ]
+        },
+        "7": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "momentum"
+          ]
+        },
+        "8": {
+          "valid": 1,
+          "duplicates": 1,
+          "families": [
+            "momentum"
+          ]
+        },
+        "9": {
+          "valid": 1,
+          "duplicates": 1,
+          "families": [
+            "momentum"
+          ]
+        },
+        "10": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "momentum"
+          ]
+        },
+        "11": {
+          "valid": 1,
+          "duplicates": 0,
+          "families": [
+            "momentum"
+          ]
+        }
+      },
+      "final_strategy": {
+        "family": "momentum",
+        "lookback": 252,
+        "skip": 20,
+        "fraction": 0.04,
+        "volatility_scale": false
+      }
+    },
+    {
+      "run": "independent-n4-s17",
+      "topology": "independent",
+      "valid": 12,
+      "unique": 10,
+      "exact_repeats": 2,
+      "self_repeats": 0,
+      "other_agent_only_repeats": 2,
+      "unique_signal_cores": 8,
+      "rounds": {
+        "0": {
+          "valid": 4,
+          "duplicates": 2,
+          "families": [
+            "momentum",
+            "momentum",
+            "momentum",
+            "momentum"
+          ]
+        },
+        "1": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "reversal",
+            "reversal",
+            "reversal",
+            "reversal"
+          ]
+        },
+        "2": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "reversal",
+            "reversal",
+            "low_volatility",
+            "low_volatility"
+          ]
+        }
+      },
+      "final_strategy": {
+        "family": "reversal",
+        "lookback": 60,
+        "skip": 1,
+        "fraction": 0.25,
+        "volatility_scale": true
+      }
+    },
+    {
+      "run": "independent-n4-s7",
+      "topology": "independent",
+      "valid": 12,
+      "unique": 10,
+      "exact_repeats": 2,
+      "self_repeats": 0,
+      "other_agent_only_repeats": 2,
+      "unique_signal_cores": 10,
+      "rounds": {
+        "0": {
+          "valid": 4,
+          "duplicates": 2,
+          "families": [
+            "momentum",
+            "momentum",
+            "momentum",
+            "momentum"
+          ]
+        },
+        "1": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "reversal",
+            "reversal",
+            "reversal",
+            "low_volatility"
+          ]
+        },
+        "2": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "low_volatility",
+            "reversal",
+            "reversal",
+            "reversal"
+          ]
+        }
+      },
+      "final_strategy": {
+        "family": "reversal",
+        "lookback": 60,
+        "skip": 1,
+        "fraction": 0.25,
+        "volatility_scale": false
+      }
+    },
+    {
+      "run": "centralized-n4-s17",
+      "topology": "centralized",
+      "valid": 12,
+      "unique": 12,
+      "exact_repeats": 0,
+      "self_repeats": 0,
+      "other_agent_only_repeats": 0,
+      "unique_signal_cores": 10,
+      "rounds": {
+        "0": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "momentum",
+            "reversal",
+            "low_volatility",
+            "volume"
+          ]
+        },
+        "1": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "reversal",
+            "low_volatility",
+            "reversal",
+            "reversal"
+          ]
+        },
+        "2": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "reversal",
+            "reversal",
+            "reversal",
+            "reversal"
+          ]
+        }
+      },
+      "final_strategy": {
+        "family": "reversal",
+        "lookback": 60,
+        "skip": 5,
+        "fraction": 0.25,
+        "volatility_scale": true
+      }
+    },
+    {
+      "run": "centralized-n4-s7",
+      "topology": "centralized",
+      "valid": 12,
+      "unique": 10,
+      "exact_repeats": 2,
+      "self_repeats": 0,
+      "other_agent_only_repeats": 2,
+      "unique_signal_cores": 9,
+      "rounds": {
+        "0": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "momentum",
+            "reversal",
+            "low_volatility",
+            "volume"
+          ]
+        },
+        "1": {
+          "valid": 4,
+          "duplicates": 2,
+          "families": [
+            "momentum",
+            "momentum",
+            "momentum",
+            "momentum"
+          ]
+        },
+        "2": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "reversal",
+            "low_volatility",
+            "volume",
+            "reversal"
+          ]
+        }
+      },
+      "final_strategy": {
+        "family": "reversal",
+        "lookback": 60,
+        "skip": 1,
+        "fraction": 0.25,
+        "volatility_scale": false
+      }
+    },
+    {
+      "run": "decentralized-n4-s17",
+      "topology": "decentralized",
+      "valid": 11,
+      "unique": 8,
+      "exact_repeats": 3,
+      "self_repeats": 0,
+      "other_agent_only_repeats": 3,
+      "unique_signal_cores": 6,
+      "rounds": {
+        "0": {
+          "valid": 3,
+          "duplicates": 1,
+          "families": [
+            "momentum",
+            "momentum",
+            "momentum"
+          ]
+        },
+        "1": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "momentum",
+            "reversal",
+            "momentum",
+            "momentum"
+          ]
+        },
+        "2": {
+          "valid": 4,
+          "duplicates": 2,
+          "families": [
+            "reversal",
+            "reversal",
+            "reversal",
+            "reversal"
+          ]
+        }
+      },
+      "final_strategy": {
+        "family": "reversal",
+        "lookback": 60,
+        "skip": 1,
+        "fraction": 0.25,
+        "volatility_scale": true
+      }
+    },
+    {
+      "run": "decentralized-n4-s7",
+      "topology": "decentralized",
+      "valid": 11,
+      "unique": 5,
+      "exact_repeats": 6,
+      "self_repeats": 0,
+      "other_agent_only_repeats": 6,
+      "unique_signal_cores": 5,
+      "rounds": {
+        "0": {
+          "valid": 4,
+          "duplicates": 2,
+          "families": [
+            "momentum",
+            "momentum",
+            "momentum",
+            "momentum"
+          ]
+        },
+        "1": {
+          "valid": 3,
+          "duplicates": 2,
+          "families": [
+            "reversal",
+            "reversal",
+            "reversal"
+          ]
+        },
+        "2": {
+          "valid": 4,
+          "duplicates": 2,
+          "families": [
+            "reversal",
+            "reversal",
+            "reversal",
+            "reversal"
+          ]
+        }
+      },
+      "final_strategy": {
+        "family": "reversal",
+        "lookback": 60,
+        "skip": 1,
+        "fraction": 0.25,
+        "volatility_scale": false
+      }
+    },
+    {
+      "run": "hybrid-n4-s17",
+      "topology": "hybrid",
+      "valid": 12,
+      "unique": 10,
+      "exact_repeats": 2,
+      "self_repeats": 0,
+      "other_agent_only_repeats": 2,
+      "unique_signal_cores": 7,
+      "rounds": {
+        "0": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "momentum",
+            "reversal",
+            "low_volatility",
+            "volume"
+          ]
+        },
+        "1": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "momentum",
+            "momentum",
+            "low_volatility",
+            "low_volatility"
+          ]
+        },
+        "2": {
+          "valid": 4,
+          "duplicates": 2,
+          "families": [
+            "momentum",
+            "momentum",
+            "momentum",
+            "momentum"
+          ]
+        }
+      },
+      "final_strategy": {
+        "family": "momentum",
+        "lookback": 252,
+        "skip": 20,
+        "fraction": 0.1,
+        "volatility_scale": false
+      }
+    },
+    {
+      "run": "hybrid-n4-s7",
+      "topology": "hybrid",
+      "valid": 12,
+      "unique": 10,
+      "exact_repeats": 2,
+      "self_repeats": 0,
+      "other_agent_only_repeats": 2,
+      "unique_signal_cores": 8,
+      "rounds": {
+        "0": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "momentum",
+            "reversal",
+            "low_volatility",
+            "volume"
+          ]
+        },
+        "1": {
+          "valid": 4,
+          "duplicates": 0,
+          "families": [
+            "reversal",
+            "reversal",
+            "reversal",
+            "reversal"
+          ]
+        },
+        "2": {
+          "valid": 4,
+          "duplicates": 2,
+          "families": [
+            "reversal",
+            "reversal",
+            "reversal",
+            "reversal"
+          ]
+        }
+      },
+      "final_strategy": {
+        "family": "reversal",
+        "lookback": 60,
+        "skip": 1,
+        "fraction": 0.2,
+        "volatility_scale": false
+      }
+    }
+  ],
+  "total_valid": 117,
+  "global_unique_parameters": 66,
+  "same_run_exact_repeats": 22,
+  "groups": [
+    {
+      "topology": "single",
+      "valid": 23,
+      "unique_within_runs": 20,
+      "duplicates": 3,
+      "duplicate_rate": 0.13043478260869565,
+      "self_repeats": 3,
+      "peer_only_repeats": 0
+    },
+    {
+      "topology": "independent",
+      "valid": 24,
+      "unique_within_runs": 20,
+      "duplicates": 4,
+      "duplicate_rate": 0.16666666666666666,
+      "self_repeats": 0,
+      "peer_only_repeats": 4
+    },
+    {
+      "topology": "centralized",
+      "valid": 24,
+      "unique_within_runs": 22,
+      "duplicates": 2,
+      "duplicate_rate": 0.08333333333333333,
+      "self_repeats": 0,
+      "peer_only_repeats": 2
+    },
+    {
+      "topology": "decentralized",
+      "valid": 22,
+      "unique_within_runs": 13,
+      "duplicates": 9,
+      "duplicate_rate": 0.4090909090909091,
+      "self_repeats": 0,
+      "peer_only_repeats": 9
+    },
+    {
+      "topology": "hybrid",
+      "valid": 24,
+      "unique_within_runs": 20,
+      "duplicates": 4,
+      "duplicate_rate": 0.16666666666666666,
+      "self_repeats": 0,
+      "peer_only_repeats": 4
+    }
+  ],
+  "first_round_unmanaged": {
+    "valid": 15,
+    "matching_prompt_example": 10,
+    "momentum_count": 15
+  },
+  "final_unique_parameters": 7,
+  "final_60_day_reversal_count": 7
+}

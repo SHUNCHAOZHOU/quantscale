@@ -1,0 +1,19 @@
+{
+  "total_tokens": 152788,
+  "communication_turn_tokens_upper_bound": 152788,
+  "total_backtests": 12,
+  "agent_turns": 10,
+  "communication_calls": 10,
+  "hypotheses": 12,
+  "successful_candidates": 10,
+  "unique_strategy_variants": 12,
+  "duplicate_variant_rate": 0.0,
+  "mean_trials_per_active_researcher": 3.0,
+  "inherited_trials": 4,
+  "additional_trials": 8,
+  "complete_eight_attempts": true,
+  "elapsed_seconds": 914.2743782080001,
+  "baseline_best_validation": 0.0,
+  "final_validation": 0.5328973947217087,
+  "winner_from_initial": false
+}

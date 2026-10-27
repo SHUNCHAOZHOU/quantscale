@@ -1,0 +1,43 @@
+{
+  "agent": 0,
+  "round": 9,
+  "hypothesis": "Cross-sectional 12-1 momentum is persistent while short-horizon returns partially reverse and high-volatility stocks underperform risk-adjusted. A monthly-rebalanced, dollar-neutral long-short portfolio of high-momentum/low-volatility stocks versus low-momentum/high-volatility stocks, filtered for liquidity, should capture this premium after costs while respecting concentration limits.",
+  "source_file": "strategies/209d14942a070e069bcc62b44387394bfc6b62ec76ad21e8a41d0cc0cf360f38.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\ndef generate_weights(history, universe):\n    u = pd.Index(universe)\n    z = pd.Series(0.0, index=u, dtype=float)\n    if len(u) == 0:\n        return z\n    ac = history.get('adjusted_close')\n    cl = history.get('close')\n    vo = history.get('volume')\n    el = history.get('eligible')\n    if ac is None or cl is None or vo is None:\n        return z\n    ac = ac.reindex(columns=u)\n    cl = cl.reindex(columns=u)\n    vo = vo.reindex(columns=u)\n    idx = ac.index\n    if len(idx) < 130:\n        return z\n    last = idx[-1]\n    per = idx.to_period('M')\n    pm = per < last.to_period('M')\n    if pm.any():\n        asof = idx[pm][-1]\n    else:\n        asof = last\n    ac = ac.loc[:asof]\n    cl = cl.loc[:asof]\n    vo = vo.loc[:asof]\n    if len(ac) > 320:\n        ac = ac.iloc[-320:]\n        cl = cl.iloc[-320:]\n        vo = vo.iloc[-320:]\n    if len(ac) < 130:\n        return z\n    ac = ac.ffill()\n    cl = cl.ffill()\n    ret = ac.pct_change(fill_method=None)\n    px = ac.iloc[-1]\n    dv = (cl * vo).rolling(20, min_periods=5).median().iloc[-1]\n    good = px.notna() & (px > 2.0) & dv.notna() & (dv > 5e5)\n    if el is not None:\n        e = el.reindex(columns=u)\n        if len(e) > 0:\n            e = e.loc[:asof]\n            if len(e) > 0:\n                good = good & e.iloc[-1].fillna(False).astype(bool)\n    n = len(ac)\n    p0 = ac.iloc[-1]\n    p1 = ac.iloc[-22] if n >= 22 else ac.iloc[0]\n    p6 = ac.iloc[-127] if n >= 127 else ac.iloc[0]\n    if n >= 252:\n        p12 = ac.iloc[-252]\n    else:\n        p12 = p6\n    mom6 = p1 / p6 - 1.0\n    mom12 = p1 / p12 - 1.0\n    rev = p0 / p1 - 1.0\n    vola = ret.iloc[-126:].std()\n    good = good & np.isfinite(mom6) & np.isfinite(mom12) & np.isfinite(vola) & np.isfinite(rev)\n    good = good & (vola > 0.0) & (vola < 0.15)\n    cand = u[good.to_numpy()]\n    if len(cand) < 20:\n        return z\n    m6 = mom6[cand].rank(pct=True)\n    m12 = mom12[cand].rank(pct=True)\n    rv = rev[cand].rank(pct=True)\n    lv = vola[cand].rank(pct=True)\n    score = 0.55 * m6 + 0.45 * m12 - 0.20 * rv - 0.25 * lv\n    ns = int(min(50, max(10, len(cand) // 10)))\n    ns = min(ns, len(cand) // 2)\n    if ns < 1:\n        return z\n    order = score.sort_values(ascending=False)\n    longs = order.index[:ns]\n    shorts = order.index[-ns:]\n    q = 0.49 / float(ns)\n    if q > 0.02:\n        q = 0.02\n    w = z.copy()\n    w.loc[longs] = q\n    w.loc[shorts] = -q\n    return w.fillna(0.0).astype(float)"
+  },
+  "strategy_id": "209d14942a070e069bcc62b44387394bfc6b62ec76ad21e8a41d0cc0cf360f38",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.4676590307049629,
+    "annualized_return": -0.056190953722430215,
+    "total_return": -0.29253741180464155,
+    "volatility": 0.11053739579856244,
+    "max_drawdown": 0.32734863988171725,
+    "downside_risk": 0.08492825218666973,
+    "average_daily_turnover": 0.06906026914477476,
+    "total_cost": 0.05207144293516016,
+    "total_borrow_cost": 0.00795083333333333,
+    "active_days": 1363
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": -0.10024540772909991,
+    "annualized_return": -0.019832926354429792,
+    "total_return": -0.038966974687322575,
+    "volatility": 0.12363295415937492,
+    "max_drawdown": 0.11174328895219021,
+    "downside_risk": 0.08948801134566688,
+    "average_daily_turnover": 0.07796653276682229,
+    "total_cost": 0.019491633191705576,
+    "total_borrow_cost": 0.0029166666666666655,
+    "active_days": 500
+  }
+}

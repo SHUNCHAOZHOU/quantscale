@@ -1,0 +1,43 @@
+{
+  "agent": 2,
+  "round": 1,
+  "hypothesis": "Short-horizon cross-sectional reversal is more reliable than momentum in this liquid universe, especially when reversal is measured on market-residual returns to avoid betting on market beta. A dollar-neutral, monthly rebalanced portfolio that buys recent residual losers and sells recent residual winners, while mildly penalizing high volatility and filtering for liquidity, should have lower turnover and less crash risk than daily momentum/reversal blends.",
+  "source_file": "strategies/67824e3d902fb0bdd664c6ff93ad20f232a2ff2d97f2ba80e964cbfa5efdfac1.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\n\ndef _rank_z(s, valid):\n    s = s.astype(float).copy()\n    s[~valid] = np.nan\n    s = s.replace([np.inf, -np.inf], np.nan)\n    if s.notna().sum() < 2:\n        return pd.Series(0.0, index=s.index)\n    r = s.rank(pct=True)\n    return (2.0 * r - 1.0).fillna(0.0)\n\n\ndef generate_weights(history, universe):\n    u = pd.Index(universe)\n    zeros = pd.Series(0.0, index=u)\n    if len(u) == 0:\n        return zeros\n\n    ac = history.get('adjusted_close')\n    if ac is None or ac.empty:\n        ac = history.get('close')\n    if ac is None or ac.empty:\n        return zeros\n\n    cols = [t for t in u if t in ac.columns]\n    if len(cols) < 2:\n        return zeros\n\n    px = ac.loc[:, cols].astype(float)\n    if not px.index.is_monotonic_increasing:\n        px = px.sort_index()\n\n    has = px.notna().any(axis=1)\n    if not has.any():\n        return zeros\n    t = px.index[has][-1]\n    px = px.loc[:t]\n    if len(px) < 30:\n        return zeros\n\n    try:\n        nb = t + pd.offsets.BDay(1)\n        at_month_end = (nb.year != t.year) or (nb.month != t.month)\n    except Exception:\n        at_month_end = False\n\n    if at_month_end:\n        sig = t\n    else:\n        mask = (px.index.year < t.year) | ((px.index.year == t.year) & (px.index.month < t.month))\n        prior = px.index[mask]\n        if len(prior) == 0:\n            return zeros\n        sig = prior[-1]\n\n    sub = px.loc[:sig]\n    n = len(sub)\n    if n < 30:\n        return zeros\n    p0 = sub.iloc[-1]\n\n    def ret(offset):\n        if n - 1 - offset < 0:\n            return pd.Series(np.nan, index=cols)\n        return sub.iloc[-1] / sub.iloc[-1 - offset] - 1.0\n\n    ret21 = ret(21)\n    ret5 = ret(5)\n    rev21 = -ret21\n    rev5 = -ret5\n\n    recent = sub.tail(127)\n    rets = recent.pct_change()\n    if len(rets) > 1:\n        r126 = rets.tail(126)\n        vol = r126.std()\n    else:\n        r126 = pd.DataFrame(index=rets.index, columns=cols, dtype=float)\n        vol = pd.Series(np.nan, index=cols)\n\n    beta = pd.Series(1.0, index=cols)\n    mkt21 = np.nan\n    if len(r126) >= 20:\n        m = r126.mean(axis=1)\n        mv = m.var()\n        if pd.notna(mv) and mv > 1e-12:\n            mean_r = r126.mean(axis=0)\n            cov = r126.mul(m, axis=0).mean(axis=0) - mean_r * m.mean()\n            beta = cov / mv\n        if len(m) >= 21:\n            mkt21 = (1.0 + m.tail(21)).prod() - 1.0\n\n    if pd.notna(mkt21):\n        resid21 = ret21 - beta * mkt21\n    else:\n        resid21 = ret21\n    rev_resid = -resid21\n\n    dvol = pd.Series(np.nan, index=cols)\n    v = history.get('volume')\n    c = history.get('close')\n    if v is not None and c is not None:\n        vv = v.reindex(columns=cols).loc[:sig]\n        cc = c.reindex(columns=cols).loc[:sig]\n        if len(vv) > 0 and len(cc) > 0:\n            vv = vv.tail(20)\n            cc = cc.tail(20)\n            dvol = (vv * cc).median(axis=0, skipna=True)\n\n    eligible = pd.Series(True, index=cols)\n    e = history.get('eligible')\n    if e is not None:\n        e = e.reindex(columns=cols)\n        if sig in e.index:\n            eligible = e.loc[sig].fillna(False).astype(bool)\n        elif t in e.index:\n            eligible = e.loc[t].fillna(False).astype(bool)\n\n    valid = p0.notna() & (p0 > 0.5) & rev21.notna() & rev5.notna() & vol.notna() & (vol > 0)\n    valid = valid & eligible.reindex(cols).fillna(False)\n\n    if dvol.notna().any():\n        pos = dvol[dvol > 0]\n        if len(pos) > 0:\n            thresh = pos.quantile(0.20)\n            valid = valid & dvol.notna() & (dvol >= thresh)\n        else:\n            valid = valid & dvol.notna()\n    valid = valid.fillna(False)\n\n    if int(valid.sum()) < 10:\n        return zeros\n\n    z_resid = _rank_z(rev_resid, valid)\n    z_rev21 = _rank_z(rev21, valid)\n    z_rev5 = _rank_z(rev5, valid)\n    z_vol = _rank_z(vol, valid)\n\n    score = 0.55 * z_resid + 0.20 * z_rev21 + 0.15 * z_rev5 - 0.15 * z_vol\n    score = score.replace([np.inf, -np.inf], np.nan)\n    score[~valid] = np.nan\n    score = score.dropna()\n    if len(score) < 10:\n        return zeros\n\n    n_side = min(50, len(score) // 2)\n    if n_side < 1:\n        return zeros\n\n    ranked = score.sort_values()\n    shorts = ranked.index[:n_side].tolist()\n    longs = ranked.index[-n_side:].tolist()\n\n    w_side = min(0.02, 0.5 / float(n_side))\n    w = pd.Series(0.0, index=u)\n    w.loc[longs] = w_side\n    w.loc[shorts] = -w_side\n    w = w.replace([np.inf, -np.inf], 0.0).fillna(0.0).clip(-0.02, 0.02)\n    return w"
+  },
+  "strategy_id": "67824e3d902fb0bdd664c6ff93ad20f232a2ff2d97f2ba80e964cbfa5efdfac1",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": 0.02280683907005068,
+    "annualized_return": -0.001351976436903768,
+    "total_return": -0.008063189309162722,
+    "volatility": 0.07975552482281625,
+    "max_drawdown": 0.18232017214588392,
+    "downside_risk": 0.05398619982359921,
+    "average_daily_turnover": 0.09892210415932272,
+    "total_cost": 0.07458726653612933,
+    "total_borrow_cost": 0.00875,
+    "active_days": 1470
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": -0.011894353462109071,
+    "annualized_return": -0.00468207628078865,
+    "total_return": -0.009268430708215813,
+    "volatility": 0.08581279973317106,
+    "max_drawdown": 0.08149419600812491,
+    "downside_risk": 0.058729241931511425,
+    "average_daily_turnover": 0.10438947003683492,
+    "total_cost": 0.02609736750920873,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

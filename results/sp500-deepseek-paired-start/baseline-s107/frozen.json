@@ -1,0 +1,98 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 4,
+        "tokens": 270000,
+        "max_turn_tokens": 131072,
+        "seed": 107,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024,
+        "manager_max_format_repairs": 1,
+        "manager_max_failed_rounds": 2
+      },
+      "topology": "independent",
+      "fleet_size": 4,
+      "manager_count": 0,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 107,
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768,
+        "role_settings": {
+          "researcher": {
+            "reasoning_effort": "low",
+            "max_output_tokens": 32768
+          },
+          "manager": {
+            "reasoning_effort": "none",
+            "max_output_tokens": 8192
+          }
+        },
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\n\ndef generate_weights(history, universe):\n    universe = pd.Index(universe)\n    if len(universe) == 0:\n        return pd.Series(dtype=float)\n\n    adj = history.get('adjusted_close')\n    if adj is None:\n        adj = history.get('close')\n    if adj is None or not isinstance(adj, pd.DataFrame):\n        return pd.Series(0.0, index=universe)\n\n    cols = [c for c in universe if c in adj.columns]\n    if len(cols) == 0:\n        return pd.Series(0.0, index=universe)\n\n    if not adj.index.is_monotonic_increasing:\n        adj = adj.sort_index()\n    px = adj[cols].tail(320).copy()\n    n = len(px)\n    if n < 40:\n        return pd.Series(0.0, index=universe)\n\n    def _mom(start_lag, end_lag):\n        if n <= end_lag + 2:\n            return pd.Series(np.nan, index=cols)\n        end_pos = n - 1 - end_lag\n        start_pos = max(0, n - 1 - start_lag)\n        if end_pos <= start_pos:\n            return pd.Series(np.nan, index=cols)\n        return px.iloc[end_pos] / px.iloc[start_pos] - 1.0\n\n    mom12 = _mom(252, 21)\n    mom6 = _mom(126, 21)\n    if n > 21:\n        ret21 = px.iloc[-1] / px.iloc[n - 1 - 21] - 1.0\n    else:\n        ret21 = pd.Series(np.nan, index=cols)\n\n    rets = px.pct_change()\n    vol_window = min(126, max(2, n - 1))\n    vol = rets.tail(vol_window).std() * np.sqrt(252.0)\n    vol = vol.replace([np.inf, -np.inf], np.nan)\n\n    last_price = px.iloc[-1]\n    valid = last_price.notna() & (last_price > 0) & mom12.notna()\n    valid = valid & (px.notna().sum() >= 60)\n\n    if 'eligible' in history:\n        edf = history['eligible']\n        if isinstance(edf, pd.DataFrame):\n            if not edf.index.is_monotonic_increasing:\n                edf = edf.sort_index()\n            ecols = [c for c in cols if c in edf.columns]\n            if ecols:\n                e_last = edf[ecols].tail(1)\n                if len(e_last) > 0:\n                    e = e_last.iloc[-1].reindex(cols).fillna(False).astype(bool)\n                    valid = valid & e\n\n    idx_valid = valid[valid].index\n    if len(idx_valid) < 10:\n        return pd.Series(0.0, index=universe)\n\n    mom6 = mom6.where(mom6.notna(), mom12)\n    mom12_v = mom12.loc[idx_valid]\n    mom6_v = mom6.loc[idx_valid]\n    vol_v = vol.loc[idx_valid].fillna(vol.loc[idx_valid].median())\n    if vol_v.isna().all():\n        vol_v = pd.Series(1.0, index=idx_valid)\n    ret21_v = ret21.loc[idx_valid].fillna(ret21.loc[idx_valid].median())\n    if ret21_v.isna().all():\n        ret21_v = pd.Series(0.0, index=idx_valid)\n\n    def rp(s):\n        return s.rank(method='average', pct=True)\n\n    score = (0.55 * rp(mom12_v) +\n             0.25 * rp(mom6_v) +\n             0.20 * (1.0 - rp(vol_v)) -\n             0.20 * rp(ret21_v))\n    score = score.replace([np.inf, -np.inf], np.nan).dropna()\n    if len(score) < 10:\n        return pd.Series(0.0, index=universe)\n\n    n_side = min(50, len(score) // 2)\n    if n_side < 1:\n        return pd.Series(0.0, index=universe)\n\n    longs = score.nlargest(n_side).index\n    shorts = score.nsmallest(n_side).index\n    w = min(0.02, 0.5 / float(n_side))\n    weights = pd.Series(0.0, index=universe)\n    weights.loc[longs] = w\n    weights.loc[shorts] = -w\n\n    gross = weights.abs().sum()\n    if gross > 1.0 + 1e-12:\n        weights = weights * (1.0 / gross)\n    weights = weights.clip(-0.02, 0.02)\n    return weights.reindex(universe).fillna(0.0)"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": -0.2517821847330097,
+      "annualized_return": -0.04006240199292266,
+      "total_return": -0.07792157320046844,
+      "volatility": 0.12920956772150258,
+      "max_drawdown": 0.1668864884308755,
+      "downside_risk": 0.09596443506933039,
+      "average_daily_turnover": 0.2514703049788024,
+      "total_cost": 0.0628675762447006,
+      "total_borrow_cost": 0.002976190476190477,
+      "active_days": 500
+    },
+    "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "a861c4e49fb7fb63f19cdf011c215f05f2fe0fb8c144878c84ab6de9b5399171"
+}

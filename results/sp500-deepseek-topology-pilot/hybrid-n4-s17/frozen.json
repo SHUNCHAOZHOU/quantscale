@@ -1,0 +1,84 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 200000,
+        "max_turn_tokens": 32768,
+        "seed": 17,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions"
+      },
+      "topology": "hybrid",
+      "fleet_size": 4,
+      "manager_count": 1,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 17,
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "high",
+        "max_output_tokens": 4096,
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "family": "momentum",
+      "lookback": 252,
+      "skip": 20,
+      "fraction": 0.1,
+      "volatility_scale": false
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": -0.10023399722259115,
+      "annualized_return": -0.020170690072825903,
+      "total_return": -0.039623946923170394,
+      "volatility": 0.12512517487374958,
+      "max_drawdown": 0.1514267534357816,
+      "downside_risk": 0.09367935312436465,
+      "average_daily_turnover": 0.1483151030849515,
+      "total_cost": 0.037078775771237873,
+      "total_borrow_cost": 0.0029761904761904765,
+      "active_days": 500
+    },
+    "implementation_sha256": "45898495a5a738c9ee1abe03df07f95cefa7d841d3bc6c01b17bb72747a5940f",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "eeb374cdc52a0084a89a9ca672f4fef4770dd01eb3baebf0df1d301260527a10"
+}

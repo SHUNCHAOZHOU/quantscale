@@ -1,0 +1,43 @@
+{
+  "agent": 0,
+  "round": 0,
+  "hypothesis": "Liquid equities exhibit short-horizon reversal after extreme recent moves. A weekly dollar-neutral portfolio that is long the most oversold liquid names and short the most overbought liquid names should capture a reversal premium while controlling risk through equal weights, liquidity filters, and a gross exposure cap of one.",
+  "source_file": "strategies/b689604579a09731dd8aadafd294bbbec8f483037586ac22b8f03a46a2ba0edb.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\ndef _get_df(history, name):\n    df = history.get(name)\n    if isinstance(df, pd.DataFrame):\n        return df\n    return None\n\ndef generate_weights(history, universe):\n    cols = pd.Index(pd.unique(pd.Index(universe).astype(str)))\n    if len(cols) == 0:\n        return pd.Series(dtype=float)\n    zeros = pd.Series(0.0, index=cols, dtype=float)\n    ac = _get_df(history, 'adjusted_close')\n    if ac is None:\n        ac = _get_df(history, 'close')\n    if ac is None or ac.empty:\n        return zeros\n    available = [c for c in cols if c in ac.columns]\n    if not available:\n        return zeros\n    ac = ac.loc[:, available].sort_index().tail(320)\n    if ac.empty:\n        return zeros\n    dates = ac.index\n    last_date = dates[-1]\n    wd = dates.weekday\n    fridays = dates[wd == 4]\n    sig_date = fridays[-1] if len(fridays) else last_date\n    hist_ac = ac.loc[:sig_date]\n    if len(hist_ac.index) < 6:\n        hist_ac = ac\n        sig_date = last_date\n    if len(hist_ac.index) < 6:\n        return zeros\n    px = hist_ac.iloc[-1]\n    ret5 = hist_ac.iloc[-1] / hist_ac.iloc[-6] - 1.0\n    rets = hist_ac.pct_change().tail(20)\n    vol = rets.std(ddof=0)\n    elig = pd.Series(True, index=available)\n    edf = _get_df(history, 'eligible')\n    if edf is not None:\n        ee = edf.reindex(columns=available).loc[:sig_date].tail(1)\n        if len(ee.index) > 0:\n            elig = ee.iloc[0].fillna(False).astype(bool)\n    liq = pd.Series(np.nan, index=available)\n    vdf = _get_df(history, 'volume')\n    if vdf is not None:\n        vv = vdf.reindex(columns=available).loc[:sig_date].tail(20)\n        pp = hist_ac.tail(20)\n        common = vv.index.intersection(pp.index)\n        if len(common) > 0:\n            dv = vv.loc[common].mul(pp.loc[common], axis=0)\n            liq = dv.mean()\n    base = (px.notna() & ret5.notna() & vol.notna() & (vol > 0) & (px > 1.0) & elig)\n    base = base & np.isfinite(px) & np.isfinite(ret5) & np.isfinite(vol)\n    if liq.notna().any():\n        base = base & (liq.fillna(0.0) > 1e6)\n    if int(base.sum()) < 10:\n        base = (px.notna() & ret5.notna() & vol.notna() & (vol > 0) & (px > 0.5) & elig)\n        base = base & np.isfinite(px) & np.isfinite(ret5) & np.isfinite(vol)\n    candidates = [c for c in available if bool(base.get(c, False))]\n    if len(candidates) < 2:\n        return zeros\n    r = ret5.loc[candidates].astype(float)\n    long_order = sorted(candidates, key=lambda c: (float(r.get(c, np.nan)), c))\n    short_order = sorted(candidates, key=lambda c: (-float(r.get(c, np.nan)), c))\n    max_n = min(40, len(candidates) // 2)\n    if max_n < 1:\n        return zeros\n    longs = long_order[:max_n]\n    used = set(longs)\n    shorts = [c for c in short_order if c not in used][:max_n]\n    N = min(len(longs), len(shorts))\n    if N < 1:\n        return zeros\n    longs = longs[:N]\n    shorts = shorts[:N]\n    w = float(min(0.5 / N, 0.02))\n    weights = zeros.copy()\n    for c in longs:\n        if c in weights.index:\n            weights.loc[c] = w\n    for c in shorts:\n        if c in weights.index:\n            weights.loc[c] = -w\n    net = float(weights.sum())\n    if abs(net) > 1e-12:\n        nz = weights.index[weights != 0.0]\n        if len(nz) > 0:\n            weights.loc[nz] -= net / len(nz)\n    weights = weights.clip(-0.02, 0.02)\n    gross = float(weights.abs().sum())\n    if gross > 1.0:\n        weights = weights * (1.0 / gross)\n    return weights.fillna(0.0)"
+  },
+  "strategy_id": "b689604579a09731dd8aadafd294bbbec8f483037586ac22b8f03a46a2ba0edb",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.04044279193438281,
+    "annualized_return": -0.011650855578055341,
+    "total_return": -0.06772694685457759,
+    "volatility": 0.1181423027252108,
+    "max_drawdown": 0.32872878169878716,
+    "downside_risk": 0.08017766701264598,
+    "average_daily_turnover": 0.36581921525452216,
+    "total_cost": 0.2758276883019096,
+    "total_borrow_cost": 0.008946428571428572,
+    "active_days": 1503
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.35103817085502154,
+    "annualized_return": 0.03580704993945605,
+    "total_return": 0.07229727806426656,
+    "volatility": 0.12099459077613929,
+    "max_drawdown": 0.0830711448827528,
+    "downside_risk": 0.0814500014839343,
+    "average_daily_turnover": 0.3728222458284737,
+    "total_cost": 0.0932055614571184,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

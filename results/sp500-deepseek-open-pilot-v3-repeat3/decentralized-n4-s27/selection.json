@@ -1,0 +1,43 @@
+{
+  "agent": 0,
+  "round": 0,
+  "hypothesis": "Cross-sectional risk-adjusted medium-term momentum persists among liquid equities: the 12-month return skipping the most recent month, divided by 60-day realized volatility, identifies persistent relative winners and losers. A dollar-neutral long-short portfolio of the top and bottom 25 names, rebalanced weekly on Fridays using only information available at the close, harvests this premium while capping each position at 2% and gross exposure at 100%. Eligibility and liquidity filters avoid non-tradable or illiquid names, and weekly holding reduces turnover relative to daily rebalancing.",
+  "source_file": "strategies/6cfaf6c8751b29e58c0e5c9d733fb36aceaed9e510af4097eaf7004c832ca419.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\ndef generate_weights(history, universe):\n    universe = pd.Index(universe)\n    if len(universe) == 0:\n        return pd.Series(dtype=float)\n    zeros = pd.Series(0.0, index=universe)\n    if 'adjusted_close' in history:\n        ac = history['adjusted_close']\n    elif 'close' in history:\n        ac = history['close']\n    else:\n        return zeros\n    if ac is None or ac.shape[0] == 0:\n        return zeros\n    dates = ac.index\n    wd = np.asarray(dates.weekday)\n    fri = np.where(wd == 4)[0]\n    if len(fri) > 0:\n        reb_idx = int(fri[-1])\n    else:\n        reb_idx = len(dates) - 1\n    if reb_idx < 60:\n        return zeros\n    start_idx = max(0, reb_idx - 300)\n    ac_s = ac.iloc[start_idx:reb_idx+1]\n    if ac_s.shape[0] < 60:\n        return zeros\n    ret = ac_s.pct_change()\n    n = ac_s.shape[0]\n    if n >= 253:\n        p_recent = ac_s.iloc[-22]\n        p_base = ac_s.iloc[-253]\n    else:\n        p_recent = ac_s.iloc[-1]\n        p_base = ac_s.iloc[0]\n    mom = p_recent / p_base - 1.0\n    vol = ret.tail(60).std().replace(0.0, np.nan)\n    score = mom / vol\n    finite_score = pd.Series(np.isfinite(score.values), index=score.index)\n    dv = pd.Series(1.0, index=ac_s.columns)\n    if 'volume' in history:\n        vdf = history['volume']\n        v_s = vdf.iloc[max(0, reb_idx-20):reb_idx+1]\n        if 'close' in history:\n            cdf = history['close']\n            c_s = cdf.iloc[max(0, reb_idx-20):reb_idx+1]\n        else:\n            c_s = ac_s\n        v_s = v_s.reindex(columns=ac_s.columns)\n        c_s = c_s.reindex(columns=ac_s.columns)\n        dv = (v_s * c_s).median()\n    if 'eligible' in history:\n        edf = history['eligible']\n        reb_date = dates[reb_idx]\n        if reb_date in edf.index:\n            elig = edf.loc[reb_date]\n        else:\n            sub = edf.loc[:reb_date]\n            if len(sub) > 0:\n                elig = sub.iloc[-1]\n            else:\n                elig = pd.Series(True, index=ac_s.columns)\n    else:\n        elig = pd.Series(True, index=ac_s.columns)\n    elig = elig.reindex(ac_s.columns).fillna(False).astype(bool)\n    univ_mask = pd.Series(ac_s.columns.isin(universe), index=ac_s.columns)\n    last_price = ac_s.iloc[-1]\n    valid = elig & univ_mask & finite_score & (dv > 0) & (last_price > 0)\n    scores = score[valid]\n    if len(scores) < 6:\n        return zeros\n    N = min(25, len(scores) // 2)\n    if N < 1:\n        return zeros\n    top = list(scores.nlargest(N).index)\n    bottom = list(scores.nsmallest(N).index)\n    top_set = set(top)\n    bottom = [t for t in bottom if t not in top_set]\n    N2 = min(len(top), len(bottom))\n    if N2 < 1:\n        return zeros\n    w = zeros.copy()\n    for t in top[:N2]:\n        w[t] = 0.02\n    for t in bottom[:N2]:\n        w[t] = -0.02\n    return w"
+  },
+  "strategy_id": "6cfaf6c8751b29e58c0e5c9d733fb36aceaed9e510af4097eaf7004c832ca419",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.45118996534764366,
+    "annualized_return": -0.060700819266933825,
+    "total_return": -0.31252747735950304,
+    "volatility": 0.12216993732946836,
+    "max_drawdown": 0.3209800191608737,
+    "downside_risk": 0.09403922036718802,
+    "average_daily_turnover": 0.10056039179233227,
+    "total_cost": 0.07582253541141852,
+    "total_borrow_cost": 0.00861309523809524,
+    "active_days": 1447
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.5029173573055283,
+    "annualized_return": 0.056980782758349946,
+    "total_return": 0.11622608011951918,
+    "volatility": 0.12603723339480075,
+    "max_drawdown": 0.11179987281240245,
+    "downside_risk": 0.0941129352611147,
+    "average_daily_turnover": 0.10881195599986017,
+    "total_cost": 0.027202988999965042,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

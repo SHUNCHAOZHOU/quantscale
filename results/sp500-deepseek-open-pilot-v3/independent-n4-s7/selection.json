@@ -1,0 +1,43 @@
+{
+  "agent": 3,
+  "round": 1,
+  "hypothesis": "The prior 12-1 momentum long-short policy earned a negative train Sharpe and near-zero validation Sharpe, suggesting momentum-reversal instability in this universe. I will test a cross-sectional short-term reversal policy: recent relative losers should outperform recent relative winners over weekly horizons. To control noise, the signal combines 5-day and 21-day returns scaled by 21-day volatility, with liquidity, price, and eligibility filters. Weekly rebalancing keeps the reversal signal fresh while the 2% name cap, 100% gross limit, and equal-weight 50/50 construction keep the portfolio market-neutral and compliant.",
+  "source_file": "strategies/67c3fb021f6690983ffe25517d7647c16973737cff68d7bb592c75c45b597b73.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\n\ndef generate_weights(history, universe):\n    tickers = pd.Index(universe)\n    n_assets = len(tickers)\n    if n_assets == 0:\n        return pd.Series(dtype=float)\n\n    ac = history.get('adjusted_close')\n    if ac is None:\n        ac = history.get('close')\n    if ac is None:\n        return pd.Series(0.0, index=tickers, dtype=float)\n\n    ac = ac.reindex(columns=tickers)\n    dates = ac.index\n    if len(dates) == 0:\n        return pd.Series(0.0, index=tickers, dtype=float)\n\n    current = dates[-1]\n    wd = dates.weekday\n    fri_idx = np.where(wd == 4)[0]\n    if len(fri_idx) > 0 and dates[fri_idx[-1]] <= current:\n        asof = dates[fri_idx[-1]]\n    else:\n        asof = current\n\n    ac_hist = ac.loc[:asof].tail(300)\n    if ac_hist.shape[0] < 30:\n        return pd.Series(0.0, index=tickers, dtype=float)\n\n    hist_index = ac_hist.index\n    C = ac_hist.to_numpy(dtype=float)\n    n = C.shape[0]\n\n    elig = history.get('eligible')\n    if elig is not None:\n        elig_hist = elig.reindex(columns=tickers).loc[:asof]\n        if len(elig_hist) > 0:\n            elig_last = elig_hist.iloc[-1].fillna(False).astype(bool)\n        else:\n            elig_last = pd.Series(True, index=tickers)\n    else:\n        elig_last = pd.Series(True, index=tickers)\n\n    last_close = C[-1, :]\n    valid = np.isfinite(last_close) & (last_close > 0)\n    valid &= elig_last.to_numpy(dtype=bool)\n\n    vol = history.get('volume')\n    close_raw = history.get('close')\n    if vol is not None:\n        vol_hist = vol.reindex(columns=tickers).reindex(index=hist_index)\n        V = vol_hist.to_numpy(dtype=float)\n        if close_raw is not None:\n            CR = close_raw.reindex(columns=tickers).reindex(index=hist_index).to_numpy(dtype=float)\n        else:\n            CR = C.copy()\n        with np.errstate(all='ignore'):\n            DV = CR * V\n            med_dv = np.nanmedian(DV[-63:, :], axis=0)\n        valid &= np.isfinite(med_dv) & (med_dv >= 1e6)\n\n    if close_raw is not None:\n        CR_last = close_raw.reindex(columns=tickers).loc[:asof].iloc[-1].to_numpy(dtype=float)\n        valid &= np.isfinite(CR_last) & (CR_last >= 3.0)\n    else:\n        valid &= np.isfinite(last_close) & (last_close >= 3.0)\n\n    score = np.full(n_assets, np.nan, dtype=float)\n    if n >= 22:\n        with np.errstate(all='ignore'):\n            ret5 = C[-1, :] / C[-6, :] - 1.0\n            ret21 = C[-1, :] / C[-22, :] - 1.0\n            sub = C[-22:, :]\n            rets = sub[1:, :] / sub[:-1, :] - 1.0\n            vola = np.nanstd(rets, axis=0)\n            score = -(0.7 * ret5 + 0.3 * ret21) / (vola + 0.01)\n    elif n >= 6:\n        with np.errstate(all='ignore'):\n            ret5 = C[-1, :] / C[-6, :] - 1.0\n            sub = C[-6:, :]\n            rets = sub[1:, :] / sub[:-1, :] - 1.0\n            vola = np.nanstd(rets, axis=0)\n            score = -ret5 / (vola + 0.01)\n    else:\n        return pd.Series(0.0, index=tickers, dtype=float)\n\n    score = np.where(valid & np.isfinite(score), score, np.nan)\n    finite = np.isfinite(score)\n    if finite.sum() < 2:\n        return pd.Series(0.0, index=tickers, dtype=float)\n\n    idx = np.where(finite)[0]\n    order = np.argsort(score[idx])\n    sorted_idx = idx[order]\n    M = len(sorted_idx)\n    N = min(50, M // 2)\n    if N == 0:\n        return pd.Series(0.0, index=tickers, dtype=float)\n\n    longs = sorted_idx[-N:]\n    shorts = sorted_idx[:N]\n    w = min(0.02, 0.5 / float(N))\n\n    weights = np.zeros(n_assets, dtype=float)\n    weights[longs] = w\n    weights[shorts] = -w\n\n    return pd.Series(weights, index=tickers, dtype=float)\n"
+  },
+  "strategy_id": "67c3fb021f6690983ffe25517d7647c16973737cff68d7bb592c75c45b597b73",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": 0.3306680263918945,
+    "annualized_return": 0.028734957328464983,
+    "total_return": 0.1847472059996902,
+    "volatility": 0.10097838158509567,
+    "max_drawdown": 0.21954367023048804,
+    "downside_risk": 0.06484175776821383,
+    "average_daily_turnover": 0.29950877944052967,
+    "total_cost": 0.2258296196981594,
+    "total_borrow_cost": 0.008785714285714287,
+    "active_days": 1476
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.23185566421543422,
+    "annualized_return": 0.018983457469300635,
+    "total_return": 0.03801739182513497,
+    "volatility": 0.10469805040792021,
+    "max_drawdown": 0.07371004287737026,
+    "downside_risk": 0.07325869587665079,
+    "average_daily_turnover": 0.3157339451876476,
+    "total_cost": 0.07893348629691191,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 170000,
+        "max_turn_tokens": 65536,
+        "seed": 17,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024,
+        "manager_max_format_repairs": 1,
+        "manager_max_failed_rounds": 2
+      },
+      "topology": "hybrid",
+      "fleet_size": 4,
+      "manager_count": 1,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 17,
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768,
+        "role_settings": {
+          "researcher": {
+            "reasoning_effort": "low",
+            "max_output_tokens": 32768
+          },
+          "manager": {
+            "reasoning_effort": "none",
+            "max_output_tokens": 8192
+          }
+        },
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\n\n\ndef generate_weights(history, universe):\n    u = pd.Index(universe)\n    zeros = pd.Series(0.0, index=u, dtype=float)\n    if len(u) == 0:\n        return zeros\n\n    ac = history.get('adjusted_close')\n    if ac is None or ac.empty:\n        ac = history.get('close')\n    if ac is None or ac.empty:\n        return zeros\n\n    ac = ac.reindex(columns=u)\n    if ac.shape[0] < 60:\n        return zeros\n\n    idx = ac.index\n    current_month = (idx[-1].year, idx[-1].month)\n    prev_dates = [d for d in idx if (d.year, d.month) < current_month]\n    if not prev_dates:\n        return zeros\n\n    reb_date = prev_dates[-1]\n    try:\n        pos = idx.get_loc(reb_date)\n    except Exception:\n        return zeros\n\n    ac_hist = ac.iloc[:pos + 1]\n    if len(ac_hist) < 60:\n        return zeros\n\n    ret = ac_hist.pct_change()\n    if len(ret) < 20:\n        return zeros\n\n    vol = ret.tail(60).std(ddof=0)\n    vol = vol.replace([np.inf, -np.inf], np.nan)\n    last_vol = vol.copy()\n\n    mkt = ret.mean(axis=1, skipna=True).fillna(0.0)\n    cum = (1.0 + mkt).cumprod()\n    if len(cum) >= 200:\n        ma = cum.tail(200).mean()\n    elif len(cum) >= 100:\n        ma = cum.tail(100).mean()\n    else:\n        return zeros\n    risk_on = bool(cum.iloc[-1] > ma)\n\n    elig_df = history.get('eligible')\n    if elig_df is not None and not elig_df.empty:\n        try:\n            cur_elig = elig_df.reindex(columns=u).iloc[-1].fillna(False).astype(bool)\n        except Exception:\n            cur_elig = pd.Series(True, index=u)\n    else:\n        cur_elig = pd.Series(True, index=u)\n\n    if elig_df is not None and not elig_df.empty:\n        try:\n            reb_elig = elig_df.reindex(columns=u).loc[reb_date].fillna(False).astype(bool)\n        except Exception:\n            reb_elig = pd.Series(True, index=u)\n    else:\n        reb_elig = pd.Series(True, index=u)\n\n    last_ac_current = ac.iloc[-1]\n    last_ac_reb = ac_hist.iloc[-1]\n\n    valid = (\n        cur_elig\n        & reb_elig\n        & last_vol.notna()\n        & np.isfinite(last_vol)\n        & (last_vol > 0)\n        & last_ac_current.notna()\n        & last_ac_reb.notna()\n    )\n    valid_names = last_vol[valid].dropna()\n    if len(valid_names) < 6:\n        return zeros\n\n    n_side = min(25, len(valid_names) // 2)\n    if n_side < 1:\n        return zeros\n\n    ordered = valid_names.sort_values(kind='mergesort')\n    if risk_on:\n        longs = ordered.index[-n_side:]\n        shorts = ordered.index[:n_side]\n    else:\n        longs = ordered.index[:n_side]\n        shorts = ordered.index[-n_side:]\n\n    w = min(0.02, 0.25 / float(n_side))\n    weights = zeros.copy()\n    weights.loc[longs] = w\n    weights.loc[shorts] = -w\n    weights = weights.clip(-0.02, 0.02).replace([np.inf, -np.inf], 0.0).fillna(0.0)\n    return weights\n"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": 0.04007454993666701,
+      "annualized_return": -0.001489124207970205,
+      "total_return": -0.002952446533830755,
+      "volatility": 0.10799276561839755,
+      "max_drawdown": 0.10477952865770102,
+      "downside_risk": 0.07509049630227099,
+      "average_daily_turnover": 0.03139566614079624,
+      "total_cost": 0.00784891653519906,
+      "total_borrow_cost": 0.0014880952380952384,
+      "active_days": 500
+    },
+    "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "a6f2a34b8ad5c020f7e5cd4cdbd1627fb8a869f956638e47235b0bc48a79abbe"
+}

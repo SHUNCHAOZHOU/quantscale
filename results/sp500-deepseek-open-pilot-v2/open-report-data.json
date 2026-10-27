@@ -1,0 +1,554 @@
+{
+  "protocol": {
+    "started_at_utc": "2026-10-26T05:08:20.131590+00:00",
+    "source": "/Users/zhoushunchao/Documents/Study_Project/quantscale/data/sp500-yahoo-2016-2025/prices.csv",
+    "config": {
+      "train": {
+        "start": "2016-01-01",
+        "end": "2021-12-31"
+      },
+      "validation": {
+        "start": "2022-01-01",
+        "end": "2023-12-31"
+      },
+      "test": {
+        "start": "2024-01-01",
+        "end": "2025-12-31"
+      },
+      "universe_size": 500,
+      "min_price": 5.0,
+      "min_volume": 100000.0,
+      "gross_limit": 1.0,
+      "max_weight": 0.02,
+      "net_tolerance": 0.01,
+      "cost_bps": 5.0,
+      "annual_borrow_bps": 30.0,
+      "annualization": 252,
+      "backtests": 12,
+      "tokens": 170000,
+      "max_turn_tokens": 65536,
+      "seed": 7,
+      "lookback_days": 300,
+      "universe_mode": "fixed",
+      "missing_data_policy": "skip_incomplete_sessions",
+      "strategy_mode": "python",
+      "code_history_days": null,
+      "code_call_timeout_seconds": 10,
+      "code_backtest_timeout_seconds": 180,
+      "code_memory_mb": 1024
+    },
+    "implementation_sha256": "3dcdcbf48932278e4d8bcfd98c1d2d667766243069c20221a77a745f89f744f3",
+    "schedule": [
+      {
+        "topology": "independent",
+        "fleet_size": 4,
+        "seed": 7
+      },
+      {
+        "topology": "hybrid",
+        "fleet_size": 4,
+        "seed": 7
+      },
+      {
+        "topology": "centralized",
+        "fleet_size": 4,
+        "seed": 17
+      },
+      {
+        "topology": "decentralized",
+        "fleet_size": 4,
+        "seed": 17
+      },
+      {
+        "topology": "single",
+        "fleet_size": 1,
+        "seed": 17
+      },
+      {
+        "topology": "single",
+        "fleet_size": 1,
+        "seed": 7
+      },
+      {
+        "topology": "independent",
+        "fleet_size": 4,
+        "seed": 17
+      },
+      {
+        "topology": "centralized",
+        "fleet_size": 4,
+        "seed": 7
+      },
+      {
+        "topology": "decentralized",
+        "fleet_size": 4,
+        "seed": 7
+      },
+      {
+        "topology": "hybrid",
+        "fleet_size": 4,
+        "seed": 17
+      }
+    ],
+    "concurrent_systems": 4,
+    "total_trial_cap": 120,
+    "total_token_cap": 1700000,
+    "replication_note": "seed is a request/repetition label; provider RNG seed is not controlled",
+    "missing_data_policy_note": "Skip incomplete cross-sectional sessions after first observed quote; no price imputation; adjacent open-to-open intervals span skipped dates",
+    "scope": "open Python policies; current-constituent survivorship bias; historical holdout",
+    "failure_policy": "Finish every scheduled research attempt before any evaluation; freeze valid submissions, record missing submissions as failures, evaluate each frozen submission once; no automatic replacement runs"
+  },
+  "completed": {
+    "completed_at_utc": "2026-10-26T05:48:30.841343+00:00",
+    "runs": 7,
+    "planned_runs": 10,
+    "research_failures": [
+      {
+        "topology": "centralized",
+        "fleet_size": 4,
+        "seed": 17,
+        "error": "'directions'"
+      },
+      {
+        "topology": "centralized",
+        "fleet_size": 4,
+        "seed": 7,
+        "error": "'directions'"
+      },
+      {
+        "topology": "hybrid",
+        "fleet_size": 4,
+        "seed": 17,
+        "error": "Manager must return one nonempty research assignment per worker"
+      }
+    ],
+    "evaluation_failures": [],
+    "actual_model_tokens": 1215706,
+    "actual_model_calls": 77,
+    "actual_candidate_trials": 71,
+    "aggregate": [
+      {
+        "topology": "decentralized",
+        "repetitions": 2,
+        "validation_sharpe_mean": -0.07665830677131374,
+        "hidden_sharpe_mean": 0.6927453423518894,
+        "hidden_sharpe_min": 0.6905487072290436,
+        "hidden_sharpe_max": 0.6949419774747353,
+        "hidden_annualized_return_mean": 0.07717364940550842,
+        "hidden_max_drawdown_mean": 0.13130876138673098,
+        "mean_total_tokens": 160010.5,
+        "mean_duplicate_variant_rate": 0.0,
+        "planned_repetitions": 2
+      },
+      {
+        "topology": "hybrid",
+        "repetitions": 1,
+        "validation_sharpe_mean": -0.17602658222993464,
+        "hidden_sharpe_mean": 0.01660708414833345,
+        "hidden_sharpe_min": 0.01660708414833345,
+        "hidden_sharpe_max": 0.01660708414833345,
+        "hidden_annualized_return_mean": -0.0031434195145857435,
+        "hidden_max_drawdown_mean": 0.12946320203153516,
+        "mean_total_tokens": 156055.0,
+        "mean_duplicate_variant_rate": 0.0,
+        "planned_repetitions": 2
+      },
+      {
+        "topology": "independent",
+        "repetitions": 2,
+        "validation_sharpe_mean": -0.1710456933637629,
+        "hidden_sharpe_mean": -0.15336016043876552,
+        "hidden_sharpe_min": -0.41571870319294885,
+        "hidden_sharpe_max": 0.10899838231541782,
+        "hidden_annualized_return_mean": -0.015678741761206427,
+        "hidden_max_drawdown_mean": 0.1259146663141949,
+        "mean_total_tokens": 163783.0,
+        "mean_duplicate_variant_rate": 0.0,
+        "planned_repetitions": 2
+      },
+      {
+        "topology": "single",
+        "repetitions": 2,
+        "validation_sharpe_mean": -0.1524595691268149,
+        "hidden_sharpe_mean": -0.3611728938765225,
+        "hidden_sharpe_min": -0.39724762311071576,
+        "hidden_sharpe_max": -0.3250981646423292,
+        "hidden_annualized_return_mean": -0.033196855148238336,
+        "hidden_max_drawdown_mean": 0.15737264609160434,
+        "mean_total_tokens": 164352.0,
+        "mean_duplicate_variant_rate": 0.0,
+        "planned_repetitions": 2
+      }
+    ]
+  },
+  "runs": [
+    {
+      "topology": "single",
+      "fleet_size": 1,
+      "seed": 7,
+      "run": "single-n1-s7",
+      "trials": 10,
+      "valid": 2,
+      "tokens": 162954,
+      "calls": 10,
+      "truncated_calls": 8,
+      "completion_tokens": 150476,
+      "reasoning_tokens": 146301,
+      "errors": {
+        "Model response did not finish: length": 8
+      },
+      "status": "evaluated",
+      "failure": "",
+      "validation_sharpe": -0.1002454077290999,
+      "hidden_sharpe": -0.3250981646423292,
+      "hidden_annualized_return": -0.032492271534405,
+      "hidden_max_drawdown": 0.1655386837973603,
+      "hidden_total_return": -0.0634378701846326,
+      "hidden_observations": 500,
+      "hypothesis": "Cross-sectional 12-1 momentum is persistent while short-horizon returns partially reverse and high-volatility stocks underperform risk-adjusted. A monthly-rebalanced, dollar-neutral long-short portfolio of high-momentum/low-volatility stocks versus low-momentum/high-volatility stocks, filtered for liquidity, should capture this premium after costs while respecting concentration limits.",
+      "strategy_id": "209d14942a070e069bcc62b44387394bfc6b62ec76ad21e8a41d0cc0cf360f38",
+      "source_file": "/Users/zhoushunchao/Documents/Study_Project/quantscale/results/sp500-deepseek-open-pilot-v2/single-n1-s7/strategies/209d14942a070e069bcc62b44387394bfc6b62ec76ad21e8a41d0cc0cf360f38.py"
+    },
+    {
+      "topology": "single",
+      "fleet_size": 1,
+      "seed": 17,
+      "run": "single-n1-s17",
+      "trials": 10,
+      "valid": 2,
+      "tokens": 165750,
+      "calls": 10,
+      "truncated_calls": 7,
+      "completion_tokens": 138824,
+      "reasoning_tokens": 134076,
+      "errors": {
+        "Strategy execution failed: NameError: name 'hasattr' is not defined": 1,
+        "Model response did not finish: length": 7
+      },
+      "status": "evaluated",
+      "failure": "",
+      "validation_sharpe": -0.2046737305245299,
+      "hidden_sharpe": -0.3972476231107157,
+      "hidden_annualized_return": -0.0339014387620716,
+      "hidden_max_drawdown": 0.1492066083858483,
+      "hidden_total_return": -0.0661424685494157,
+      "hidden_observations": 500,
+      "hypothesis": "A dollar-neutral cross-sectional portfolio of liquid equities that combines 12-1/6-1/3-1 momentum, one-month reversal, low realized volatility, and dollar-volume liquidity should earn more stable risk-adjusted returns than single-signal sorts. Rebalancing only when a new month-end signal becomes available keeps turnover and costs moderate, while equal-weighting the top and bottom names with a 2% per-name cap and 1.0 gross limit keeps the book diversified and market-neutral. All signals use only point-in-time close, volume, and eligibility data available at the decision close.",
+      "strategy_id": "1af09c275759048686d5fa221c0050216aefce3497a195c9e5759fa4d7690f57",
+      "source_file": "/Users/zhoushunchao/Documents/Study_Project/quantscale/results/sp500-deepseek-open-pilot-v2/single-n1-s17/strategies/1af09c275759048686d5fa221c0050216aefce3497a195c9e5759fa4d7690f57.py"
+    },
+    {
+      "topology": "independent",
+      "fleet_size": 4,
+      "seed": 7,
+      "run": "independent-n4-s7",
+      "trials": 10,
+      "valid": 1,
+      "tokens": 165815,
+      "calls": 10,
+      "truncated_calls": 9,
+      "completion_tokens": 156447,
+      "reasoning_tokens": 150762,
+      "errors": {
+        "Model response did not finish: length": 9
+      },
+      "status": "evaluated",
+      "failure": "",
+      "validation_sharpe": -0.4768251453755066,
+      "hidden_sharpe": 0.1089983823154178,
+      "hidden_annualized_return": 0.0059489562794117,
+      "hidden_max_drawdown": 0.1375080560211256,
+      "hidden_total_return": 0.0118380355136116,
+      "hidden_observations": 500,
+      "hypothesis": "Monthly rebalanced dollar-neutral cross-sectional strategy. At each previous month-end I rank liquid stocks with sufficient history by a composite of 12-1 momentum, 5-day reversal (long recent losers), low 60-day volatility, and price trend versus the 100-day mean. I buy the top 30 and short the bottom 30, equal weight within each side, target gross 1.0 and net 0.0; a liquidity filter requires median 20-day dollar volume above 1 million. This seeks to harvest momentum, short-term reversal and low-volatility premia while controlling turnover and single-name risk.",
+      "strategy_id": "4ecde3d9b7efe9f67918828309476f8dc6c72de863d1859de5389c80061f96bd",
+      "source_file": "/Users/zhoushunchao/Documents/Study_Project/quantscale/results/sp500-deepseek-open-pilot-v2/independent-n4-s7/strategies/4ecde3d9b7efe9f67918828309476f8dc6c72de863d1859de5389c80061f96bd.py"
+    },
+    {
+      "topology": "independent",
+      "fleet_size": 4,
+      "seed": 17,
+      "run": "independent-n4-s17",
+      "trials": 10,
+      "valid": 4,
+      "tokens": 161751,
+      "calls": 10,
+      "truncated_calls": 6,
+      "completion_tokens": 144225,
+      "reasoning_tokens": 137473,
+      "errors": {
+        "Model response did not finish: length": 6
+      },
+      "status": "evaluated",
+      "failure": "",
+      "validation_sharpe": 0.1347337586479808,
+      "hidden_sharpe": -0.4157187031929488,
+      "hidden_annualized_return": -0.0373064398018245,
+      "hidden_max_drawdown": 0.1143212766072642,
+      "hidden_total_return": -0.0726616347099627,
+      "hidden_observations": 500,
+      "hypothesis": "Cross-sectional weekly reversal with volatility scaling: after controlling for the equal-weighted market move, stocks with unusually negative five-day residual returns tend to rebound over the next week, while unusually positive ones tend to fade. I rank eligible liquid stocks by demeaned five-day return divided by 21-day volatility, exclude the least liquid quintile and most volatile decile, and form a weekly dollar-neutral portfolio long the lowest scores and short the highest. Equal weights use up to 50 names per side, capped at 2 percent and gross 100 percent, with a weekly Friday-close cutoff to limit turnover.",
+      "strategy_id": "63823549d0cfc4b68d3a0c267ac3f4097cf2c397454cc7b2c4b5eee24abb3ae9",
+      "source_file": "/Users/zhoushunchao/Documents/Study_Project/quantscale/results/sp500-deepseek-open-pilot-v2/independent-n4-s17/strategies/63823549d0cfc4b68d3a0c267ac3f4097cf2c397454cc7b2c4b5eee24abb3ae9.py"
+    },
+    {
+      "topology": "centralized",
+      "fleet_size": 4,
+      "seed": 7,
+      "run": "centralized-n4-s7",
+      "trials": 4,
+      "valid": 0,
+      "tokens": 78271,
+      "calls": 6,
+      "truncated_calls": 4,
+      "completion_tokens": 71514,
+      "reasoning_tokens": 69009,
+      "errors": {
+        "Model response did not finish: length": 4
+      },
+      "status": "no_submission",
+      "failure": "'directions'"
+    },
+    {
+      "topology": "centralized",
+      "fleet_size": 4,
+      "seed": 17,
+      "run": "centralized-n4-s17",
+      "trials": 0,
+      "valid": 0,
+      "tokens": 2117,
+      "calls": 1,
+      "truncated_calls": 0,
+      "completion_tokens": 1330,
+      "reasoning_tokens": 460,
+      "errors": {},
+      "status": "no_submission",
+      "failure": "'directions'"
+    },
+    {
+      "topology": "decentralized",
+      "fleet_size": 4,
+      "seed": 7,
+      "run": "decentralized-n4-s7",
+      "trials": 9,
+      "valid": 2,
+      "tokens": 158339,
+      "calls": 9,
+      "truncated_calls": 7,
+      "completion_tokens": 138837,
+      "reasoning_tokens": 136129,
+      "errors": {
+        "Model response did not finish: length": 7
+      },
+      "status": "evaluated",
+      "failure": "",
+      "validation_sharpe": -0.1391637289481241,
+      "hidden_sharpe": 0.6949419774747353,
+      "hidden_annualized_return": 0.0806630190154769,
+      "hidden_max_drawdown": 0.1289125244404044,
+      "hidden_total_return": 0.1663954404106449,
+      "hidden_observations": 500,
+      "hypothesis": "Cross-sectional intermediate-term momentum, excluding the most recent month, continues to predict relative performance. A composite of 12-1 and 6-1 momentum, with a mild short-term reversal penalty and a low-volatility tilt, can form a robust dollar-neutral long-short portfolio: buy the top-ranked stocks and short the bottom-ranked stocks, equal-weighting each side with at most 2% gross per name and 100% gross exposure.",
+      "strategy_id": "c6406c19fabc3ced56cd8a51d55203452a095b861cfe940d54077bb622434cba",
+      "source_file": "/Users/zhoushunchao/Documents/Study_Project/quantscale/results/sp500-deepseek-open-pilot-v2/decentralized-n4-s7/strategies/c6406c19fabc3ced56cd8a51d55203452a095b861cfe940d54077bb622434cba.py"
+    },
+    {
+      "topology": "decentralized",
+      "fleet_size": 4,
+      "seed": 17,
+      "run": "decentralized-n4-s17",
+      "trials": 10,
+      "valid": 3,
+      "tokens": 161682,
+      "calls": 10,
+      "truncated_calls": 7,
+      "completion_tokens": 140036,
+      "reasoning_tokens": 135376,
+      "errors": {
+        "Model response did not finish: length": 7
+      },
+      "status": "evaluated",
+      "failure": "",
+      "validation_sharpe": -0.0141528845945033,
+      "hidden_sharpe": 0.6905487072290436,
+      "hidden_annualized_return": 0.0736842797955399,
+      "hidden_max_drawdown": 0.1337049983330575,
+      "hidden_total_return": 0.1514977251015115,
+      "hidden_observations": 500,
+      "hypothesis": "Round-0 evidence shows that a fast short-horizon reversal sleeve dominates the composite and loses badly under open-to-open execution while generating about 0.65 daily turnover and 0.49 cumulative cost; the lagged close-based reversal is likely monetizing close-auction/bid-ask effects that are not earned from the next open onward. I therefore remove short-horizon reversal entirely and build a slower dollar-neutral book: 12-1 and 6-1 momentum (open-to-open, skipping the most recent month, smoothed over 5 sessions) provide cross-sectional continuation; a 20% low-volatility tilt adds defensiveness and is cheap to trade. I select the most liquid tradable names (price > $1, 60-day median dollar volume >= $1M, eligible flag), rank on a robust z-score composite, go equal-weight long the top 50 and short the bottom 50 (or fewer if liquidity is limited) with per-name weight capped at 2% and gross at about 0.98, reducing turnover relative to round 0.",
+      "strategy_id": "7f6681acb04efbf04115180ee2515e7d2de0e9f712b224c35bb656847e0a08b1",
+      "source_file": "/Users/zhoushunchao/Documents/Study_Project/quantscale/results/sp500-deepseek-open-pilot-v2/decentralized-n4-s17/strategies/7f6681acb04efbf04115180ee2515e7d2de0e9f712b224c35bb656847e0a08b1.py"
+    },
+    {
+      "topology": "hybrid",
+      "fleet_size": 4,
+      "seed": 7,
+      "run": "hybrid-n4-s7",
+      "trials": 8,
+      "valid": 2,
+      "tokens": 156055,
+      "calls": 10,
+      "truncated_calls": 6,
+      "completion_tokens": 123270,
+      "reasoning_tokens": 117554,
+      "errors": {
+        "Model response did not finish: length": 6
+      },
+      "status": "evaluated",
+      "failure": "",
+      "validation_sharpe": -0.1760265822299346,
+      "hidden_sharpe": 0.0166070841483334,
+      "hidden_annualized_return": -0.0031434195145857,
+      "hidden_max_drawdown": 0.1294632020315351,
+      "hidden_total_return": -0.0062272962536746,
+      "hidden_observations": 500,
+      "hypothesis": "Cross-sectional continuation is best captured with volatility-scaled 126-session momentum that skips the most recent 5 sessions, combined with a short-term reversal overlay and trend confirmation. Rebalancing monthly at the prior month-end reduces turnover and avoids reacting to transient microstructure noise. A dollar-neutral, equal-weighted top/bottom basket of up to 50 liquid eligible names, capped at 2% per name and gross below 1.0, should capture momentum while limiting crash and crowding risk; names with insufficient history or missing data receive zero.",
+      "strategy_id": "771b36b7ed7dcd29bc568678ef8eb758ae958b6b5112d52b03539882f0beb808",
+      "source_file": "/Users/zhoushunchao/Documents/Study_Project/quantscale/results/sp500-deepseek-open-pilot-v2/hybrid-n4-s7/strategies/771b36b7ed7dcd29bc568678ef8eb758ae958b6b5112d52b03539882f0beb808.py"
+    },
+    {
+      "topology": "hybrid",
+      "fleet_size": 4,
+      "seed": 17,
+      "run": "hybrid-n4-s17",
+      "trials": 0,
+      "valid": 0,
+      "tokens": 2972,
+      "calls": 1,
+      "truncated_calls": 0,
+      "completion_tokens": 2185,
+      "reasoning_tokens": 332,
+      "errors": {},
+      "status": "no_submission",
+      "failure": "Manager must return one nonempty research assignment per worker"
+    }
+  ],
+  "correlations": [
+    {
+      "left": "decentralized-n4-s7",
+      "right": "decentralized-n4-s17",
+      "correlation": 0.952296416981496,
+      "observations": 500
+    },
+    {
+      "left": "single-n1-s7",
+      "right": "single-n1-s17",
+      "correlation": 0.867529891232996,
+      "observations": 500
+    },
+    {
+      "left": "decentralized-n4-s7",
+      "right": "hybrid-n4-s7",
+      "correlation": 0.8244077673017486,
+      "observations": 500
+    },
+    {
+      "left": "independent-n4-s7",
+      "right": "hybrid-n4-s7",
+      "correlation": 0.8061317659274793,
+      "observations": 500
+    },
+    {
+      "left": "single-n1-s7",
+      "right": "decentralized-n4-s7",
+      "correlation": 0.7880657547889401,
+      "observations": 500
+    },
+    {
+      "left": "single-n1-s7",
+      "right": "decentralized-n4-s17",
+      "correlation": 0.7867548861870792,
+      "observations": 500
+    },
+    {
+      "left": "decentralized-n4-s17",
+      "right": "hybrid-n4-s7",
+      "correlation": 0.7778905260703226,
+      "observations": 500
+    },
+    {
+      "left": "single-n1-s7",
+      "right": "hybrid-n4-s7",
+      "correlation": 0.7516942048266957,
+      "observations": 500
+    },
+    {
+      "left": "single-n1-s17",
+      "right": "independent-n4-s7",
+      "correlation": 0.7371356321740332,
+      "observations": 500
+    },
+    {
+      "left": "single-n1-s7",
+      "right": "independent-n4-s7",
+      "correlation": 0.7119585829082344,
+      "observations": 500
+    },
+    {
+      "left": "independent-n4-s7",
+      "right": "decentralized-n4-s17",
+      "correlation": 0.6580271090308688,
+      "observations": 500
+    },
+    {
+      "left": "independent-n4-s7",
+      "right": "decentralized-n4-s7",
+      "correlation": 0.6374523632628245,
+      "observations": 500
+    },
+    {
+      "left": "single-n1-s17",
+      "right": "hybrid-n4-s7",
+      "correlation": 0.6226679550209581,
+      "observations": 500
+    },
+    {
+      "left": "single-n1-s17",
+      "right": "decentralized-n4-s17",
+      "correlation": 0.6143147634959056,
+      "observations": 500
+    },
+    {
+      "left": "single-n1-s17",
+      "right": "decentralized-n4-s7",
+      "correlation": 0.6104844741854331,
+      "observations": 500
+    },
+    {
+      "left": "independent-n4-s17",
+      "right": "hybrid-n4-s7",
+      "correlation": 0.21703597941577024,
+      "observations": 500
+    },
+    {
+      "left": "single-n1-s17",
+      "right": "independent-n4-s17",
+      "correlation": 0.1951937613662196,
+      "observations": 500
+    },
+    {
+      "left": "independent-n4-s7",
+      "right": "independent-n4-s17",
+      "correlation": 0.17988389464192048,
+      "observations": 500
+    },
+    {
+      "left": "single-n1-s7",
+      "right": "independent-n4-s17",
+      "correlation": 0.16408734370015426,
+      "observations": 500
+    },
+    {
+      "left": "independent-n4-s17",
+      "right": "decentralized-n4-s7",
+      "correlation": 0.14405207388994928,
+      "observations": 500
+    },
+    {
+      "left": "independent-n4-s17",
+      "right": "decentralized-n4-s17",
+      "correlation": 0.014577085547957062,
+      "observations": 500
+    }
+  ]
+}

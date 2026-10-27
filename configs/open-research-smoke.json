@@ -1,0 +1,16 @@
+{
+  "train": {"start": "2018-01-01", "end": "2018-02-28"},
+  "validation": {"start": "2018-03-01", "end": "2018-03-30"},
+  "test": {"start": "2018-04-01", "end": "2018-04-30"},
+  "universe_mode": "fixed",
+  "universe_size": 48,
+  "strategy_mode": "python",
+  "backtests": 2,
+  "tokens": 40000,
+  "max_turn_tokens": 32768,
+  "code_history_days": null,
+  "code_call_timeout_seconds": 10,
+  "code_backtest_timeout_seconds": 120,
+  "code_memory_mb": 1024,
+  "seed": 7
+}

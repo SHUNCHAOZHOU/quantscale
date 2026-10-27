@@ -1,0 +1,36 @@
+{
+  "run": "single-n1-s7",
+  "label": "\u5355 Agent \u00b7 7",
+  "topology": "single",
+  "seed": 7,
+  "artifact_sha256": "ad2863ca513e56a4d6b0b65c317a21c405b2218d5b1d0b95eea4c11e26426249",
+  "metrics": {
+    "observations": 500,
+    "sharpe": 0.4320707754115901,
+    "annualized_return": 0.03612614542374781,
+    "total_return": 0.07295280764088541,
+    "volatility": 0.09186709822214992,
+    "max_drawdown": 0.07766355817686643,
+    "downside_risk": 0.059478703131028064,
+    "average_daily_turnover": 0.09506735761983955,
+    "total_cost": 0.023766839404959883,
+    "total_borrow_cost": 0.002916666666666666,
+    "active_days": 500
+  },
+  "original_validation": {
+    "observations": 500,
+    "sharpe": 0.4320707754115901,
+    "annualized_return": 0.03612614542374781,
+    "total_return": 0.07295280764088541,
+    "volatility": 0.09186709822214992,
+    "max_drawdown": 0.07766355817686643,
+    "downside_risk": 0.059478703131028064,
+    "average_daily_turnover": 0.09506735761983955,
+    "total_cost": 0.023766839404959883,
+    "total_borrow_cost": 0.002916666666666666,
+    "active_days": 500
+  },
+  "matched_original": true,
+  "differences": {},
+  "reconstructed_at_utc": "2026-10-26T13:08:21.785848+00:00"
+}

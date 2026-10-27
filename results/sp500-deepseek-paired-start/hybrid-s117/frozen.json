@@ -1,0 +1,102 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 400000,
+        "max_turn_tokens": 131072,
+        "seed": 117,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024,
+        "manager_max_format_repairs": 1,
+        "manager_max_failed_rounds": 2
+      },
+      "topology": "hybrid",
+      "fleet_size": 4,
+      "manager_count": 1,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768,
+        "role_settings": {
+          "researcher": {
+            "reasoning_effort": "low",
+            "max_output_tokens": 32768
+          },
+          "manager": {
+            "reasoning_effort": "none",
+            "max_output_tokens": 8192
+          }
+        },
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      },
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "seed": 117,
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "selection": "highest net validation Sharpe including initial four; SHA256 ascending tie-break",
+      "budget_mode": "paired-start, 8 additional candidate attempts in exactly two scheduled rounds",
+      "initial_state_sha256": "6fae307f90873d2e01dc4d36df6fbb4c5fe2da8055232d87adcd5d36caf1167d",
+      "study_source_sha256": "b9e1493cda5da1f72b077348fb8363309e2ddb7140844f1d330281210c751012",
+      "initial_cost_accounting": "Initial four generated once, recorded separately; not charged four times",
+      "manager_failure_policy": "Skip failed scheduled round; at most two scheduled rounds; retain best initial strategy",
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ]
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\nimport math\n\n\ndef generate_weights(history, universe):\n    tickers = pd.Index(list(universe))\n    zero = pd.Series(0.0, index=tickers, dtype=float)\n    if len(tickers) == 0:\n        return zero\n\n    def get_df(name):\n        if not isinstance(history, dict):\n            return None\n        obj = history.get(name)\n        if isinstance(obj, pd.DataFrame):\n            try:\n                return obj.reindex(columns=tickers)\n            except Exception:\n                return None\n        return None\n\n    ac = get_df('adjusted_close')\n    if ac is None or ac.dropna(how='all').shape[1] == 0:\n        ac = get_df('close')\n    if ac is None or ac.empty:\n        return zero\n    ac = ac.astype(float)\n    dates = ac.index\n    n = len(dates)\n    if n < 70:\n        return zero\n\n    raw = get_df('close')\n    if raw is None:\n        raw = ac.copy()\n    else:\n        raw = raw.reindex(index=dates).astype(float)\n        raw = raw.fillna(ac)\n\n    vol = get_df('volume')\n    if vol is not None:\n        vol = vol.reindex(index=dates).astype(float)\n\n    elig = get_df('eligible')\n    if elig is not None:\n        elig = elig.reindex(index=dates)\n\n    ac_arr = ac.values.astype(float)\n    raw_arr = raw.values.astype(float)\n    vol_arr = vol.values.astype(float) if vol is not None else None\n    elig_arr = elig.values if elig is not None else None\n\n    asof = None\n    try:\n        if n >= 2:\n            last_date = dates[-1]\n            nb = last_date + pd.offsets.BDay(1)\n            if nb.month != last_date.month:\n                asof = n - 1\n            else:\n                months = np.array([d.month for d in dates])\n                changes = np.where(months[:-1] != months[1:])[0]\n                if changes.size > 0:\n                    asof = int(changes[-1])\n    except Exception:\n        asof = None\n    if asof is None:\n        asof = n - 1\n    if asof < 70:\n        return zero\n\n    ncol = len(tickers)\n    nan_vec = np.full(ncol, np.nan, dtype=float)\n\n    def compute_scores(pos):\n        close_full = ac_arr[:pos + 1]\n        nrow = len(close_full)\n        if nrow < 60:\n            return None\n        sub = close_full[-min(300, nrow):]\n        nsub = len(sub)\n        if nsub < 60:\n            return None\n        cur = sub[-1]\n        valid = np.isfinite(cur) & (cur > 2.0)\n        cnt = np.sum(np.isfinite(sub), axis=0)\n        valid = valid & (cnt >= 50)\n\n        if elig_arr is not None:\n            try:\n                e = pd.to_numeric(pd.Series(elig_arr[pos]), errors='coerce').values\n                eligmask = (e == 1) | np.isnan(e)\n                if np.sum(eligmask) >= 10:\n                    valid = valid & eligmask\n            except Exception:\n                pass\n\n        if vol_arr is not None:\n            try:\n                start = max(0, pos - 59)\n                v = vol_arr[start:pos + 1]\n                c = raw_arr[start:pos + 1]\n                with np.errstate(invalid='ignore'):\n                    dv = np.nanmedian(v * c, axis=0)\n                dvv = dv[np.isfinite(dv)]\n                if dvv.size >= 5:\n                    thr = max(100000.0, float(np.nanpercentile(dvv, 20)))\n                    valid = valid & np.isfinite(dv) & (dv >= thr)\n            except Exception:\n                pass\n\n        def ret(k, skip):\n            if nsub > k + skip:\n                a = sub[-1 - skip]\n                b = sub[-1 - skip - k]\n                return a / b - 1.0\n            return nan_vec.copy()\n\n        r12_1 = ret(231, 21) if nsub >= 253 else nan_vec.copy()\n        r6_1 = ret(105, 21) if nsub >= 127 else nan_vec.copy()\n        r21 = ret(21, 0) if nsub >= 22 else nan_vec.copy()\n\n        mom = 0.65 * r12_1 + 0.35 * r6_1\n        mom = np.where(np.isfinite(mom), mom, r6_1)\n        mom = np.where(np.isfinite(mom), mom, r12_1)\n        mom = np.where(np.isfinite(mom), mom, r21)\n\n        with np.errstate(invalid='ignore', divide='ignore'):\n            rets = sub[1:] / sub[:-1] - 1.0\n        rets = np.where(np.isfinite(rets), rets, np.nan)\n        win60 = min(60, rets.shape[0])\n        win21 = min(21, rets.shape[0])\n        if win60 > 5:\n            vol60 = np.nanstd(rets[-win60:], axis=0) * math.sqrt(252.0)\n        else:\n            vol60 = nan_vec.copy()\n        if win21 > 3:\n            vol21 = np.nanstd(rets[-win21:], axis=0) * math.sqrt(252.0)\n        else:\n            vol21 = nan_vec.copy()\n        vol60 = np.where(np.isfinite(vol60) & (vol60 > 0.005), vol60, np.nan)\n        vol21 = np.where(np.isfinite(vol21) & (vol21 > 0.005), vol21, np.nan)\n\n        valid = valid & np.isfinite(mom) & np.isfinite(vol60)\n        valid = valid & (mom > -0.95) & (mom < 10.0)\n        valid_rev = valid & np.isfinite(r21) & np.isfinite(vol21)\n        valid_rev = valid_rev & (r21 > -0.8) & (r21 < 3.0)\n\n        def rank_pct(x, mask):\n            arr = np.where(mask, x, np.nan)\n            return pd.Series(arr).rank(pct=True).values\n\n        mom_adj = mom / vol60\n        score_mom = 0.65 * rank_pct(mom_adj, valid) + 0.35 * rank_pct(mom, valid)\n        score_mom = np.where(np.isfinite(score_mom), score_mom, 0.5)\n\n        rev_adj = -r21 / vol21\n        score_rev = rank_pct(rev_adj, valid_rev)\n        score_rev = np.where(np.isfinite(score_rev), score_rev, 0.5)\n\n        score_lv = rank_pct(-vol60, valid)\n        score_lv = np.where(np.isfinite(score_lv), score_lv, 0.5)\n\n        return {\n            'valid': valid,\n            'valid_rev': valid_rev,\n            'score_mom': score_mom,\n            'score_rev': score_rev,\n            'score_lv': score_lv,\n        }\n\n    base = compute_scores(asof)\n    if base is None or int(np.sum(base['valid'])) < 8:\n        return zero\n\n    perf_m = []\n    perf_r = []\n    perf_lv = []\n    for lag in (21, 42, 63, 84, 105, 126):\n        pos = asof - lag\n        if pos < 60:\n            continue\n        sc = compute_scores(pos)\n        if sc is None:\n            continue\n        fwd_j = min(pos + 21, asof)\n        if fwd_j <= pos:\n            continue\n        p0 = ac_arr[pos]\n        p1 = ac_arr[fwd_j]\n        with np.errstate(invalid='ignore', divide='ignore'):\n            fwd = p1 / p0 - 1.0\n        fwd = np.where(np.isfinite(fwd), fwd, np.nan)\n        for factor, out in (('mom', perf_m), ('rev', perf_r), ('lv', perf_lv)):\n            score = sc['score_' + factor]\n            if factor == 'rev':\n                mask = sc['valid_rev'] & np.isfinite(score) & np.isfinite(fwd)\n            else:\n                mask = sc['valid'] & np.isfinite(score) & np.isfinite(fwd)\n            idx = np.where(mask)[0]\n            if idx.size < 8:\n                continue\n            s = score[idx]\n            order = np.argsort(s)\n            nside = min(40, idx.size // 2)\n            if nside < 2:\n                continue\n            longs = idx[order[-nside:]]\n            shorts = idx[order[:nside]]\n            lr = np.nanmean(fwd[longs])\n            sr = np.nanmean(fwd[shorts])\n            if np.isfinite(lr) and np.isfinite(sr):\n                out.append(float(lr - sr))\n\n    def avg(lst):\n        if len(lst) == 0:\n            return 0.0\n        v = np.nanmean(np.array(lst, dtype=float))\n        return float(v) if np.isfinite(v) else 0.0\n\n    pm = avg(perf_m)\n    pr = avg(perf_r)\n    pv = avg(perf_lv)\n    scale = 0.04\n    raws = []\n    for p in (pm, pr, pv):\n        raws.append(max(0.2, 1.0 + float(np.clip(p / scale, -0.8, 0.8))))\n    raws = np.array(raws, dtype=float)\n    w = raws / raws.sum()\n    w = np.clip(w, 0.10, 0.60)\n    w = w / w.sum()\n    w_mom, w_rev, w_lv = w[0], w[1], w[2]\n\n    score = (w_mom * base['score_mom'] +\n             w_rev * base['score_rev'] +\n             w_lv * base['score_lv'])\n    valid = base['valid'] & np.isfinite(score)\n    if int(np.sum(valid)) < 8:\n        return zero\n\n    idx = np.where(valid)[0]\n    s = score[idx]\n    order = idx[np.argsort(s)]\n    nside = min(40, idx.size // 2)\n    if nside < 2:\n        return zero\n    longs = order[-nside:]\n    shorts = order[:nside]\n    wt = min(0.02, 0.5 / float(nside))\n\n    wv = np.zeros(ncol, dtype=float)\n    wv[longs] = wt\n    wv[shorts] = -wt\n    wv = np.clip(wv, -0.02, 0.02)\n    wv = np.nan_to_num(wv, nan=0.0, posinf=0.0, neginf=0.0)\n    return pd.Series(wv, index=tickers, dtype=float).fillna(0.0)"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": 0.22617322089870842,
+      "annualized_return": 0.022411485620377647,
+      "total_return": 0.04495755459427264,
+      "volatility": 0.14341210135010912,
+      "max_drawdown": 0.12811646789044306,
+      "downside_risk": 0.10072385099233455,
+      "average_daily_turnover": 0.08850705756067123,
+      "total_cost": 0.022126764390167804,
+      "total_borrow_cost": 0.002976190476190477,
+      "active_days": 500
+    },
+    "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "f51a2db0f3527c5bee2bb661becd27b45a62a59b78c05b8ea8c0feef580fb3cb"
+}

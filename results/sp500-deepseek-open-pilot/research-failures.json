@@ -1,0 +1,14 @@
+[
+  {
+    "topology": "centralized",
+    "fleet_size": 4,
+    "seed": 17,
+    "error": "Manager must return one nonempty research assignment per worker"
+  },
+  {
+    "topology": "hybrid",
+    "fleet_size": 4,
+    "seed": 7,
+    "error": "Manager must return one nonempty research assignment per worker"
+  }
+]

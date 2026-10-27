@@ -1,0 +1,86 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 170000,
+        "max_turn_tokens": 65536,
+        "seed": 7,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024
+      },
+      "topology": "hybrid",
+      "fleet_size": 4,
+      "manager_count": 1,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 7,
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "high",
+        "max_output_tokens": 16384,
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\n\n\ndef _frame(history, names):\n    for n in names:\n        if n in history:\n            obj = history[n]\n            if isinstance(obj, pd.DataFrame):\n                return obj\n    return None\n\n\ndef generate_weights(history, universe):\n    u = pd.Index(universe)\n    out = pd.Series(0.0, index=u, dtype=float)\n    if len(u) == 0:\n        return out\n    close = _frame(history, ['adjusted_close', 'close'])\n    if close is None or close.empty:\n        return out\n    close = close.copy()\n    cols = [c for c in u if c in close.columns]\n    if len(cols) < 4:\n        return out\n    close = close[cols].astype(float).replace([np.inf, -np.inf], np.nan)\n    dates = close.index\n    if len(dates) < 60:\n        return out\n    max_date = dates[-1]\n    first = pd.Timestamp(year=max_date.year, month=max_date.month, day=1)\n    prev_end = first - pd.Timedelta(days=1)\n    cand = dates[dates <= prev_end]\n    if len(cand) > 0:\n        ref_date = cand[-1]\n    else:\n        ref_date = max_date\n    px = close.loc[:ref_date]\n    if len(px) < 60:\n        px = close\n        ref_date = max_date\n    p = px.replace([np.inf, -np.inf], np.nan)\n    nrows = len(p)\n    mom_lb = 126 if nrows > 126 else 60\n    skip = 5\n    mom = p.shift(skip) / p.shift(mom_lb) - 1.0\n    ret5 = p / p.shift(skip) - 1.0\n    rets = p / p.shift(1) - 1.0\n    vol = rets.rolling(window=60, min_periods=30).std()\n    ma = p.rolling(window=100, min_periods=50).mean()\n    trend = p / ma - 1.0\n    last_mom = mom.iloc[-1]\n    last_ret5 = ret5.iloc[-1]\n    last_vol = vol.iloc[-1]\n    last_trend = trend.iloc[-1]\n    last_price = p.iloc[-1]\n    valid = pd.Series(True, index=cols, dtype=bool)\n    valid = valid & last_price.notna() & (last_price > 0)\n    valid = valid & last_mom.notna() & np.isfinite(last_mom)\n    valid = valid & last_ret5.notna() & np.isfinite(last_ret5)\n    valid = valid & last_vol.notna() & np.isfinite(last_vol) & (last_vol > 0)\n    valid = valid & last_trend.notna() & np.isfinite(last_trend)\n    elig = history.get('eligible', None)\n    if isinstance(elig, pd.DataFrame):\n        e = elig.reindex(index=close.index, columns=cols).ffill(limit=5)\n        if len(e) > 0:\n            ecur = e.iloc[-1].fillna(True).astype(bool)\n            valid = valid & ecur.reindex(cols).fillna(True)\n            esub = e.loc[:ref_date]\n            if len(esub) > 0:\n                eref = esub.iloc[-1].fillna(True).astype(bool)\n                valid = valid & eref.reindex(cols).fillna(True)\n    volf = history.get('volume', None)\n    if isinstance(volf, pd.DataFrame):\n        vv = volf.reindex(index=close.index, columns=cols).loc[:ref_date]\n        raw_close = _frame(history, ['close', 'adjusted_close'])\n        if raw_close is not None:\n            rc = raw_close.reindex(index=close.index, columns=cols).loc[:ref_date]\n        else:\n            rc = p\n        adv = (rc * vv).rolling(20, min_periods=5).mean().iloc[-1]\n        valid = valid & adv.notna() & (adv > 1e5)\n    sel = list(valid[valid].index)\n    if len(sel) < 4:\n        return out\n    m = last_mom.reindex(sel).astype(float)\n    r = last_ret5.reindex(sel).astype(float)\n    v = last_vol.reindex(sel).astype(float)\n    t = last_trend.reindex(sel).astype(float)\n    v_floor = v.quantile(0.05) if len(v) >= 20 else v.min()\n    if (not np.isfinite(v_floor)) or v_floor <= 0:\n        v_floor = 1e-6\n    ram = m / v.clip(lower=v_floor)\n    rank_ram = ram.rank(pct=True, method='average') - 0.5\n    rank_rev = (-r).rank(pct=True, method='average') - 0.5\n    rank_trend = t.rank(pct=True, method='average') - 0.5\n    score = 0.65 * rank_ram + 0.25 * rank_rev + 0.10 * rank_trend\n    score = score.replace([np.inf, -np.inf], np.nan).dropna()\n    if len(score) < 4:\n        return out\n    n_side = min(50, len(score) // 2)\n    if n_side < 1:\n        return out\n    sorted_scores = score.sort_values(ascending=False)\n    top = list(sorted_scores.index[:n_side])\n    bottom = list(sorted_scores.index[-n_side:])\n    w = min(0.02, 0.499 / float(n_side))\n    if (not np.isfinite(w)) or w <= 0:\n        return out\n    out.loc[top] = w\n    out.loc[bottom] = -w\n    overlap = set(top).intersection(set(bottom))\n    if len(overlap) > 0:\n        for c in overlap:\n            out.loc[c] = 0.0\n    out = out.replace([np.inf, -np.inf], 0.0).fillna(0.0)\n    gross = float(np.abs(out.values).sum())\n    if gross > 1.0:\n        out = out * (0.999 / gross)\n    return out"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": -0.17602658222993464,
+      "annualized_return": -0.02071609108312511,
+      "total_return": -0.04068431667159478,
+      "volatility": 0.09387821631236722,
+      "max_drawdown": 0.13051074113738004,
+      "downside_risk": 0.06941042619644623,
+      "average_daily_turnover": 0.0867718957636348,
+      "total_cost": 0.021692973940908702,
+      "total_borrow_cost": 0.0029702380952380944,
+      "active_days": 500
+    },
+    "implementation_sha256": "3dcdcbf48932278e4d8bcfd98c1d2d667766243069c20221a77a745f89f744f3",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "b71ec6ff0d33dd04c515fc330736ad0bd9ab5594ba5f95f341ed31c298e2d572"
+}

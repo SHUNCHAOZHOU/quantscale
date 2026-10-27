@@ -1,0 +1,135 @@
+{
+  "started_at_utc": "2026-10-26T14:08:54.407070+00:00",
+  "design": "Three independent common starts, each split into four paired continuations",
+  "seeds": [
+    107,
+    117,
+    127
+  ],
+  "topologies": [
+    "independent",
+    "centralized",
+    "decentralized",
+    "hybrid"
+  ],
+  "schedule": [
+    {
+      "seed": 127,
+      "topology": "independent"
+    },
+    {
+      "seed": 127,
+      "topology": "hybrid"
+    },
+    {
+      "seed": 127,
+      "topology": "centralized"
+    },
+    {
+      "seed": 127,
+      "topology": "decentralized"
+    },
+    {
+      "seed": 117,
+      "topology": "centralized"
+    },
+    {
+      "seed": 107,
+      "topology": "independent"
+    },
+    {
+      "seed": 117,
+      "topology": "independent"
+    },
+    {
+      "seed": 117,
+      "topology": "decentralized"
+    },
+    {
+      "seed": 117,
+      "topology": "hybrid"
+    },
+    {
+      "seed": 107,
+      "topology": "decentralized"
+    },
+    {
+      "seed": 107,
+      "topology": "hybrid"
+    },
+    {
+      "seed": 107,
+      "topology": "centralized"
+    }
+  ],
+  "concurrent_systems": 4,
+  "initial_candidates_per_block": 4,
+  "additional_candidates_per_branch": 8,
+  "scheduled_continuation_rounds": 2,
+  "initial_token_cap": 270000,
+  "branch_token_cap": 400000,
+  "total_known_token_cap": 5610000,
+  "config": {
+    "train": {
+      "start": "2016-01-01",
+      "end": "2021-12-31"
+    },
+    "validation": {
+      "start": "2022-01-01",
+      "end": "2023-12-31"
+    },
+    "test": {
+      "start": "2024-01-01",
+      "end": "2025-12-31"
+    },
+    "universe_size": 500,
+    "min_price": 5.0,
+    "min_volume": 100000.0,
+    "gross_limit": 1.0,
+    "max_weight": 0.02,
+    "net_tolerance": 0.01,
+    "cost_bps": 5.0,
+    "annual_borrow_bps": 30.0,
+    "annualization": 252,
+    "backtests": 12,
+    "tokens": 170000,
+    "max_turn_tokens": 131072,
+    "seed": 7,
+    "lookback_days": 300,
+    "universe_mode": "fixed",
+    "missing_data_policy": "skip_incomplete_sessions",
+    "strategy_mode": "python",
+    "code_history_days": null,
+    "code_call_timeout_seconds": 10,
+    "code_backtest_timeout_seconds": 180,
+    "code_memory_mb": 1024,
+    "manager_max_format_repairs": 1,
+    "manager_max_failed_rounds": 2
+  },
+  "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+  "study_source_sha256": "b9e1493cda5da1f72b077348fb8363309e2ddb7140844f1d330281210c751012",
+  "backend_configuration": {
+    "provider": "deepseek",
+    "model": "deepseek-flash",
+    "reasoning_effort": "low",
+    "max_output_tokens": 32768,
+    "role_settings": {
+      "researcher": {
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768
+      },
+      "manager": {
+        "reasoning_effort": "none",
+        "max_output_tokens": 8192
+      }
+    },
+    "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+  },
+  "estimand": "Mechanism under matched initial states and scheduled candidate opportunities; actual tokens are an outcome",
+  "rng_note": "Seeds are repetition labels; provider randomness is uncontrolled",
+  "failure_policy": "No replacement runs; errors consume attempts; failed manager rounds are skipped, not replaced",
+  "selection": "Best validation Sharpe across initial four plus generated continuation; SHA tie-break",
+  "evaluation_policy": "Finish all research and freeze roster before baseline or branch evaluation; each artifact once",
+  "historical_note": "2024-2025 historical test was previously viewed; not a fresh blind test",
+  "differences_from_v3": "max_total_tokens per request raised 65536->131072; token protective caps raised; exactly two scheduled continuation rounds"
+}

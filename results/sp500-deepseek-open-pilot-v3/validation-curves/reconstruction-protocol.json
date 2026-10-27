@@ -1,0 +1,30 @@
+{
+  "created_at_utc": "2026-10-26T13:07:58.338926+00:00",
+  "purpose": "Reconstruct missing daily VALIDATION paths for user-requested charts",
+  "no_api_calls": true,
+  "no_test_period_evaluation": true,
+  "no_new_strategy_selection": true,
+  "research_data_sha256": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+  "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+  "validation": {
+    "start": "2022-01-01",
+    "end": "2023-12-31"
+  },
+  "runs": [
+    "single-n1-s7",
+    "independent-n4-s7",
+    "independent-n4-s17",
+    "centralized-n4-s7",
+    "centralized-n4-s17",
+    "decentralized-n4-s7",
+    "decentralized-n4-s17",
+    "hybrid-n4-s7",
+    "hybrid-n4-s17",
+    "single-n1-s17-supplement",
+    "single-n1-s27",
+    "independent-n4-s27",
+    "centralized-n4-s27",
+    "decentralized-n4-s27",
+    "hybrid-n4-s27"
+  ]
+}

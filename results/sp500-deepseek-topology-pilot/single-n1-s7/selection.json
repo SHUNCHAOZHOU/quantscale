@@ -1,0 +1,40 @@
+{
+  "agent": 0,
+  "round": 11,
+  "hypothesis": "The best observed cost-adjusted validation Sharpe remains the 12-1 momentum configuration with lookback 252, skip 20, fraction 0.05, and volatility scaling disabled. Since fraction 0.03 and 0.07 both underperformed 0.05, the next defensible rule-based refinement is to test fraction 0.04 to probe the lower side of the local optimum; if the signal remains adequate, slightly lower turnover may improve net validation Sharpe relative to 0.05.",
+  "strategy": {
+    "family": "momentum",
+    "lookback": 252,
+    "skip": 20,
+    "fraction": 0.04,
+    "volatility_scale": false
+  },
+  "strategy_id": "9e336aec2d70164ee61bcfc9ca8e2e56fdf14adf6cbd204d5e91db601cbcea08",
+  "cached_backtest": false,
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.24292603951963354,
+    "annualized_return": -0.03765976710826602,
+    "total_return": -0.20523912001797362,
+    "volatility": 0.12545460583900597,
+    "max_drawdown": 0.3127222614792339,
+    "downside_risk": 0.0972862767184757,
+    "average_daily_turnover": 0.09957562735278658,
+    "total_cost": 0.07508002302400107,
+    "total_borrow_cost": 0.005385714285714285,
+    "active_days": 1236
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.16283135802933765,
+    "annualized_return": 0.013124144957054051,
+    "total_return": 0.026208122365617204,
+    "volatility": 0.14289043381881322,
+    "max_drawdown": 0.16089638063664702,
+    "downside_risk": 0.10587011097125124,
+    "average_daily_turnover": 0.1230583655474737,
+    "total_cost": 0.030764591386868427,
+    "total_borrow_cost": 0.002261666666666666,
+    "active_days": 500
+  }
+}

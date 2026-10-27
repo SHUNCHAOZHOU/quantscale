@@ -1,0 +1,43 @@
+{
+  "agent": 3,
+  "round": 1,
+  "hypothesis": "Round-0 evidence shows that a fast short-horizon reversal sleeve dominates the composite and loses badly under open-to-open execution while generating about 0.65 daily turnover and 0.49 cumulative cost; the lagged close-based reversal is likely monetizing close-auction/bid-ask effects that are not earned from the next open onward. I therefore remove short-horizon reversal entirely and build a slower dollar-neutral book: 12-1 and 6-1 momentum (open-to-open, skipping the most recent month, smoothed over 5 sessions) provide cross-sectional continuation; a 20% low-volatility tilt adds defensiveness and is cheap to trade. I select the most liquid tradable names (price > $1, 60-day median dollar volume >= $1M, eligible flag), rank on a robust z-score composite, go equal-weight long the top 50 and short the bottom 50 (or fewer if liquidity is limited) with per-name weight capped at 2% and gross at about 0.98, reducing turnover relative to round 0.",
+  "source_file": "strategies/7f6681acb04efbf04115180ee2515e7d2de0e9f712b224c35bb656847e0a08b1.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\n\ndef _zscore(x, mask):\n    v = np.where(mask, x, np.nan)\n    m = np.isfinite(v)\n    out = np.zeros(v.shape[0], dtype=float)\n    if int(m.sum()) < 10:\n        return out\n    mu = np.nanmean(v)\n    sd = np.nanstd(v)\n    if (not np.isfinite(sd)) or sd <= 1e-12:\n        return out\n    z = (v - mu) / sd\n    z = np.clip(z, -3.0, 3.0)\n    z = np.where(m, z, 0.0)\n    return z\n\n\ndef generate_weights(history, universe):\n    tickers = pd.Index(list(universe))\n    n = len(tickers)\n    if n == 0:\n        return pd.Series(dtype=float)\n    empty = pd.Series(0.0, index=tickers, dtype=float)\n\n    open_key = None\n    for k in ('adjusted_open', 'adjusted_close', 'close'):\n        if k in history:\n            open_key = k\n            break\n    close_key = None\n    for k in ('adjusted_close', 'close'):\n        if k in history:\n            close_key = k\n            break\n    if open_key is None or close_key is None:\n        return empty\n\n    try:\n        op_full = history[open_key].reindex(columns=tickers)\n        cl_full = history[close_key].reindex(columns=tickers)\n    except Exception:\n        return empty\n\n    if op_full.shape[0] < 80:\n        return empty\n    op = op_full.iloc[-320:].astype(float)\n    cl = cl_full.reindex(index=op.index).astype(float)\n    op = op.where(op > 0.0)\n    cl = cl.where(cl > 0.0)\n    if op.shape[0] < 80:\n        return empty\n\n    try:\n        vol_df = history['volume'].reindex(columns=tickers).reindex(index=op.index).astype(float)\n    except Exception:\n        vol_df = pd.DataFrame(np.nan, index=op.index, columns=tickers)\n\n    if op.shape[0] >= 260:\n        mom_series = op.shift(21) / op.shift(252) - 1.0\n    elif op.shape[0] >= 140:\n        mom_series = op.shift(21) / op.shift(126) - 1.0\n    else:\n        mom_series = op.shift(5) / op.shift(63) - 1.0\n    mom = mom_series.iloc[-5:].mean()\n\n    if op.shape[0] >= 140:\n        mom6_series = op.shift(21) / op.shift(126) - 1.0\n    else:\n        mom6_series = op.shift(5) / op.shift(63) - 1.0\n    mom6 = mom6_series.iloc[-5:].mean()\n\n    ret = op / op.shift(1) - 1.0\n    vol60 = ret.rolling(60, min_periods=40).std().iloc[-1]\n\n    last_px = cl.iloc[-1]\n    dv = (cl * vol_df).iloc[-60:].median()\n\n    p_last = last_px.values.astype(float)\n    volv = vol60.values.astype(float)\n    momv = mom.values.astype(float)\n    mom6v = mom6.values.astype(float)\n    dvv = dv.values.astype(float)\n\n    base = (np.isfinite(p_last) & (p_last > 1.0)\n            & np.isfinite(volv) & (volv > 1e-6)\n            & np.isfinite(momv))\n    liquid = base & np.isfinite(dvv) & (dvv >= 1e6)\n    mask = liquid if int(liquid.sum()) >= 40 else base\n\n    if 'eligible' in history:\n        try:\n            el = history['eligible'].reindex(columns=tickers).reindex(index=op.index).iloc[-1]\n            el_bool = np.nan_to_num(el.values.astype(float), nan=0.0) > 0.5\n            m2 = mask & el_bool\n            if int(m2.sum()) >= 20:\n                mask = m2\n        except Exception:\n            pass\n\n    if int(mask.sum()) < 4:\n        return empty\n\n    z_mom = _zscore(momv, mask)\n    z_mom6 = _zscore(mom6v, mask)\n    z_lowvol = _zscore(-volv, mask)\n    score = 0.65 * z_mom + 0.15 * z_mom6 + 0.20 * z_lowvol\n    score = np.where(mask, score, np.nan)\n\n    idx = np.where(mask)[0]\n    if idx.size < 2:\n        return empty\n    s_sel = score[idx]\n    order = idx[np.argsort(-s_sel, kind='mergesort')]\n\n    k = int(min(50, idx.size // 2))\n    if k < 1:\n        return empty\n\n    w_side = float(min(0.02, 0.98 / (2.0 * k)))\n    w = np.zeros(n, dtype=float)\n    w[order[:k]] = w_side\n    w[order[-k:]] = -w_side\n\n    w = np.clip(w, -0.02, 0.02)\n    w = np.where(np.isfinite(w), w, 0.0)\n    return pd.Series(w, index=tickers, dtype=float)\n"
+  },
+  "strategy_id": "7f6681acb04efbf04115180ee2515e7d2de0e9f712b224c35bb656847e0a08b1",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.33591967927125177,
+    "annualized_return": -0.04817249648458455,
+    "total_return": -0.2557996944456825,
+    "volatility": 0.12398749155292807,
+    "max_drawdown": 0.338069027895054,
+    "downside_risk": 0.09531940685304337,
+    "average_daily_turnover": 0.08878469606422851,
+    "total_cost": 0.06694366083242828,
+    "total_borrow_cost": 0.00833583333333333,
+    "active_days": 1429
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": -0.01415288459450331,
+    "annualized_return": -0.010950159438678497,
+    "total_return": -0.021609433828841174,
+    "volatility": 0.1348544795052032,
+    "max_drawdown": 0.1535543182785094,
+    "downside_risk": 0.09993291030958383,
+    "average_daily_turnover": 0.08905459509135406,
+    "total_cost": 0.022263648772838512,
+    "total_borrow_cost": 0.0029166666666666664,
+    "active_days": 500
+  }
+}

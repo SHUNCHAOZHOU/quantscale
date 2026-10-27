@@ -1,0 +1,39 @@
+{
+  "agent": 0,
+  "round": 0,
+  "hypothesis": "Cross-sectional momentum should persist over a medium-term 60-day window; skipping the most recent day reduces short-term reversal contamination, while selecting the top quartile keeps turnover and net transaction costs moderate.",
+  "strategy": {
+    "family": "momentum",
+    "lookback": 60,
+    "skip": 1,
+    "fraction": 0.25,
+    "volatility_scale": false
+  },
+  "strategy_id": "7f1da2d1a3e7734f3809a09964207f787a0bc3cc525fa82fec3e94cf6f80eced",
+  "train": {
+    "observations": 129,
+    "sharpe": -1.0364146173062418,
+    "annualized_return": -0.028563710124879016,
+    "total_return": -0.014725297454835196,
+    "volatility": 0.027595226923078597,
+    "max_drawdown": 0.03212264251854291,
+    "downside_risk": 0.020406175677209586,
+    "average_daily_turnover": 0.12425985017356116,
+    "total_cost": 0.008014760336194693,
+    "total_borrow_cost": 0.0003685714285714285,
+    "active_days": 129
+  },
+  "validation": {
+    "observations": 130,
+    "sharpe": -1.226274364069253,
+    "annualized_return": -0.032299171664062265,
+    "total_return": -0.016794668546248004,
+    "volatility": 0.026488379355868223,
+    "max_drawdown": 0.024982389849597997,
+    "downside_risk": 0.019718985226644534,
+    "average_daily_turnover": 0.12427069331781673,
+    "total_cost": 0.008077595065658092,
+    "total_borrow_cost": 0.0003714285714285714,
+    "active_days": 130
+  }
+}

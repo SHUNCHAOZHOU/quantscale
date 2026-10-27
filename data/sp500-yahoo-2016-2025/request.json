@@ -1,0 +1,8 @@
+{
+  "start_inclusive": "2016-01-01",
+  "end_exclusive": "2026-01-01",
+  "auto_adjust": false,
+  "actions": true,
+  "repair": false,
+  "interval": "1d"
+}

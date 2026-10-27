@@ -1,0 +1,43 @@
+{
+  "agent": 2,
+  "round": 2,
+  "hypothesis": "Prior conditional low-vol strategy failed because the low-risk anomaly was inverted in this sample: high-beta/high-vol names outperformed in both risk-on and risk-off regimes. I flip the tilt: in risk-on (equal-weight index above 200-day MA), go long high 120/60-day momentum, high 120-day beta, and high 60-day vol, short the mirror. In risk-off, use a momentum-quality tilt: long high 120/60-day momentum with low 20-day vol, short the mirror, with half gross exposure. This tests whether high-beta should be favored in risk-on while avoiding crash risk in risk-off. Rebalance every 5 trading days to control turnover, dollar-neutral, 30 names per side, equal weights capped at 2%.",
+  "source_file": "strategies/30fd16446b8f0373414b585a7730e58bc7ca3753b17eab49eb43bc270a714e35.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\n\ndef _zscore(s):\n    s = s.astype(float)\n    mu = s.mean(skipna=True)\n    sd = s.std(skipna=True, ddof=0)\n    if not np.isfinite(sd) or sd == 0:\n        return s * 0.0\n    return (s - mu) / sd\n\n\ndef generate_weights(history, universe):\n    idx_univ = pd.Index(list(universe))\n    zeros = pd.Series(0.0, index=idx_univ, dtype=float)\n    if len(idx_univ) == 0:\n        return zeros\n\n    adj = history.get('adjusted_close')\n    if adj is None:\n        adj = history.get('close')\n    if adj is None or adj.empty:\n        return zeros\n\n    cols = [c for c in idx_univ if c in adj.columns]\n    if len(cols) == 0:\n        return zeros\n\n    ac_full = adj[cols]\n    n_full = len(ac_full)\n    if n_full < 30:\n        return zeros\n\n    # Rebalance every 5 trading days: use data up to the last row whose\n    # integer position is a multiple of 5.  This holds weights for 5 days.\n    rebal_pos = ((n_full - 1) // 5) * 5\n    ac = ac_full.iloc[:rebal_pos + 1].tail(320)\n    if len(ac) < 30:\n        return zeros\n\n    rets = ac / ac.shift(1) - 1.0\n    rets = rets.replace([np.inf, -np.inf], np.nan)\n\n    mkt = rets.mean(axis=1)\n    idx_level = (1.0 + mkt.fillna(0.0)).cumprod()\n    ma = idx_level.rolling(window=200, min_periods=150).mean()\n\n    risk_off = True\n    if len(idx_level) > 0 and np.isfinite(idx_level.iloc[-1]) and np.isfinite(ma.iloc[-1]):\n        risk_off = bool(idx_level.iloc[-1] < ma.iloc[-1])\n\n    # 60-day realized volatility\n    vol_win = rets.tail(60)\n    count = vol_win.count()\n    vol60 = vol_win.std(ddof=0) * np.sqrt(252.0)\n    vol60[count < 30] = np.nan\n\n    # 20-day realized volatility (for risk-off quality momentum)\n    vol_win20 = rets.tail(20)\n    count20 = vol_win20.count()\n    vol20 = vol_win20.std(ddof=0) * np.sqrt(252.0)\n    vol20[count20 < 10] = np.nan\n\n    # 120-day beta vs equal-weight market\n    r120 = rets.tail(120)\n    m120 = mkt.tail(120)\n    R = r120.to_numpy(dtype=float)\n    M = m120.to_numpy(dtype=float)\n    n_cols = R.shape[1]\n    beta_vals = np.full(n_cols, np.nan)\n    for j in range(n_cols):\n        x = R[:, j]\n        mask = np.isfinite(x) & np.isfinite(M)\n        if int(mask.sum()) >= 40:\n            xv = x[mask]\n            yv = M[mask]\n            vy = float(np.var(yv, ddof=0))\n            if vy > 0.0:\n                beta_vals[j] = float(np.cov(xv, yv, ddof=0)[0, 1] / vy)\n    beta = pd.Series(beta_vals, index=cols, dtype=float)\n\n    # Momentum\n    if len(ac) >= 121:\n        mom120 = ac.iloc[-1] / ac.iloc[-121] - 1.0\n    else:\n        mom120 = pd.Series(np.nan, index=cols)\n    if len(ac) >= 61:\n        mom60 = ac.iloc[-1] / ac.iloc[-61] - 1.0\n    else:\n        mom60 = pd.Series(np.nan, index=cols)\n\n    mom120 = mom120.replace([np.inf, -np.inf], np.nan)\n    mom60 = mom60.replace([np.inf, -np.inf], np.nan)\n\n    beta_filled = beta.copy()\n    if beta_filled.notna().any():\n        beta_filled = beta_filled.fillna(beta_filled.median())\n    else:\n        beta_filled = beta_filled.fillna(1.0)\n\n    z_mom120 = _zscore(mom120)\n    z_mom60 = _zscore(mom60)\n    z_beta = _zscore(beta_filled)\n    z_vol60 = _zscore(vol60)\n    z_vol20 = _zscore(vol20)\n\n    if risk_off:\n        # Quality momentum: high long-term momentum, low short-term vol\n        score = 0.6 * z_mom120 + 0.4 * z_mom60 - 0.3 * z_vol20\n        valid = mom120.notna() & mom60.notna() & vol20.notna()\n        gross_scale = 0.5\n    else:\n        # High-beta / high-vol / high-momentum tilt\n        score = 0.4 * z_mom120 + 0.3 * z_mom60 + 0.5 * z_beta + 0.4 * z_vol60\n        valid = mom120.notna() & mom60.notna() & vol60.notna() & beta_filled.notna()\n        gross_scale = 1.0\n\n    score = score.where(valid, np.nan)\n    n = int(score.notna().sum())\n    if n < 2:\n        return zeros\n\n    K = min(30, n // 2)\n    if K < 1:\n        return zeros\n\n    ranked = score.dropna().sort_values(ascending=False, kind='mergesort')\n    longs = ranked.index[:K]\n    shorts = ranked.index[-K:]\n\n    w = min(0.02, 0.5 / float(K)) * gross_scale\n    weights = zeros.copy()\n    weights.loc[longs] = w\n    weights.loc[shorts] = -w\n    return weights\n"
+  },
+  "strategy_id": "30fd16446b8f0373414b585a7730e58bc7ca3753b17eab49eb43bc270a714e35",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": 0.3680626079288984,
+    "annualized_return": 0.04065050383351232,
+    "total_return": 0.2692720361222074,
+    "volatility": 0.13195892716865112,
+    "max_drawdown": 0.22460844597500618,
+    "downside_risk": 0.09636274820623096,
+    "average_daily_turnover": 0.08465754871234504,
+    "total_cost": 0.06383179172910816,
+    "total_borrow_cost": 0.007845238095238096,
+    "active_days": 1388
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": -0.004551476335828548,
+    "annualized_return": -0.009613126388337334,
+    "total_return": -0.01898343531837099,
+    "volatility": 0.13462670314419833,
+    "max_drawdown": 0.22523812058535897,
+    "downside_risk": 0.09628462857574131,
+    "average_daily_turnover": 0.10967187285796448,
+    "total_cost": 0.02741796821449112,
+    "total_borrow_cost": 0.0024553571428571432,
+    "active_days": 500
+  }
+}

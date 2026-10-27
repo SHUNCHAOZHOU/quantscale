@@ -1,0 +1,39 @@
+{
+  "agent": 0,
+  "round": 0,
+  "hypothesis": "momentum with a 60-day horizon",
+  "strategy": {
+    "family": "momentum",
+    "lookback": 60,
+    "skip": 5,
+    "fraction": 0.2,
+    "volatility_scale": false
+  },
+  "strategy_id": "91f586d91e50ff87bf740e04b2c0c3bd677053c4640118df32140f3001128bf5",
+  "train": {
+    "observations": 129,
+    "sharpe": -1.6147687998268305,
+    "annualized_return": -0.03832740935093604,
+    "total_return": -0.01980707752634514,
+    "volatility": 0.024023131880501692,
+    "max_drawdown": 0.03178390784889651,
+    "downside_risk": 0.018452944298700785,
+    "average_daily_turnover": 0.10159367617749127,
+    "total_cost": 0.0065527921134481875,
+    "total_borrow_cost": 0.0002764285714285714,
+    "active_days": 129
+  },
+  "validation": {
+    "observations": 130,
+    "sharpe": -0.9085674647536928,
+    "annualized_return": -0.022372496073100878,
+    "total_return": -0.011604571579192036,
+    "volatility": 0.024572657257730467,
+    "max_drawdown": 0.020659068461302055,
+    "downside_risk": 0.01835640665972177,
+    "average_daily_turnover": 0.10770057911779936,
+    "total_cost": 0.007000537642656957,
+    "total_borrow_cost": 0.00027857142857142854,
+    "active_days": 130
+  }
+}

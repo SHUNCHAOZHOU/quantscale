@@ -1,0 +1,28 @@
+{
+  "frozen_before_any_evaluation_utc": "2026-10-26T15:16:36.548502+00:00",
+  "all_scheduled_research_finished": true,
+  "submissions": {
+    "baseline-s107": "a861c4e49fb7fb63f19cdf011c215f05f2fe0fb8c144878c84ab6de9b5399171",
+    "baseline-s127": "a4a43c907a60781b58a2c8ef31fbdc29eba4512422c4993cf463eed997a6bf2e",
+    "baseline-s117": "482c543321072ccc4b62f2007daeb1b51eaba48ad3669d10844f8a677669245c",
+    "centralized-s127": "cfb13960ba149db41022669a23cd8d595930c46e1b362fe9435616e5a559713b",
+    "hybrid-s127": "6db76e18ae88f6ef19efefcab6215e70755388b6069ea37cc2438d0c76ec7f9d",
+    "decentralized-s127": "d395bebce16b2832ef811b66f4a53632283287c80648786593439fe6019485b2",
+    "independent-s127": "9423f5a2528e3e77a0dcde294252d534d32201840172352849b55252815844a9",
+    "independent-s107": "afb9d488389590f9ce5da2a0ae8777c605f44ae193a703037416e9a463fcb541",
+    "centralized-s117": "adff49793b76db6500c4db15a9a035f3f027b742fe47efe13c8888d72c164d1f",
+    "independent-s117": "029e9d422ebb234370bc5a7e90b9a9dc6f12d96418555b97a4ff644f0250b8d5",
+    "decentralized-s117": "3396f73f7acbb7276d2b60fc2caa60979aa3f52939903de4dcbc45e7c126151c",
+    "hybrid-s117": "f51a2db0f3527c5bee2bb661becd27b45a62a59b78c05b8ea8c0feef580fb3cb",
+    "hybrid-s107": "f1407de0c63b3703b3ee9e48c39bb7d7f32b5c436bee455e287183ac90829afd",
+    "centralized-s107": "1440fef2e5117faff88ad1d26ed51fa51c741fd19114b01e38f3863a53acffa8"
+  },
+  "failures": [
+    {
+      "run": "decentralized-s107",
+      "seed": 107,
+      "topology": "decentralized",
+      "error": "DeepSeek network/TLS failure; no automatic retry; usage may be uncertain"
+    }
+  ]
+}

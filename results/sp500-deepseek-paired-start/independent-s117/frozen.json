@@ -1,0 +1,102 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 400000,
+        "max_turn_tokens": 131072,
+        "seed": 117,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024,
+        "manager_max_format_repairs": 1,
+        "manager_max_failed_rounds": 2
+      },
+      "topology": "independent",
+      "fleet_size": 4,
+      "manager_count": 0,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768,
+        "role_settings": {
+          "researcher": {
+            "reasoning_effort": "low",
+            "max_output_tokens": 32768
+          },
+          "manager": {
+            "reasoning_effort": "none",
+            "max_output_tokens": 8192
+          }
+        },
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      },
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "seed": 117,
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "selection": "highest net validation Sharpe including initial four; SHA256 ascending tie-break",
+      "budget_mode": "paired-start, 8 additional candidate attempts in exactly two scheduled rounds",
+      "initial_state_sha256": "6fae307f90873d2e01dc4d36df6fbb4c5fe2da8055232d87adcd5d36caf1167d",
+      "study_source_sha256": "b9e1493cda5da1f72b077348fb8363309e2ddb7140844f1d330281210c751012",
+      "initial_cost_accounting": "Initial four generated once, recorded separately; not charged four times",
+      "manager_failure_policy": "Skip failed scheduled round; at most two scheduled rounds; retain best initial strategy",
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ]
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\nimport math\n\ndef _pct_rank(x):\n    x = np.asarray(x, dtype=float)\n    n = x.size\n    if n == 0:\n        return x\n    if n == 1:\n        return np.zeros(1, dtype=float)\n    order = np.argsort(x, kind='mergesort')\n    xs = x[order]\n    ranks = np.empty(n, dtype=float)\n    i = 0\n    while i < n:\n        j = i + 1\n        while j < n and xs[j] == xs[i]:\n            j += 1\n        avg = (i + j - 1) / 2.0\n        ranks[order[i:j]] = avg\n        i = j\n    return ranks / (n - 1.0) - 0.5\n\ndef _to_bool_array(v):\n    n = len(v)\n    out = np.zeros(n, dtype=bool)\n    for i, x in enumerate(v):\n        try:\n            if pd.isna(x):\n                continue\n        except Exception:\n            pass\n        if isinstance(x, (bool, np.bool_)):\n            out[i] = bool(x)\n        else:\n            try:\n                out[i] = (float(x) != 0.0)\n            except Exception:\n                try:\n                    out[i] = bool(x)\n                except Exception:\n                    out[i] = False\n    return out\n\ndef _mom_from_close(close_sig, lookback, skip):\n    if close_sig.shape[0] <= lookback + skip:\n        return None\n    num = close_sig[-1 - skip]\n    den = close_sig[-1 - lookback]\n    with np.errstate(divide='ignore', invalid='ignore'):\n        r = num / den - 1.0\n    return r\n\ndef generate_weights(history, universe):\n    tickers = pd.Index(list(universe))\n    n = len(tickers)\n    if n == 0:\n        return pd.Series(dtype=float)\n    zero = pd.Series(np.zeros(n, dtype=float), index=tickers)\n    ac_full = history.get('adjusted_close')\n    if ac_full is None or len(ac_full.index) == 0:\n        return zero\n    try:\n        ac_full = ac_full.reindex(columns=tickers)\n    except Exception:\n        return zero\n    dates = ac_full.index\n    mrows = len(dates)\n    if mrows < 80:\n        return zero\n    try:\n        months = dates.month.values\n    except Exception:\n        months = np.array([d.month for d in dates])\n    month_starts = [i for i in range(1, mrows) if months[i] != months[i - 1]]\n    if len(month_starts) == 0:\n        return zero\n    signal_pos = month_starts[-1]\n    if signal_pos < 130:\n        return zero\n    last_pos = mrows - 1\n    start = max(0, signal_pos - 400)\n    close_all = ac_full.values.astype(float)\n    close_sig = close_all[start:signal_pos + 1]\n    if close_sig.shape[0] < 130:\n        return zero\n    last_close = close_all[last_pos]\n    valid = np.isfinite(last_close) & (last_close > 1.0)\n    elig = history.get('eligible')\n    if elig is not None:\n        try:\n            e = elig.reindex(index=dates, columns=tickers)\n            le = e.iloc[last_pos].values\n            if len(le) > 0 and not pd.isna(le).all():\n                valid &= _to_bool_array(le)\n        except Exception:\n            pass\n    vol_field = history.get('volume')\n    if vol_field is not None:\n        try:\n            v = vol_field.reindex(index=dates, columns=tickers).values.astype(float)\n            Lq = min(60, last_pos + 1)\n            if Lq >= 20:\n                cwin = close_all[last_pos - Lq + 1:last_pos + 1]\n                vwin = v[last_pos - Lq + 1:last_pos + 1]\n                dv = np.nanmean(cwin * vwin, axis=0)\n                valid &= np.isfinite(dv) & (dv > 0)\n                if valid.sum() >= 40:\n                    thresh = np.nanpercentile(dv[valid], 20)\n                    valid &= dv >= thresh\n        except Exception:\n            pass\n    with np.errstate(divide='ignore', invalid='ignore'):\n        rets = close_sig[1:] / close_sig[:-1] - 1.0\n    if rets.shape[0] < 60:\n        return zero\n    Lv = min(120, rets.shape[0])\n    stock_vol = np.nanstd(rets[-Lv:], axis=0)\n    hwin = close_sig[-252:] if close_sig.shape[0] >= 252 else close_sig\n    with np.errstate(invalid='ignore'):\n        max_close = np.nanmax(hwin, axis=0)\n        high_prox = close_sig[-1] / max_close - 1.0\n        high_prox = np.where(np.isfinite(max_close) & (max_close > 0), high_prox, np.nan)\n    twin = close_sig[-200:] if close_sig.shape[0] >= 200 else close_sig\n    with np.errstate(invalid='ignore'):\n        sma = np.nanmean(twin, axis=0)\n        trend = close_sig[-1] / sma - 1.0\n        trend = np.where(np.isfinite(sma) & (sma > 0), trend, np.nan)\n    ret = np.full(n, np.nan, dtype=float)\n    r = _mom_from_close(close_sig, 252, 21)\n    if r is not None:\n        ret = r\n    r = _mom_from_close(close_sig, 126, 10)\n    if r is not None:\n        ret = np.where(np.isfinite(ret), ret, r)\n    r = _mom_from_close(close_sig, 63, 5)\n    if r is not None:\n        ret = np.where(np.isfinite(ret), ret, r)\n    mret = np.nanmean(rets[-252:], axis=1) if rets.shape[0] >= 252 else np.nanmean(rets, axis=1)\n    mret = np.nan_to_num(mret, nan=0.0, posinf=0.0, neginf=0.0)\n    level = np.cumprod(1.0 + mret)\n    base = np.nanmean(level[-200:]) if len(level) >= 200 else np.nanmean(level)\n    mtrend = level[-1] / base - 1.0 if np.isfinite(base) and base > 0 else 0.0\n    if len(mret) >= 60:\n        mvol = np.nanstd(mret[-60:]) * math.sqrt(252.0)\n    else:\n        mvol = np.nanstd(mret) * math.sqrt(252.0)\n    if not np.isfinite(mvol):\n        mvol = 0.20\n    peak = np.nanmax(level[-60:]) if len(level) >= 60 else np.nanmax(level)\n    recent_dd = level[-1] / peak - 1.0 if np.isfinite(peak) and peak > 0 else 0.0\n    beta = np.ones(n, dtype=float)\n    Lb = min(120, rets.shape[0])\n    if Lb >= 40:\n        rwin = rets[-Lb:]\n        mwin = mret[-Lb:]\n        mean_m = np.nanmean(mwin)\n        var_m = np.nanmean((mwin - mean_m) ** 2)\n        if np.isfinite(var_m) and var_m > 1e-12:\n            mean_s = np.nanmean(rwin, axis=0)\n            cov = np.nanmean((rwin - mean_s) * (mwin[:, None] - mean_m), axis=0)\n            b = cov / var_m\n            beta = np.where(np.isfinite(b), b, 1.0)\n    valid &= np.isfinite(ret) & np.isfinite(stock_vol) & (stock_vol > 1e-6) & np.isfinite(high_prox) & np.isfinite(trend) & np.isfinite(beta)\n    idx = np.where(valid)[0]\n    if len(idx) < 16:\n        return zero\n    mom = ret[idx]\n    volv = stock_vol[idx]\n    hp = high_prox[idx]\n    tr = trend[idx]\n    bet = beta[idx]\n    z_lowvol = _pct_rank(-volv)\n    z_lowbeta = _pct_rank(-bet)\n    z_highvol = _pct_rank(volv)\n    z_highbeta = _pct_rank(bet)\n    z_mom = _pct_rank(mom)\n    z_trend = _pct_rank(tr)\n    z_high = _pct_rank(hp)\n    score_on = 0.30 * z_highbeta + 0.25 * z_mom + 0.20 * z_trend + 0.15 * z_high + 0.10 * z_highvol\n    score_off = 0.35 * z_lowvol + 0.25 * z_lowbeta + 0.20 * z_trend + 0.20 * z_high\n    risk_on = (mtrend > 0.03) and (mvol < 0.22) and (recent_dd > -0.06)\n    risk_off = (mtrend < -0.02) or (mvol > 0.28) or (recent_dd < -0.10)\n    if risk_on:\n        score = score_on\n        scale = 0.80\n    elif risk_off:\n        score = score_off\n        scale = 1.00\n    else:\n        score = 0.50 * score_on + 0.50 * score_off\n        scale = 0.70\n    if mvol > 0.35:\n        scale *= 0.85\n    if recent_dd < -0.15:\n        scale *= 0.85\n    scale = float(np.clip(scale, 0.30, 1.00))\n    m = min(30, len(idx) // 2)\n    if m < 8:\n        return zero\n    order = np.argsort(score, kind='mergesort')\n    long_sel = idx[order[-m:]]\n    short_sel = idx[order[:m]]\n    wt = min(0.02, 0.5 * scale / m)\n    if wt <= 0.0 or not np.isfinite(wt):\n        return zero\n    w = np.zeros(n, dtype=float)\n    w[long_sel] = wt\n    w[short_sel] = -wt\n    w = np.nan_to_num(w, nan=0.0, posinf=0.0, neginf=0.0)\n    w = np.clip(w, -0.02, 0.02)\n    return pd.Series(w, index=tickers)"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": 0.01079751902178099,
+      "annualized_return": -0.010953462300768324,
+      "total_return": -0.02161591648921224,
+      "volatility": 0.1595651418698955,
+      "max_drawdown": 0.18670946557357904,
+      "downside_risk": 0.11664972533490264,
+      "average_daily_turnover": 0.06915982129323595,
+      "total_cost": 0.01728995532330899,
+      "total_borrow_cost": 0.0024690476190476194,
+      "active_days": 500
+    },
+    "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "029e9d422ebb234370bc5a7e90b9a9dc6f12d96418555b97a4ff644f0250b8d5"
+}

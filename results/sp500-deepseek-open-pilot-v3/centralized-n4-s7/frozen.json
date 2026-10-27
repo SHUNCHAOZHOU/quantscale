@@ -1,0 +1,98 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 170000,
+        "max_turn_tokens": 65536,
+        "seed": 7,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024,
+        "manager_max_format_repairs": 1,
+        "manager_max_failed_rounds": 2
+      },
+      "topology": "centralized",
+      "fleet_size": 4,
+      "manager_count": 1,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 7,
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768,
+        "role_settings": {
+          "researcher": {
+            "reasoning_effort": "low",
+            "max_output_tokens": 32768
+          },
+          "manager": {
+            "reasoning_effort": "none",
+            "max_output_tokens": 8192
+          }
+        },
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\n\n\ndef _capped_inv_vol(inv, target, cap):\n    n = len(inv)\n    if n == 0 or target <= 0:\n        return np.zeros(n, dtype=float)\n    target = min(float(target), cap * n)\n    inv = np.asarray(inv, dtype=float)\n    inv = np.where(np.isfinite(inv) & (inv > 0), inv, 0.0)\n    if inv.sum() <= 0:\n        w = np.full(n, target / n, dtype=float)\n        return np.minimum(w, cap)\n    w = np.zeros(n, dtype=float)\n    active = np.ones(n, dtype=bool)\n    remaining = float(target)\n    for _ in range(n + 2):\n        idx = np.flatnonzero(active)\n        if idx.size == 0:\n            break\n        s = inv[idx].sum()\n        if s <= 0:\n            w[idx] += remaining / idx.size\n            remaining = 0.0\n            break\n        lam = remaining / s\n        raw = lam * inv[idx]\n        over = raw >= cap - 1e-15\n        if not np.any(over):\n            w[idx] = raw\n            remaining = 0.0\n            break\n        over_idx = idx[over]\n        w[over_idx] = cap\n        active[over_idx] = False\n        remaining -= cap * over_idx.size\n        if remaining <= 1e-15:\n            remaining = 0.0\n            break\n    if remaining > 1e-12:\n        idx = np.flatnonzero(active & (w < cap - 1e-15))\n        if idx.size:\n            room = cap - w[idx]\n            add = min(remaining, room.sum())\n            if room.sum() > 0:\n                w[idx] += add * room / room.sum()\n    return np.minimum(w, cap)\n\n\ndef generate_weights(history, universe):\n    universe = pd.Index(universe)\n    n_assets = len(universe)\n    if n_assets == 0:\n        return pd.Series(dtype=float)\n\n    px = None\n    if 'adjusted_close' in history:\n        px = history['adjusted_close']\n    elif 'close' in history:\n        px = history['close']\n    else:\n        return pd.Series(0.0, index=universe)\n\n    if not isinstance(px, pd.DataFrame):\n        return pd.Series(0.0, index=universe)\n\n    px = px.reindex(columns=universe)\n    if px.shape[0] < 25:\n        return pd.Series(0.0, index=universe)\n    if not px.index.is_monotonic_increasing:\n        px = px.sort_index()\n\n    vals = px.to_numpy(dtype=float, copy=False)\n    n_dates = vals.shape[0]\n\n    # Rebalance monthly: use the most recent prior month-end observation.\n    dates = px.index\n    current = dates[-1]\n    same_month = (dates.year == current.year) & (dates.month == current.month)\n    first_current = int(np.argmax(same_month))\n    ref_idx = first_current - 1 if first_current > 0 else n_dates - 1\n    if ref_idx < 21:\n        return pd.Series(0.0, index=universe)\n\n    last = vals[ref_idx]\n    valid = np.isfinite(last) & (last > 0)\n\n    if 'eligible' in history:\n        e = history['eligible']\n        if isinstance(e, pd.DataFrame):\n            e = e.reindex(index=px.index, columns=universe)\n            last_e = e.iloc[ref_idx].to_numpy(dtype=float, copy=False)\n            valid &= np.isfinite(last_e) & (last_e > 0.5)\n\n    rets = px.pct_change(fill_method=None).to_numpy(dtype=float, copy=False)\n    start = max(0, ref_idx - 60)\n    rwin = rets[start:ref_idx + 1]\n    vol = np.nanstd(rwin, axis=0, ddof=1)\n    obs = np.sum(np.isfinite(rwin), axis=0)\n    valid &= np.isfinite(vol) & (vol > 1e-8) & (obs >= 20)\n\n    if valid.sum() < 10:\n        return pd.Series(0.0, index=universe)\n\n    denom = np.maximum(vol, 1e-8)\n    signal_sum = np.zeros(n_assets, dtype=float)\n    signal_w = np.zeros(n_assets, dtype=float)\n\n    # Reversal score: negative of market-relative past return, z-scored.\n    for L, wt in ((20, 0.2), (60, 0.5), (120, 0.3)):\n        if ref_idx <= L:\n            continue\n        past = vals[ref_idx - L]\n        past_ok = np.isfinite(past) & (past > 0)\n        ret = np.where(past_ok & valid, last / past - 1.0, np.nan)\n        finite = np.isfinite(ret)\n        if finite.sum() < 10:\n            continue\n        mu = ret[finite].mean()\n        rel = ret - mu\n        sd = rel[finite].std(ddof=0)\n        if not np.isfinite(sd) or sd <= 1e-12:\n            continue\n        z = np.where(finite, rel / sd, np.nan)\n        score = -np.clip(z, -3.0, 3.0)\n        good = np.isfinite(score)\n        signal_sum[good] += wt * score[good]\n        signal_w[good] += wt\n\n    signal = np.full(n_assets, np.nan, dtype=float)\n    has = signal_w > 0\n    signal[has] = signal_sum[has] / signal_w[has]\n    valid &= np.isfinite(signal)\n\n    candidates = np.flatnonzero(valid)\n    if candidates.size < 10:\n        return pd.Series(0.0, index=universe)\n\n    K = min(40, candidates.size // 2)\n    if K < 5:\n        return pd.Series(0.0, index=universe)\n\n    order = candidates[np.argsort(signal[candidates])]\n    short_idx = order[:K]\n    long_idx = order[-K:]\n\n    cap = 0.02\n    side_target = min(0.5, cap * K)\n    inv = 1.0 / denom\n    w = np.zeros(n_assets, dtype=float)\n    w[long_idx] = _capped_inv_vol(inv[long_idx], side_target, cap)\n    w[short_idx] = -_capped_inv_vol(inv[short_idx], side_target, cap)\n\n    pos = w > 0\n    neg = w < 0\n    long_sum = w[pos].sum()\n    short_sum = -w[neg].sum()\n    if long_sum > 0 and short_sum > 0:\n        side = min(long_sum, short_sum)\n        w[pos] *= side / long_sum\n        w[neg] *= side / short_sum\n    else:\n        return pd.Series(0.0, index=universe)\n\n    w = np.clip(w, -cap, cap)\n    gross = np.abs(w).sum()\n    if gross > 1.0:\n        w *= 1.0 / gross\n\n    return pd.Series(w, index=universe, dtype=float)\n"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": 0.3285464734723332,
+      "annualized_return": 0.033005787196637604,
+      "total_return": 0.06655107036687347,
+      "volatility": 0.12101489814456563,
+      "max_drawdown": 0.13241569823343058,
+      "downside_risk": 0.0787807891919638,
+      "average_daily_turnover": 0.08561861289408398,
+      "total_cost": 0.021404653223520996,
+      "total_borrow_cost": 0.0029761904761904765,
+      "active_days": 500
+    },
+    "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "4425db9d26935b7dd079a2cfdd9471c7506fd457983f612893760e632080ad95"
+}

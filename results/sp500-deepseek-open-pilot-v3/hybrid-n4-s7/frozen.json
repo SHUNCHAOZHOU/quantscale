@@ -1,0 +1,98 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 170000,
+        "max_turn_tokens": 65536,
+        "seed": 7,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024,
+        "manager_max_format_repairs": 1,
+        "manager_max_failed_rounds": 2
+      },
+      "topology": "hybrid",
+      "fleet_size": 4,
+      "manager_count": 1,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 7,
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768,
+        "role_settings": {
+          "researcher": {
+            "reasoning_effort": "low",
+            "max_output_tokens": 32768
+          },
+          "manager": {
+            "reasoning_effort": "none",
+            "max_output_tokens": 8192
+          }
+        },
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\n\n\ndef generate_weights(history, universe):\n    u = pd.Index(universe)\n    zeros = pd.Series(0.0, index=u, dtype=float)\n    if len(u) == 0:\n        return zeros\n\n    ac = history.get('adjusted_close')\n    if ac is None or not isinstance(ac, pd.DataFrame) or ac.empty:\n        ac = history.get('close')\n    if ac is None or not isinstance(ac, pd.DataFrame) or ac.empty:\n        return zeros\n\n    ac = ac.reindex(columns=u)\n    dates = pd.DatetimeIndex(ac.index)\n    if len(dates) < 126:\n        return zeros\n\n    cur = dates[-1]\n    ym = dates.year.to_numpy() * 12 + dates.month.to_numpy()\n    cur_ym = cur.year * 12 + cur.month\n    mask = ym < cur_ym\n    if not mask.any():\n        return zeros\n\n    sig_pos = int(np.where(mask)[0][-1])\n    start = max(0, sig_pos + 1 - 300)\n    sub = ac.iloc[start:sig_pos + 1]\n    if sub.shape[0] < 60:\n        return zeros\n\n    prices = sub.to_numpy(dtype=float)\n    with np.errstate(divide='ignore', invalid='ignore'):\n        rets = prices[1:] / prices[:-1] - 1.0\n    rets = np.clip(rets, -0.5, 0.5)\n    rets[~np.isfinite(rets)] = np.nan\n    T = rets.shape[0]\n    if T < 126:\n        return zeros\n\n    mkt = np.nanmean(rets, axis=1)\n    mkt = np.where(np.isfinite(mkt), mkt, 0.0)\n\n    bwin = min(252, T)\n    rb = rets[-bwin:]\n    mb = mkt[-bwin:]\n    mb_mean = np.nanmean(mb)\n    if not np.isfinite(mb_mean):\n        mb_mean = 0.0\n    mb_dev = mb - mb_mean\n    den = np.nanmean(mb_dev ** 2)\n    if not np.isfinite(den) or den <= 0:\n        beta = np.ones(prices.shape[1])\n    else:\n        rmean = np.nanmean(rb, axis=0)\n        num = np.nanmean((rb - rmean) * mb_dev[:, None], axis=0)\n        beta = num / den\n        beta = np.where(np.isfinite(beta), beta, 1.0)\n        beta = np.clip(beta, 0.2, 3.0)\n\n    resid = rets - beta[None, :] * mkt[:, None]\n\n    if T >= 252:\n        rwin = resid[-252:-21]\n    else:\n        rwin = resid[-126:-21]\n    if rwin.shape[0] < 20:\n        return zeros\n\n    score_raw = np.nansum(rwin, axis=0)\n    vol = np.nanstd(rwin, axis=0, ddof=1)\n    obs = np.sum(np.isfinite(rwin), axis=0)\n    med_vol = np.nanmedian(vol)\n    if not np.isfinite(med_vol) or med_vol <= 0:\n        med_vol = 0.02\n    vol = np.where(np.isfinite(vol) & (vol > 0), vol, med_vol)\n    vol = np.clip(vol, 0.005, 0.20)\n    score = score_raw / vol\n\n    last = prices[-1]\n\n    dollar = None\n    vdf = history.get('volume')\n    if vdf is not None and isinstance(vdf, pd.DataFrame) and not vdf.empty:\n        vdf = vdf.reindex(columns=u)\n        vsub = vdf.iloc[start:sig_pos + 1].tail(60)\n        psub = sub.tail(vsub.shape[0])\n        if vsub.shape[0] == psub.shape[0] and vsub.shape[0] > 0:\n            dv = psub.to_numpy(dtype=float) * vsub.to_numpy(dtype=float)\n            with np.errstate(all='ignore'):\n                dollar = np.nanmedian(dv, axis=0)\n\n    valid = np.isfinite(score) & np.isfinite(last) & (last > 5.0) & (obs >= max(20, rwin.shape[0] * 0.8))\n\n    edf = history.get('eligible')\n    if edf is not None and isinstance(edf, pd.DataFrame) and len(edf) > 0:\n        e = edf.reindex(columns=u).iloc[-1].to_numpy(dtype=float)\n        valid &= np.isfinite(e) & (e > 0.5)\n\n    if dollar is not None:\n        valid &= np.isfinite(dollar) & (dollar > 0)\n        if valid.sum() >= 20:\n            thr = np.nanpercentile(dollar[valid], 20)\n            valid &= (dollar >= thr)\n\n    n_valid = int(valid.sum())\n    if n_valid < 20:\n        return zeros\n\n    idx = np.where(valid)[0]\n    order = idx[np.argsort(score[idx], kind='mergesort')]\n    n_side = min(50, n_valid // 2)\n    if n_side < 5:\n        return zeros\n\n    longs = order[-n_side:]\n    shorts = order[:n_side]\n    side_gross = min(0.5, 0.02 * n_side)\n    w = side_gross / n_side\n\n    weights = np.zeros(len(u), dtype=float)\n    weights[longs] = w\n    weights[shorts] = -w\n    weights = np.clip(weights, -0.02, 0.02)\n    g = np.abs(weights).sum()\n    if g > 1.0 and g > 0:\n        weights *= 1.0 / g\n    weights = np.nan_to_num(weights, nan=0.0, posinf=0.0, neginf=0.0)\n    return pd.Series(weights, index=u)"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": 0.06921878932779323,
+      "annualized_return": 0.0016008550668527022,
+      "total_return": 0.0031788017568776805,
+      "volatility": 0.10911748830610267,
+      "max_drawdown": 0.11569459514403613,
+      "downside_risk": 0.08034019581456288,
+      "average_daily_turnover": 0.0557328272263592,
+      "total_cost": 0.013933206806589798,
+      "total_borrow_cost": 0.002976190476190477,
+      "active_days": 500
+    },
+    "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "cfa861053375f0e82e0b7f3ce1f24ab84415ce33bc734d68f5c7cc82b0603ab2"
+}

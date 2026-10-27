@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "config": {
+    "train": {
+      "start": "2018-01-01",
+      "end": "2018-02-28"
+    },
+    "validation": {
+      "start": "2018-03-01",
+      "end": "2018-03-30"
+    },
+    "test": {
+      "start": "2018-04-01",
+      "end": "2018-04-30"
+    },
+    "universe_size": 48,
+    "min_price": 5.0,
+    "min_volume": 100000.0,
+    "gross_limit": 1.0,
+    "max_weight": 0.02,
+    "net_tolerance": 0.01,
+    "cost_bps": 5.0,
+    "annual_borrow_bps": 30.0,
+    "annualization": 252,
+    "backtests": 2,
+    "tokens": 40000,
+    "max_turn_tokens": 32768,
+    "seed": 7,
+    "lookback_days": 300,
+    "universe_mode": "fixed",
+    "missing_data_policy": "strict",
+    "strategy_mode": "python",
+    "code_history_days": null,
+    "code_call_timeout_seconds": 10,
+    "code_backtest_timeout_seconds": 120,
+    "code_memory_mb": 1024
+  },
+  "topology": "single",
+  "fleet_size": 1,
+  "manager_count": 0,
+  "research_data_hash": "3bf97676ac1dc0aacfd69865855c746745292c3aa5dd160abee1b07fec604140",
+  "backend": "deepseek-flash",
+  "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+  "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+  "execution": "close t -> next open -> following open; each split starts flat",
+  "budget_mode": "fixed-total",
+  "seed": 7,
+  "excluded_data_sessions": [],
+  "backend_configuration": {
+    "provider": "deepseek",
+    "model": "deepseek-flash",
+    "reasoning_effort": "high",
+    "max_output_tokens": 16384,
+    "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+  }
+}

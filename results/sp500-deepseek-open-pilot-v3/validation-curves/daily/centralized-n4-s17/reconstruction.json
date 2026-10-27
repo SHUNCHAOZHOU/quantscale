@@ -1,0 +1,36 @@
+{
+  "run": "centralized-n4-s17",
+  "label": "\u4e2d\u5fc3\u5316 \u00b7 17",
+  "topology": "centralized",
+  "seed": 17,
+  "artifact_sha256": "226fdaca7e35beec42c6c74c3373de848c7eae868b864a7e839d4b6cc330e12a",
+  "metrics": {
+    "observations": 500,
+    "sharpe": -0.004551476335828548,
+    "annualized_return": -0.009613126388337334,
+    "total_return": -0.01898343531837099,
+    "volatility": 0.13462670314419833,
+    "max_drawdown": 0.22523812058535897,
+    "downside_risk": 0.09628462857574131,
+    "average_daily_turnover": 0.10967187285796448,
+    "total_cost": 0.02741796821449112,
+    "total_borrow_cost": 0.0024553571428571432,
+    "active_days": 500
+  },
+  "original_validation": {
+    "observations": 500,
+    "sharpe": -0.004551476335828548,
+    "annualized_return": -0.009613126388337334,
+    "total_return": -0.01898343531837099,
+    "volatility": 0.13462670314419833,
+    "max_drawdown": 0.22523812058535897,
+    "downside_risk": 0.09628462857574131,
+    "average_daily_turnover": 0.10967187285796448,
+    "total_cost": 0.02741796821449112,
+    "total_borrow_cost": 0.0024553571428571432,
+    "active_days": 500
+  },
+  "matched_original": true,
+  "differences": {},
+  "reconstructed_at_utc": "2026-10-26T13:08:36.400858+00:00"
+}

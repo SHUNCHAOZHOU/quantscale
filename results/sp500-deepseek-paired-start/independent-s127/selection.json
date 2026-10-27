@@ -1,0 +1,38 @@
+{
+  "agent": 0,
+  "round": 2,
+  "hypothesis": "The earlier reversal/momentum blend was diluted by a short-term reversal leg, and the low-volatility thesis failed badly. I will test a cleaner, more robust cross-sectional momentum policy: long stocks with strong 12-1 momentum, confirmed by 6-1 momentum, positive 200-day trend, and proximity to 52-week highs; short the mirror-image weakest stocks. Monthly rebalancing with 25 equal-weight long and 25 equal-weight short positions keeps gross at 1.0, net at 0, and per-name weight at the 2% cap while limiting turnover and avoiding fitted models.",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\n\ndef _pct_rank(s, high_good=True):\n    if s is None or len(s) == 0:\n        return s\n    r = s.rank(pct=True, method='average', ascending=bool(high_good))\n    return r.fillna(0.5)\n\n\ndef generate_weights(history, universe):\n    universe = pd.Index(universe)\n    zero = pd.Series(0.0, index=universe, dtype=float)\n    if len(universe) == 0:\n        return zero\n\n    close = history.get('adjusted_close')\n    if close is None:\n        close = history.get('close')\n    if close is None or close.empty:\n        return zero\n\n    dates = close.index\n    rebalance = 21\n    p = len(dates) - 1\n    anchor = (p // rebalance) * rebalance\n    if anchor < 260:\n        return zero\n    anchor_date = dates[anchor]\n\n    cols = [c for c in universe if c in close.columns]\n    if len(cols) < 10:\n        return zero\n\n    prices = close.iloc[:anchor + 1][cols].ffill()\n    last = prices.iloc[-1]\n\n    elig_df = history.get('eligible')\n    if elig_df is not None and not elig_df.empty:\n        sub = elig_df.loc[:anchor_date]\n        if len(sub) > 0:\n            elig = sub.iloc[-1].reindex(cols).fillna(False).astype(bool)\n        else:\n            elig = pd.Series(True, index=cols)\n    else:\n        elig = pd.Series(True, index=cols)\n\n    valid = elig & last.notna() & (last > 0.0) & np.isfinite(last)\n    if int(valid.sum()) < 10:\n        return zero\n\n    ret = prices / prices.shift(1) - 1.0\n    ret = ret.replace([np.inf, -np.inf], np.nan)\n\n    mom12 = prices.shift(21) / prices.shift(252) - 1.0\n    mom6 = prices.shift(21) / prices.shift(126) - 1.0\n\n    ma = prices.rolling(200, min_periods=120).mean()\n    trend = prices / ma - 1.0\n\n    high252 = prices.rolling(252, min_periods=120).max()\n    prox = prices / high252 - 1.0\n\n    f = pd.DataFrame({\n        'mom12': mom12.iloc[-1],\n        'mom6': mom6.iloc[-1],\n        'trend': trend.iloc[-1],\n        'prox': prox.iloc[-1]\n    }).reindex(cols)\n    f = f.replace([np.inf, -np.inf], np.nan)\n    f = f.loc[valid]\n    if len(f) < 10:\n        return zero\n\n    score = (\n        0.45 * _pct_rank(f['mom12'], True) +\n        0.25 * _pct_rank(f['mom6'], True) +\n        0.20 * _pct_rank(f['trend'], True) +\n        0.10 * _pct_rank(f['prox'], True)\n    )\n    score = score.replace([np.inf, -np.inf], np.nan).fillna(0.5)\n    score = score.sort_values(ascending=False)\n\n    n = min(25, len(score) // 2)\n    if n < 5:\n        return zero\n\n    longs = score.index[:n]\n    shorts = score.index[-n:]\n    side = min(0.02, 0.5 / float(n))\n\n    out = zero.copy()\n    out.loc[longs] = side\n    out.loc[shorts] = -side\n    out = out.replace([np.inf, -np.inf], 0.0).fillna(0.0)\n    return out"
+  },
+  "strategy_id": "2f5cf6f1ed765295ee6b7aa6367ddb9811174f2398dfaf2509a1bba2199ccd24",
+  "source_file": "strategies/2f5cf6f1ed765295ee6b7aa6367ddb9811174f2398dfaf2509a1bba2199ccd24.py",
+  "cached_backtest": false,
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.21551472874753327,
+    "annualized_return": -0.04208758938044799,
+    "total_return": -0.22687233196867973,
+    "volatility": 0.14823443878880563,
+    "max_drawdown": 0.32924789005530575,
+    "downside_risk": 0.11449729466746364,
+    "average_daily_turnover": 0.049446033291269564,
+    "total_cost": 0.037282309101617256,
+    "total_borrow_cost": 0.007351190476190477,
+    "active_days": 1235
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.07765660596523129,
+    "annualized_return": -0.0011405496218015454,
+    "total_return": -0.0022617252290703105,
+    "volatility": 0.1685543943006462,
+    "max_drawdown": 0.20366029055064339,
+    "downside_risk": 0.1245851329040002,
+    "average_daily_turnover": 0.06540104823454479,
+    "total_cost": 0.016350262058636197,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

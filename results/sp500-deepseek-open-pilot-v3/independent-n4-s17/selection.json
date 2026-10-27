@@ -1,0 +1,43 @@
+{
+  "agent": 1,
+  "round": 1,
+  "hypothesis": "Cross-sectional one-month reversal combined with a low-volatility tilt and a long-term momentum filter among liquid US equities produces positive dollar-neutral returns. Recent monthly losers with below-median volatility and non-negative 6-to-12 month momentum tend to rebound, while recent winners with high volatility underperform. Monthly rebalancing at the first trading day controls transaction costs, and equal-weight 30 long / 30 short positions respect gross and position limits.",
+  "source_file": "strategies/fbbf60ffcaf736fbc4c6101341e084f0981892cae70ce24b92b0dd744f8dbfab.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import pandas as pd\nimport numpy as np\n\ndef generate_weights(history, universe):\n    universe = pd.Index(universe)\n    if len(universe) == 0:\n        return pd.Series(dtype=float)\n    adj_all = history.get('adjusted_close')\n    vol_all = history.get('volume')\n    if adj_all is None or vol_all is None:\n        return pd.Series(0.0, index=universe)\n    common = universe.intersection(adj_all.columns).intersection(vol_all.columns)\n    if len(common) == 0:\n        return pd.Series(0.0, index=universe)\n    adj = adj_all[common]\n    vol = vol_all[common]\n    idx = adj.index\n    if len(idx) == 0:\n        return pd.Series(0.0, index=universe)\n    if not idx.is_monotonic_increasing:\n        adj = adj.sort_index()\n        vol = vol.sort_index()\n        idx = adj.index\n    periods = idx.to_period('M')\n    first_mask = ~periods.duplicated(keep='first')\n    rebal_dates = idx[first_mask]\n    if len(rebal_dates) == 0:\n        return pd.Series(0.0, index=universe)\n    rebal_date = rebal_dates[-1]\n    adj_r = adj.loc[:rebal_date]\n    vol_r = vol.loc[:rebal_date]\n    n = len(adj_r)\n    if n < 30:\n        return pd.Series(0.0, index=universe)\n    ret = adj_r.pct_change()\n    if n >= 22:\n        ret21 = adj_r.iloc[-1] / adj_r.iloc[-22] - 1.0\n    else:\n        ret21 = pd.Series(np.nan, index=common)\n    if n >= 6:\n        ret5 = adj_r.iloc[-1] / adj_r.iloc[-6] - 1.0\n    else:\n        ret5 = pd.Series(np.nan, index=common)\n    if n >= 127:\n        mom126 = adj_r.iloc[-22] / adj_r.iloc[-127] - 1.0\n    else:\n        mom126 = pd.Series(np.nan, index=common)\n    if n >= 60:\n        vol60 = ret.iloc[-60:].std()\n    else:\n        vol60 = ret.std()\n    if n >= 20:\n        dv = (adj_r.iloc[-20:] * vol_r.iloc[-20:]).median()\n    else:\n        dv = (adj_r * vol_r).median()\n    df = pd.DataFrame({'ret21': ret21, 'ret5': ret5, 'mom126': mom126, 'vol': vol60, 'dv': dv})\n    df = df.replace([np.inf, -np.inf], np.nan).dropna()\n    df = df[df['vol'] > 0]\n    if len(df) < 20:\n        return pd.Series(0.0, index=universe)\n    dv_cut = df['dv'].quantile(0.2)\n    df = df[df['dv'] >= dv_cut]\n    if len(df) < 20:\n        return pd.Series(0.0, index=universe)\n    df = df[df['ret21'].abs() < 0.75]\n    if len(df) < 20:\n        return pd.Series(0.0, index=universe)\n    def zscore(s):\n        std = s.std(ddof=0)\n        if std == 0 or not np.isfinite(std):\n            return s * 0.0\n        return (s - s.mean()) / std\n    score = (-1.0 * zscore(df['ret21']) - 0.25 * zscore(df['vol']) + 0.15 * zscore(df['mom126']) - 0.2 * zscore(df['ret5']))\n    df = df.assign(score=score)\n    k = min(30, len(df) // 2)\n    if k < 1:\n        return pd.Series(0.0, index=universe)\n    df_sorted = df.sort_values('score', ascending=False)\n    longs = df_sorted.index[:k]\n    shorts = df_sorted.index[-k:]\n    w = min(0.02, 0.96 / (2.0 * k))\n    weights = pd.Series(0.0, index=universe)\n    weights.loc[longs] = w\n    weights.loc[shorts] = -w\n    return weights.fillna(0.0)"
+  },
+  "strategy_id": "fbbf60ffcaf736fbc4c6101341e084f0981892cae70ce24b92b0dd744f8dbfab",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.39696193266013663,
+    "annualized_return": -0.04507787728058765,
+    "total_return": -0.24120283848897983,
+    "volatility": 0.10290039642946051,
+    "max_drawdown": 0.306101170184512,
+    "downside_risk": 0.07126518334797576,
+    "average_daily_turnover": 0.09124643155676677,
+    "total_cost": 0.06879980939380215,
+    "total_borrow_cost": 0.0077885714285714286,
+    "active_days": 1363
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": -0.0001513174206487354,
+    "annualized_return": -0.005156340441893059,
+    "total_return": -0.010204875348758358,
+    "volatility": 0.10165862186609498,
+    "max_drawdown": 0.08930221097036162,
+    "downside_risk": 0.07045584163206162,
+    "average_daily_turnover": 0.10683311031375282,
+    "total_cost": 0.026708277578438203,
+    "total_borrow_cost": 0.002857142857142857,
+    "active_days": 500
+  }
+}

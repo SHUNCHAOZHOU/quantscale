@@ -1,0 +1,43 @@
+{
+  "agent": 0,
+  "round": 0,
+  "hypothesis": "A dollar-neutral cross-sectional momentum portfolio works because relative stock performance persists over 12-1 month horizons. By scaling momentum by recent volatility and rebalancing monthly, the strategy controls risk, limits turnover, and remains within gross/net constraints while capturing persistent winners and losers.",
+  "source_file": "strategies/ee9b81e17b23b5691d83817080ae1dbcb700ea3f23ff5fb4228f29760b4c5fa6.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\n_CACHE = {}\n\ndef _zero_weights(universe):\n    return pd.Series(0.0, index=universe, dtype=float)\n\ndef generate_weights(history, universe):\n    universe = pd.Index(universe)\n    if len(universe) == 0:\n        return pd.Series(dtype=float)\n\n    price_key = 'adjusted_close' if 'adjusted_close' in history else 'close'\n    px_all = history[price_key]\n    if px_all is None or px_all.empty:\n        return _zero_weights(universe)\n\n    idx = px_all.index\n    if len(idx) == 0:\n        return _zero_weights(universe)\n\n    # Rebalance on the first trading day of each month, using only data through that close.\n    months = idx.month.values\n    is_first = np.empty(len(idx), dtype=bool)\n    is_first[0] = True\n    if len(idx) > 1:\n        is_first[1:] = months[1:] != months[:-1]\n    pos = np.where(is_first)[0][-1]\n    reb_date = idx[pos]\n\n    cache_key = (reb_date, tuple(universe))\n    if cache_key in _CACHE:\n        return _CACHE[cache_key].copy()\n\n    px = px_all.loc[:reb_date]\n    if len(px) < 253:\n        w = _zero_weights(universe)\n        _CACHE[cache_key] = w\n        return w.copy()\n\n    px = px.reindex(columns=universe).astype(float)\n    n = len(px)\n\n    # 12-1 momentum: price 21 sessions ago divided by price 252 sessions ago.\n    p_start = px.iloc[n - 253]\n    p_end = px.iloc[n - 22]\n    mom = p_end / p_start - 1.0\n\n    # Daily volatility over the last 126 sessions.\n    rets = px.pct_change()\n    vol = rets.iloc[-126:].std(ddof=0)\n\n    last_px = px.iloc[-1]\n    valid = (\n        mom.notna()\n        & vol.notna()\n        & (vol > 1e-8)\n        & last_px.notna()\n        & p_start.notna()\n        & p_end.notna()\n    )\n\n    score = mom / vol\n    score = score[valid]\n    if len(score) < 2:\n        w = _zero_weights(universe)\n        _CACHE[cache_key] = w\n        return w.copy()\n\n    score = score.sort_values(ascending=False)\n    k = min(25, len(score) // 2)\n    if k == 0:\n        w = _zero_weights(universe)\n        _CACHE[cache_key] = w\n        return w.copy()\n\n    longs = score.index[:k]\n    shorts = score.index[-k:]\n\n    w = pd.Series(0.0, index=universe, dtype=float)\n    w.loc[longs] = 0.02\n    w.loc[shorts] = -0.02\n\n    # Equal long and short counts make the portfolio dollar neutral.\n    _CACHE[cache_key] = w\n    return w.copy()\n"
+  },
+  "strategy_id": "ee9b81e17b23b5691d83817080ae1dbcb700ea3f23ff5fb4228f29760b4c5fa6",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.07701866159007303,
+    "annualized_return": -0.017094949897962897,
+    "total_return": -0.09803795474702193,
+    "volatility": 0.1238618208679074,
+    "max_drawdown": 0.23206914922794375,
+    "downside_risk": 0.09438630741550309,
+    "average_daily_turnover": 0.051487975615427235,
+    "total_cost": 0.038821933614032134,
+    "total_borrow_cost": 0.007476190476190477,
+    "active_days": 1256
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.3668847219937128,
+    "annualized_return": 0.03807402513542946,
+    "total_return": 0.07695871724527037,
+    "volatility": 0.12221559389973666,
+    "max_drawdown": 0.1303467326446408,
+    "downside_risk": 0.08904488229184007,
+    "average_daily_turnover": 0.06400050084190305,
+    "total_cost": 0.016000125210475766,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

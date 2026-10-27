@@ -1,0 +1,83 @@
+{
+  "completed_at_utc": "2026-10-26T05:48:30.841343+00:00",
+  "runs": 7,
+  "planned_runs": 10,
+  "research_failures": [
+    {
+      "topology": "centralized",
+      "fleet_size": 4,
+      "seed": 17,
+      "error": "'directions'"
+    },
+    {
+      "topology": "centralized",
+      "fleet_size": 4,
+      "seed": 7,
+      "error": "'directions'"
+    },
+    {
+      "topology": "hybrid",
+      "fleet_size": 4,
+      "seed": 17,
+      "error": "Manager must return one nonempty research assignment per worker"
+    }
+  ],
+  "evaluation_failures": [],
+  "actual_model_tokens": 1215706,
+  "actual_model_calls": 77,
+  "actual_candidate_trials": 71,
+  "aggregate": [
+    {
+      "topology": "decentralized",
+      "repetitions": 2,
+      "validation_sharpe_mean": -0.07665830677131374,
+      "hidden_sharpe_mean": 0.6927453423518894,
+      "hidden_sharpe_min": 0.6905487072290436,
+      "hidden_sharpe_max": 0.6949419774747353,
+      "hidden_annualized_return_mean": 0.07717364940550842,
+      "hidden_max_drawdown_mean": 0.13130876138673098,
+      "mean_total_tokens": 160010.5,
+      "mean_duplicate_variant_rate": 0.0,
+      "planned_repetitions": 2
+    },
+    {
+      "topology": "hybrid",
+      "repetitions": 1,
+      "validation_sharpe_mean": -0.17602658222993464,
+      "hidden_sharpe_mean": 0.01660708414833345,
+      "hidden_sharpe_min": 0.01660708414833345,
+      "hidden_sharpe_max": 0.01660708414833345,
+      "hidden_annualized_return_mean": -0.0031434195145857435,
+      "hidden_max_drawdown_mean": 0.12946320203153516,
+      "mean_total_tokens": 156055.0,
+      "mean_duplicate_variant_rate": 0.0,
+      "planned_repetitions": 2
+    },
+    {
+      "topology": "independent",
+      "repetitions": 2,
+      "validation_sharpe_mean": -0.1710456933637629,
+      "hidden_sharpe_mean": -0.15336016043876552,
+      "hidden_sharpe_min": -0.41571870319294885,
+      "hidden_sharpe_max": 0.10899838231541782,
+      "hidden_annualized_return_mean": -0.015678741761206427,
+      "hidden_max_drawdown_mean": 0.1259146663141949,
+      "mean_total_tokens": 163783.0,
+      "mean_duplicate_variant_rate": 0.0,
+      "planned_repetitions": 2
+    },
+    {
+      "topology": "single",
+      "repetitions": 2,
+      "validation_sharpe_mean": -0.1524595691268149,
+      "hidden_sharpe_mean": -0.3611728938765225,
+      "hidden_sharpe_min": -0.39724762311071576,
+      "hidden_sharpe_max": -0.3250981646423292,
+      "hidden_annualized_return_mean": -0.033196855148238336,
+      "hidden_max_drawdown_mean": 0.15737264609160434,
+      "mean_total_tokens": 164352.0,
+      "mean_duplicate_variant_rate": 0.0,
+      "planned_repetitions": 2
+    }
+  ]
+}

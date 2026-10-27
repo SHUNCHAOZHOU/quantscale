@@ -1,0 +1,98 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 170000,
+        "max_turn_tokens": 65536,
+        "seed": 27,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024,
+        "manager_max_format_repairs": 1,
+        "manager_max_failed_rounds": 2
+      },
+      "topology": "hybrid",
+      "fleet_size": 4,
+      "manager_count": 1,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 27,
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768,
+        "role_settings": {
+          "researcher": {
+            "reasoning_effort": "low",
+            "max_output_tokens": 32768
+          },
+          "manager": {
+            "reasoning_effort": "none",
+            "max_output_tokens": 8192
+          }
+        },
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import math\nimport numpy as np\nimport pandas as pd\n\n\ndef _price_frame(history):\n    for name in ('adjusted_close', 'close'):\n        df = history.get(name)\n        if isinstance(df, pd.DataFrame) and df.shape[0] > 0 and df.shape[1] > 0:\n            return df\n    return None\n\n\ndef generate_weights(history, universe):\n    universe = pd.Index(list(universe))\n    weights = pd.Series(0.0, index=universe, dtype=float)\n    if len(universe) == 0:\n        return weights\n\n    raw_prices = _price_frame(history)\n    if raw_prices is None:\n        return weights\n\n    prices = raw_prices.reindex(columns=universe).astype(float)\n    if prices.shape[0] < 2:\n        return weights\n\n    prices = prices.ffill()\n    last = prices.iloc[-1]\n\n    elig_df = history.get('eligible')\n    if isinstance(elig_df, pd.DataFrame):\n        elig = elig_df.reindex(columns=universe).ffill().iloc[-1]\n        elig = elig.fillna(False).astype(bool)\n    else:\n        elig = pd.Series(True, index=universe)\n\n    base_valid = last.notna() & np.isfinite(last) & (last > 0.0) & elig\n    if not base_valid.any():\n        return weights\n\n    max_lookback = 252\n    smooth_days = 5\n    need = max_lookback + 80\n    px = prices.tail(need)\n\n    if px.shape[0] < 25:\n        L = min(20, max(1, px.shape[0] - 1))\n        if L < 1:\n            return weights\n        signal = px.iloc[-1] / px.iloc[-1 - L] - 1.0\n        signal = signal.replace([np.inf, -np.inf], np.nan)\n    else:\n        ret = px.pct_change()\n        ret = ret.replace([np.inf, -np.inf], np.nan)\n        vol = ret.rolling(63, min_periods=20).std(ddof=0)\n        vol = vol.where(vol > 1e-8)\n\n        lookbacks = [21, 63, 126, 252]\n        lb_weights = [0.15, 0.30, 0.30, 0.25]\n        comps = []\n        for L, wt in zip(lookbacks, lb_weights):\n            if px.shape[0] <= L:\n                continue\n            mom = px / px.shift(L) - 1.0\n            mom = mom.replace([np.inf, -np.inf], np.nan)\n            comp = mom / (vol * math.sqrt(float(L)))\n            comp = comp.replace([np.inf, -np.inf], np.nan)\n            mu = comp.mean(axis=1, skipna=True)\n            sd = comp.std(axis=1, ddof=0, skipna=True)\n            sd = sd.where(sd > 1e-12)\n            z = comp.sub(mu, axis=0).div(sd, axis=0)\n            z = z.replace([np.inf, -np.inf], np.nan)\n            z_s = z.tail(smooth_days).mean(axis=0, skipna=True)\n            comps.append(z_s * wt)\n\n        if comps:\n            signal = pd.concat(comps, axis=1).sum(axis=1, min_count=1)\n        else:\n            L = min(20, max(1, px.shape[0] - 1))\n            signal = px.iloc[-1] / px.iloc[-1 - L] - 1.0\n            signal = signal.replace([np.inf, -np.inf], np.nan)\n\n    signal = signal.reindex(universe)\n    valid = base_valid & signal.notna() & np.isfinite(signal)\n    candidates = signal[valid]\n    n = int(candidates.shape[0])\n    if n < 2:\n        return weights\n\n    N = min(50, n // 2)\n    if N < 1:\n        return weights\n\n    ordered = candidates.sort_values(ascending=False, kind='mergesort')\n    longs = ordered.index[:N]\n    shorts = ordered.index[-N:]\n\n    per_name = min(0.02, 1.0 / (2.0 * float(N)))\n    weights.loc[longs] = per_name\n    weights.loc[shorts] = -per_name\n\n    weights = weights.clip(-0.02, 0.02)\n    gross = float(weights.abs().sum())\n    if gross > 1.0 + 1e-12:\n        weights = weights * (1.0 / gross)\n\n    return weights.fillna(0.0).astype(float)\n"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": 0.09527526430712716,
+      "annualized_return": 0.004387889399993128,
+      "total_return": 0.00872492690643245,
+      "volatility": 0.11301073055673147,
+      "max_drawdown": 0.11423146453275057,
+      "downside_risk": 0.08410149649679792,
+      "average_daily_turnover": 0.12606887916528647,
+      "total_cost": 0.03151721979132162,
+      "total_borrow_cost": 0.002976190476190477,
+      "active_days": 500
+    },
+    "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "94688d82a04d87a38c1def9b46e86d71fc653840dc5b4dbfcd9d314297d18eb1"
+}

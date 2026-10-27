@@ -1,0 +1,26 @@
+{
+  "status": "infrastructure-aborted-before-evaluation",
+  "reason": "Manager worker IDs were underspecified; fix canonical-ID contract and normalization before restart",
+  "confirmed_tokens": 72341,
+  "confirmed_candidate_trials": 3,
+  "unresolved_requests": [
+    {
+      "run": "independent-n4-s7",
+      "max_total_tokens": 65536,
+      "role": "researcher"
+    },
+    {
+      "run": "single-n1-s17",
+      "max_total_tokens": 65536,
+      "role": "researcher"
+    },
+    {
+      "run": "decentralized-n4-s17",
+      "max_total_tokens": 65536,
+      "role": "researcher"
+    }
+  ],
+  "unresolved_allowance_sum": 196608,
+  "reserved_tokens_for_aborted_attempt": 300000,
+  "holdout_opened": false
+}

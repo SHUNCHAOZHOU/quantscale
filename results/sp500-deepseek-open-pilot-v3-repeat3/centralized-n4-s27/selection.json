@@ -1,0 +1,43 @@
+{
+  "agent": 3,
+  "round": 1,
+  "hypothesis": "The prior 60-session momentum long-short book lost money (Sharpe -0.72 train, -0.98 validation) with 26% daily turnover, implying the 60-session return-z has a negative (reversal) edge in this universe. I hypothesize that a smoothed 60-session reversal signal\u2014cross-sectional z-score of the 60-session open-to-open return averaged over the last 5 sessions to damp turnover\u2014will produce a positive net-of-cost spread. I will benchmark this against a long-only equal-weight universe and a random long-short control, and plan to measure signal IC at 5-, 20-, and 60-day forward horizons to select the holding period with the best expected value after 5bps costs. For this round I implement the smoothed 60-day reversal long-short (long lowest-return names, short highest), equal-weighted within legs with at least 25 names per side, gross 1.0, net 0, and per-name weight capped at 2%. I will also test net-long variants and a low-volatility long tilt within the 1% net tolerance in subsequent rounds.",
+  "source_file": "strategies/a48a4200eda89d0b3e561fd34a4e09d9e23a8dd051627e2dffb993006661a412.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\n\ndef _get_df(history, key):\n    if isinstance(history, dict):\n        df = history.get(key)\n        if isinstance(df, pd.DataFrame):\n            return df\n    return None\n\n\ndef generate_weights(history, universe):\n    universe = pd.Index(pd.unique(pd.Index(universe).astype(str)))\n    zero = pd.Series(0.0, index=universe, dtype=float)\n    if len(universe) == 0:\n        return zero\n\n    adj = _get_df(history, 'adjusted_open')\n    if adj is None or adj.empty:\n        adj = _get_df(history, 'open')\n    if adj is None or adj.empty:\n        return zero\n\n    adj = adj.reindex(columns=universe).astype(float)\n    n_needed = 130\n    adj_s = adj.iloc[-n_needed:].ffill()\n    if len(adj_s) < 62:\n        return zero\n\n    # Smoothed 60-session return: average of 60-day returns over last 5 sessions\n    rets = []\n    max_lag = 5\n    lookback = 60\n    for lag in range(max_lag):\n        end_idx = len(adj_s) - 1 - lag\n        start_idx = end_idx - lookback\n        if start_idx < 0:\n            continue\n        r = adj_s.iloc[end_idx] / adj_s.iloc[start_idx] - 1.0\n        rets.append(r)\n    if len(rets) == 0:\n        return zero\n    ret_smooth = pd.concat(rets, axis=1).mean(axis=1, skipna=True)\n    ret_smooth = ret_smooth.replace([np.inf, -np.inf], np.nan)\n\n    last = adj_s.iloc[-1]\n    elig_df = _get_df(history, 'eligible')\n    if elig_df is not None and not elig_df.empty:\n        elig = elig_df.reindex(columns=universe).iloc[-1].astype(float).fillna(0.0).astype(bool)\n    else:\n        elig = pd.Series(True, index=universe)\n\n    vol = _get_df(history, 'volume')\n    liq = pd.Series(True, index=universe)\n    if vol is not None and not vol.empty:\n        vol_s = vol.reindex(columns=universe).astype(float).iloc[-60:]\n        price_s = adj.reindex(columns=universe).astype(float).iloc[-60:]\n        dv = vol_s * price_s\n        med = dv.median(axis=0, skipna=True)\n        liq = (med > 1e6) | med.isna()\n\n    price_ok = last.notna() & (last > 0)\n    mask = elig & price_ok & ret_smooth.notna() & np.isfinite(ret_smooth) & liq\n    tickers = universe[mask].tolist()\n    if len(tickers) < 2:\n        return zero\n\n    s = ret_smooth.reindex(tickers).astype(float).dropna()\n    if len(s) < 2:\n        return zero\n\n    mu = s.mean()\n    sd = s.std(ddof=0)\n    if np.isfinite(sd) and sd > 0:\n        z = (s - mu) / sd\n    else:\n        z = s - mu\n\n    # Reversal: long lowest z (losers), short highest z (winners)\n    tmp = pd.DataFrame({'t': z.index, 'z': z.values})\n    tmp = tmp.sort_values(['z', 't'], ascending=[True, True]).reset_index(drop=True)\n    n = len(tmp)\n    k = max(25, int(np.floor(0.15 * n)))\n    k = min(k, n // 2)\n    if k < 1:\n        return zero\n\n    longs = tmp.iloc[:k]['t'].tolist()\n    shorts = tmp.iloc[-k:]['t'].tolist()\n\n    base = min(0.5 / k, 0.02)\n    w = pd.Series(0.0, index=universe, dtype=float)\n    for t in longs:\n        w[t] = base\n    for t in shorts:\n        w[t] = -base\n\n    w = w.clip(-0.02, 0.02)\n    w = w.replace([np.inf, -np.inf], 0.0).fillna(0.0)\n    return w\n"
+  },
+  "strategy_id": "a48a4200eda89d0b3e561fd34a4e09d9e23a8dd051627e2dffb993006661a412",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": 0.25214979972200613,
+    "annualized_return": 0.02131157785564386,
+    "total_return": 0.13449911683616045,
+    "volatility": 0.10551788115991018,
+    "max_drawdown": 0.1995160493737944,
+    "downside_risk": 0.06572180657015575,
+    "average_daily_turnover": 0.12057611543143,
+    "total_cost": 0.09091439103529822,
+    "total_borrow_cost": 0.00861309523809524,
+    "active_days": 1447
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.4038786739803361,
+    "annualized_return": 0.03816451451793901,
+    "total_return": 0.0771449930498398,
+    "volatility": 0.10679420688275024,
+    "max_drawdown": 0.09101235955026366,
+    "downside_risk": 0.06920528116836143,
+    "average_daily_turnover": 0.12682457194356675,
+    "total_cost": 0.03170614298589168,
+    "total_borrow_cost": 0.0029761904761904765,
+    "active_days": 500
+  }
+}

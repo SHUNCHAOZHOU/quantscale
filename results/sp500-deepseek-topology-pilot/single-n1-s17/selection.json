@@ -1,0 +1,40 @@
+{
+  "agent": 0,
+  "round": 1,
+  "hypothesis": "The 60-day momentum trial showed strongly negative Sharpe in both train (-0.71) and validation (-1.05), so relative strength has been reversing rather than persisting in this liquid universe. That negative momentum result is consistent with short-horizon mean reversion dominating, so this trial flips to a reversal family using a short 5-day lookback with no skip, buying recent losers and selling recent winners; the top/bottom 25% fraction keeps turnover and cost exposure comparable while testing whether the sign inversion improves net validation Sharpe.",
+  "strategy": {
+    "family": "reversal",
+    "lookback": 5,
+    "skip": 0,
+    "fraction": 0.25,
+    "volatility_scale": false
+  },
+  "strategy_id": "7c5d159e33594d99bb39e62f9e9b28913bb4aef0b7f7afc2d6dff421aa07aa71",
+  "cached_backtest": false,
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.24650121278538173,
+    "annualized_return": -0.025239498123386328,
+    "total_return": -0.14184890540902295,
+    "volatility": 0.08811217313013665,
+    "max_drawdown": 0.42776938029201805,
+    "downside_risk": 0.055066541777688965,
+    "average_daily_turnover": 0.648801955257747,
+    "total_cost": 0.48919667426434116,
+    "total_borrow_cost": 0.008946428571428572,
+    "active_days": 1503
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": -0.4113477283087282,
+    "annualized_return": -0.03814466292491747,
+    "total_return": -0.07426301010168701,
+    "volatility": 0.08565724040728163,
+    "max_drawdown": 0.09154662755908782,
+    "downside_risk": 0.05858573584105014,
+    "average_daily_turnover": 0.6442715968303164,
+    "total_cost": 0.16106789920757908,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

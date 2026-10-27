@@ -1,0 +1,67 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2018-01-01",
+          "end": "2018-06-30"
+        },
+        "validation": {
+          "start": "2018-07-01",
+          "end": "2018-12-31"
+        },
+        "test": {
+          "start": "2019-01-01",
+          "end": "2019-06-30"
+        },
+        "universe_size": 48,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 4,
+        "tokens": 100000,
+        "max_turn_tokens": 16000,
+        "seed": 7,
+        "lookback_days": 300
+      },
+      "topology": "hybrid",
+      "fleet_size": 2,
+      "manager_count": 1,
+      "research_data_hash": "8d7432c4d579a80f8244e406c5736c9d991b26fc05c238cb5d550db2e109fb84",
+      "backend": "scripted-demo",
+      "token_accounting": "estimated UTF-8 bytes / 4; no model inference",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 7
+    },
+    "strategy": {
+      "family": "reversal",
+      "lookback": 120,
+      "skip": 5,
+      "fraction": 0.5,
+      "volatility_scale": false
+    },
+    "validation": {
+      "observations": 130,
+      "sharpe": 0.4750633235203211,
+      "annualized_return": 0.017017398211515156,
+      "total_return": 0.008742955299191557,
+      "volatility": 0.036947200831237495,
+      "max_drawdown": 0.015918940719256258,
+      "downside_risk": 0.026161995349942173,
+      "average_daily_turnover": 0.1009893909820709,
+      "total_cost": 0.0065643104138346075,
+      "total_borrow_cost": 0.0007428571428571428,
+      "active_days": 130
+    },
+    "implementation_sha256": "df6e14dc40daec281674be4344bc8f19b63cd2956903965b30091d4597a93601"
+  },
+  "artifact_sha256": "137fed363ec7c2040d052e0b8a855b31dd723a31083d5e3d59a83f52a733bd20"
+}

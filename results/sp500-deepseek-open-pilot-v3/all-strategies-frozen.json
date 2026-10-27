@@ -1,0 +1,23 @@
+{
+  "frozen_before_any_evaluation_utc": "2026-10-26T08:28:43.680525+00:00",
+  "submissions": {
+    "hybrid-n4-s7": "cfa861053375f0e82e0b7f3ce1f24ab84415ce33bc734d68f5c7cc82b0603ab2",
+    "centralized-n4-s17": "226fdaca7e35beec42c6c74c3373de848c7eae868b864a7e839d4b6cc330e12a",
+    "independent-n4-s7": "502a185ace3461eeb4e09e0d40d3c3ed7366da60c846cff988056dc98dadafaa",
+    "decentralized-n4-s17": "2fde48e762c4392323759e13494697e5b4937d00c5de7b82bebce2de42296ade",
+    "single-n1-s7": "ad2863ca513e56a4d6b0b65c317a21c405b2218d5b1d0b95eea4c11e26426249",
+    "centralized-n4-s7": "4425db9d26935b7dd079a2cfdd9471c7506fd457983f612893760e632080ad95",
+    "independent-n4-s17": "854aeebb0316a1825966f638b98061f5f87098f18eec3e709d7b8a841e9577e1",
+    "decentralized-n4-s7": "ea984c43e69f111a447cb7225e09312f8bef2525118b9a2d18b118ca92f0ca46",
+    "hybrid-n4-s17": "a6f2a34b8ad5c020f7e5cd4cdbd1627fb8a869f956638e47235b0bc48a79abbe"
+  },
+  "no_submission": [
+    {
+      "topology": "single",
+      "fleet_size": 1,
+      "seed": 17,
+      "error": "DeepSeek network/TLS failure; no automatic retry; usage may be uncertain"
+    }
+  ],
+  "all_scheduled_research_attempts_finished": true
+}

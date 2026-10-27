@@ -1,0 +1,43 @@
+{
+  "agent": 0,
+  "round": 1,
+  "hypothesis": "A dollar-neutral cross-sectional policy should exploit the interaction between medium-term momentum and short-term reversal: long liquid stocks with strong 20/60-day momentum but recent 5/10-day pullbacks, and short stocks with weak medium-term momentum but recent bounces. A small low-volatility tilt should improve risk-adjusted returns. Equal-weight 24-25 long/short pairs, each capped below the 2% single-name limit, keeps gross near 1 and net near zero.",
+  "source_file": "strategies/6ceb6e646fbbad2d70f487dd0a323059aef810fc875a25258e3ec148e350a695.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\n\ndef _as_df(x):\n    if isinstance(x, pd.DataFrame):\n        return x\n    if isinstance(x, dict):\n        try:\n            return pd.DataFrame(x)\n        except Exception:\n            return None\n    return None\n\n\ndef generate_weights(history, universe):\n    try:\n        cols = pd.Index(universe)\n    except Exception:\n        cols = pd.Index(list(universe))\n    zero = pd.Series(0.0, index=cols, dtype=float)\n    n = len(cols)\n    if n < 2:\n        return zero\n\n    px = _as_df(history.get('adjusted_close', None))\n    if px is None or px.empty:\n        px = _as_df(history.get('close', None))\n    if px is None or px.empty:\n        return zero\n\n    vol = _as_df(history.get('volume', None))\n    elig = _as_df(history.get('eligible', None))\n    if px.index is None or len(px.index) == 0:\n        return zero\n    latest = px.index[-1]\n\n    records = []\n    for t in cols:\n        if t not in px.columns:\n            continue\n        s = px[t].replace([np.inf, -np.inf], np.nan).dropna()\n        if len(s) < 2:\n            continue\n        try:\n            if (latest - s.index[-1]).days > 7:\n                continue\n        except Exception:\n            if s.index[-1] != latest:\n                continue\n\n        last = float(s.iloc[-1])\n        if not np.isfinite(last) or last <= 0:\n            continue\n\n        if elig is not None and t in elig.columns:\n            e = elig[t].replace([np.inf, -np.inf], np.nan).dropna()\n            if len(e) > 0:\n                ev = e.iloc[-1]\n                if isinstance(ev, str):\n                    if ev.strip().lower() in ('false', '0', 'nan', ''):\n                        continue\n                else:\n                    try:\n                        if not bool(ev):\n                            continue\n                    except Exception:\n                        pass\n\n        def ret(k):\n            if len(s) > k:\n                prev = float(s.iloc[-1 - k])\n                if np.isfinite(prev) and prev > 0:\n                    return last / prev - 1.0\n            return np.nan\n\n        r1 = ret(1)\n        r5 = ret(5)\n        r10 = ret(10)\n        r20 = ret(20)\n        r60 = ret(60)\n\n        rets = s.pct_change().replace([np.inf, -np.inf], np.nan).dropna()\n        if len(rets) >= 20:\n            vol20 = float(rets.iloc[-20:].std(ddof=0))\n        elif len(rets) >= 5:\n            vol20 = float(rets.std(ddof=0))\n        else:\n            vol20 = np.nan\n        if len(rets) >= 60:\n            vol60 = float(rets.iloc[-60:].std(ddof=0))\n        elif len(rets) >= 10:\n            vol60 = float(rets.std(ddof=0))\n        else:\n            vol60 = np.nan\n\n        vr = np.nan\n        dv = np.nan\n        if vol is not None and t in vol.columns:\n            v = vol[t].replace([np.inf, -np.inf], np.nan).dropna()\n            if len(v) >= 5:\n                v5 = float(v.iloc[-5:].mean())\n                if len(v) >= 20:\n                    v20 = float(v.iloc[-20:].mean())\n                else:\n                    v20 = float(v.mean())\n                if v20 > 0:\n                    vr = v5 / v20\n                dv = v20\n\n        records.append({\n            'ticker': t,\n            'r1': r1,\n            'r5': r5,\n            'r10': r10,\n            'r20': r20,\n            'r60': r60,\n            'vol20': vol20,\n            'vol60': vol60,\n            'vr': vr,\n            'dv': dv\n        })\n\n    if len(records) < 2:\n        return zero\n\n    df = pd.DataFrame(records).set_index('ticker')\n    if len(df) > 60:\n        df = df.assign(_dv_rank=df['dv'].rank(pct=True, method='average').fillna(0.0))\n        df = df.sort_values('_dv_rank', ascending=False, kind='mergesort').iloc[:60]\n\n    def zrank(col):\n        x = df[col]\n        if x.notna().sum() == 0:\n            return pd.Series(0.0, index=df.index, dtype=float)\n        r = x.rank(pct=True, method='average')\n        z = (r - 0.5) * 2.0\n        return z.fillna(0.0)\n\n    zr1 = zrank('r1')\n    zr5 = zrank('r5')\n    zr10 = zrank('r10')\n    zr20 = zrank('r20')\n    zr60 = zrank('r60')\n    zvol = zrank('vol20')\n    zvr = zrank('vr')\n\n    score = (0.45 * zr20 + 0.15 * zr60 - 0.35 * zr10 - 0.10 * zr5\n             - 0.15 * zvol - 0.05 * zvr)\n\n    if zr20.abs().sum() == 0 and zr10.abs().sum() == 0:\n        score = -0.50 * zr5 - 0.25 * zr1 - 0.15 * zvol\n\n    score = score.replace([np.inf, -np.inf], np.nan).fillna(0.0)\n    if float(score.abs().sum()) < 1e-12:\n        return zero\n\n    df = df.assign(score=score)\n    ranked = df.sort_values('score', ascending=False, kind='mergesort')\n    k = min(25, len(ranked) // 2)\n    if k < 1:\n        return zero\n\n    longs = ranked.index[:k].tolist()\n    shorts = ranked.index[-k:].tolist()\n    max_w = 0.0199\n\n    w = pd.Series(0.0, index=cols, dtype=float)\n    for t in longs:\n        if t in w.index:\n            w.loc[t] = max_w\n    for t in shorts:\n        if t in w.index:\n            w.loc[t] = -max_w\n\n    w = w.clip(-0.02, 0.02)\n    gross = float(w.abs().sum())\n    if gross > 1.0:\n        w = w * (1.0 / gross)\n\n    net = float(w.sum())\n    if abs(net) > 0.005:\n        nz = w[w != 0.0]\n        if len(nz) > 0:\n            w.loc[nz.index] = w.loc[nz.index] - net / len(nz)\n            w = w.clip(-0.02, 0.02)\n\n    return w.astype(float)"
+  },
+  "strategy_id": "6ceb6e646fbbad2d70f487dd0a323059aef810fc875a25258e3ec148e350a695",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 120
+  },
+  "train": {
+    "observations": 42,
+    "sharpe": -2.2084177102242686,
+    "annualized_return": -0.07686267673053992,
+    "total_return": -0.013241101059793925,
+    "volatility": 0.035923652841463975,
+    "max_drawdown": 0.01733017783797164,
+    "downside_risk": 0.028299811622846116,
+    "average_daily_turnover": 0.3136800756258021,
+    "total_cost": 0.006587281588141844,
+    "total_borrow_cost": 0.00023880000000000006,
+    "active_days": 42
+  },
+  "validation": {
+    "observations": 21,
+    "sharpe": -5.0371055529426,
+    "annualized_return": -0.2052113263392772,
+    "total_return": -0.018957913049235553,
+    "volatility": 0.04538180825503461,
+    "max_drawdown": 0.021917018291460866,
+    "downside_risk": 0.03975502851062586,
+    "average_daily_turnover": 0.31943229374609217,
+    "total_cost": 0.0033540390843339674,
+    "total_borrow_cost": 0.00011940000000000002,
+    "active_days": 21
+  }
+}

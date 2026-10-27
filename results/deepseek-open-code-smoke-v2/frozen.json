@@ -1,0 +1,84 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2018-01-01",
+          "end": "2018-02-28"
+        },
+        "validation": {
+          "start": "2018-03-01",
+          "end": "2018-03-30"
+        },
+        "test": {
+          "start": "2018-04-01",
+          "end": "2018-04-30"
+        },
+        "universe_size": 48,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 2,
+        "tokens": 40000,
+        "max_turn_tokens": 32768,
+        "seed": 7,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "strict",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 120,
+        "code_memory_mb": 1024
+      },
+      "topology": "single",
+      "fleet_size": 1,
+      "manager_count": 0,
+      "research_data_hash": "3bf97676ac1dc0aacfd69865855c746745292c3aa5dd160abee1b07fec604140",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 7,
+      "excluded_data_sessions": [],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "high",
+        "max_output_tokens": 16384,
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\n\n\ndef _as_df(x):\n    if isinstance(x, pd.DataFrame):\n        return x\n    if isinstance(x, dict):\n        try:\n            return pd.DataFrame(x)\n        except Exception:\n            return None\n    return None\n\n\ndef generate_weights(history, universe):\n    try:\n        cols = pd.Index(universe)\n    except Exception:\n        cols = pd.Index(list(universe))\n    zero = pd.Series(0.0, index=cols, dtype=float)\n    n = len(cols)\n    if n < 2:\n        return zero\n\n    px = _as_df(history.get('adjusted_close', None))\n    if px is None or px.empty:\n        px = _as_df(history.get('close', None))\n    if px is None or px.empty:\n        return zero\n\n    vol = _as_df(history.get('volume', None))\n    elig = _as_df(history.get('eligible', None))\n    if px.index is None or len(px.index) == 0:\n        return zero\n    latest = px.index[-1]\n\n    records = []\n    for t in cols:\n        if t not in px.columns:\n            continue\n        s = px[t].replace([np.inf, -np.inf], np.nan).dropna()\n        if len(s) < 2:\n            continue\n        try:\n            if (latest - s.index[-1]).days > 7:\n                continue\n        except Exception:\n            if s.index[-1] != latest:\n                continue\n\n        last = float(s.iloc[-1])\n        if not np.isfinite(last) or last <= 0:\n            continue\n\n        if elig is not None and t in elig.columns:\n            e = elig[t].replace([np.inf, -np.inf], np.nan).dropna()\n            if len(e) > 0:\n                ev = e.iloc[-1]\n                if isinstance(ev, str):\n                    if ev.strip().lower() in ('false', '0', 'nan', ''):\n                        continue\n                else:\n                    try:\n                        if not bool(ev):\n                            continue\n                    except Exception:\n                        pass\n\n        def ret(k):\n            if len(s) > k:\n                prev = float(s.iloc[-1 - k])\n                if np.isfinite(prev) and prev > 0:\n                    return last / prev - 1.0\n            return np.nan\n\n        r1 = ret(1)\n        r5 = ret(5)\n        r10 = ret(10)\n        r20 = ret(20)\n        r60 = ret(60)\n\n        rets = s.pct_change().replace([np.inf, -np.inf], np.nan).dropna()\n        if len(rets) >= 20:\n            vol20 = float(rets.iloc[-20:].std(ddof=0))\n        elif len(rets) >= 5:\n            vol20 = float(rets.std(ddof=0))\n        else:\n            vol20 = np.nan\n        if len(rets) >= 60:\n            vol60 = float(rets.iloc[-60:].std(ddof=0))\n        elif len(rets) >= 10:\n            vol60 = float(rets.std(ddof=0))\n        else:\n            vol60 = np.nan\n\n        vr = np.nan\n        dv = np.nan\n        if vol is not None and t in vol.columns:\n            v = vol[t].replace([np.inf, -np.inf], np.nan).dropna()\n            if len(v) >= 5:\n                v5 = float(v.iloc[-5:].mean())\n                if len(v) >= 20:\n                    v20 = float(v.iloc[-20:].mean())\n                else:\n                    v20 = float(v.mean())\n                if v20 > 0:\n                    vr = v5 / v20\n                dv = v20\n\n        records.append({\n            'ticker': t,\n            'r1': r1,\n            'r5': r5,\n            'r10': r10,\n            'r20': r20,\n            'r60': r60,\n            'vol20': vol20,\n            'vol60': vol60,\n            'vr': vr,\n            'dv': dv\n        })\n\n    if len(records) < 2:\n        return zero\n\n    df = pd.DataFrame(records).set_index('ticker')\n    if len(df) > 60:\n        df = df.assign(_dv_rank=df['dv'].rank(pct=True, method='average').fillna(0.0))\n        df = df.sort_values('_dv_rank', ascending=False, kind='mergesort').iloc[:60]\n\n    def zrank(col):\n        x = df[col]\n        if x.notna().sum() == 0:\n            return pd.Series(0.0, index=df.index, dtype=float)\n        r = x.rank(pct=True, method='average')\n        z = (r - 0.5) * 2.0\n        return z.fillna(0.0)\n\n    zr1 = zrank('r1')\n    zr5 = zrank('r5')\n    zr10 = zrank('r10')\n    zr20 = zrank('r20')\n    zr60 = zrank('r60')\n    zvol = zrank('vol20')\n    zvr = zrank('vr')\n\n    score = (0.45 * zr20 + 0.15 * zr60 - 0.35 * zr10 - 0.10 * zr5\n             - 0.15 * zvol - 0.05 * zvr)\n\n    if zr20.abs().sum() == 0 and zr10.abs().sum() == 0:\n        score = -0.50 * zr5 - 0.25 * zr1 - 0.15 * zvol\n\n    score = score.replace([np.inf, -np.inf], np.nan).fillna(0.0)\n    if float(score.abs().sum()) < 1e-12:\n        return zero\n\n    df = df.assign(score=score)\n    ranked = df.sort_values('score', ascending=False, kind='mergesort')\n    k = min(25, len(ranked) // 2)\n    if k < 1:\n        return zero\n\n    longs = ranked.index[:k].tolist()\n    shorts = ranked.index[-k:].tolist()\n    max_w = 0.0199\n\n    w = pd.Series(0.0, index=cols, dtype=float)\n    for t in longs:\n        if t in w.index:\n            w.loc[t] = max_w\n    for t in shorts:\n        if t in w.index:\n            w.loc[t] = -max_w\n\n    w = w.clip(-0.02, 0.02)\n    gross = float(w.abs().sum())\n    if gross > 1.0:\n        w = w * (1.0 / gross)\n\n    net = float(w.sum())\n    if abs(net) > 0.005:\n        nz = w[w != 0.0]\n        if len(nz) > 0:\n            w.loc[nz.index] = w.loc[nz.index] - net / len(nz)\n            w = w.clip(-0.02, 0.02)\n\n    return w.astype(float)"
+    },
+    "validation": {
+      "observations": 21,
+      "sharpe": -5.0371055529426,
+      "annualized_return": -0.2052113263392772,
+      "total_return": -0.018957913049235553,
+      "volatility": 0.04538180825503461,
+      "max_drawdown": 0.021917018291460866,
+      "downside_risk": 0.03975502851062586,
+      "average_daily_turnover": 0.31943229374609217,
+      "total_cost": 0.0033540390843339674,
+      "total_borrow_cost": 0.00011940000000000002,
+      "active_days": 21
+    },
+    "implementation_sha256": "0138623657372d6381bb0017974e435e28377f8ac07e189d5ee44fdc134fb7eb",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "a339e249eaca39833a80d4f56e1ce06884ddc34ae2bc3008691e98e75f092156"
+}

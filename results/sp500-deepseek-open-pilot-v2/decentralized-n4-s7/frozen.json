@@ -1,0 +1,86 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 170000,
+        "max_turn_tokens": 65536,
+        "seed": 7,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024
+      },
+      "topology": "decentralized",
+      "fleet_size": 4,
+      "manager_count": 0,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 7,
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "high",
+        "max_output_tokens": 16384,
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\n\n\ndef _safe_frame(history, key):\n    obj = history.get(key, None)\n    if isinstance(obj, pd.DataFrame) and not obj.empty:\n        return obj\n    return None\n\n\ndef _last_row_shift(df, n):\n    if n <= 0:\n        return df.iloc[-1]\n    if n >= len(df):\n        return pd.Series(np.nan, index=df.columns, dtype=float)\n    return df.iloc[-1 - n]\n\n\ndef _cs_rank(s):\n    return s.rank(method='average', pct=True) - 0.5\n\n\ndef generate_weights(history, universe):\n    universe = pd.Index(universe)\n    weights = pd.Series(0.0, index=universe, dtype=float)\n    if len(universe) == 0:\n        return weights\n\n    close = _safe_frame(history, 'adjusted_close')\n    close_raw = _safe_frame(history, 'close')\n    if close is None:\n        close = close_raw\n    else:\n        close = close.copy()\n        if close_raw is not None:\n            close_raw = close_raw.reindex(index=close.index, columns=close.columns)\n            close = close.where(close.notna(), close_raw)\n    if close is None or close.empty:\n        return weights\n\n    close = close.reindex(columns=universe)\n    if close.empty:\n        return weights\n    close = close.apply(pd.to_numeric, errors='coerce')\n    L = len(close)\n    if L < 2:\n        return weights\n\n    if L >= 253:\n        skip, lb12, lb6 = 21, 252, 126\n    elif L >= 127:\n        skip, lb12, lb6 = 21, 126, 63\n    else:\n        if L >= 4:\n            skip = max(1, min(21, L // 5))\n            lb12 = max(skip + 1, min(L - 1, L // 2))\n            lb6 = max(skip + 1, min(L - 1, L // 3))\n        else:\n            skip, lb12, lb6 = 1, 1, 1\n\n    last = close.iloc[-1]\n    p_skip = _last_row_shift(close, skip)\n    p_12 = _last_row_shift(close, lb12)\n    p_6 = _last_row_shift(close, lb6)\n\n    mom12 = (p_skip / p_12 - 1.0).replace([np.inf, -np.inf], np.nan)\n    mom6 = (p_skip / p_6 - 1.0).replace([np.inf, -np.inf], np.nan)\n    rev = (last / p_skip - 1.0).replace([np.inf, -np.inf], np.nan)\n\n    ret = close.pct_change()\n    vol_window = min(126, max(20, L // 4))\n    vol_last = ret.tail(vol_window).std().replace([np.inf, -np.inf], np.nan)\n\n    r12 = _cs_rank(mom12)\n    r6 = _cs_rank(mom6)\n    rrev = _cs_rank(rev)\n    rvol = _cs_rank(vol_last)\n\n    signal = 0.55 * r12 + 0.30 * r6 - 0.10 * rrev - 0.05 * rvol\n    signal = signal.replace([np.inf, -np.inf], np.nan)\n\n    eligible = pd.Series(True, index=universe, dtype=bool)\n    elig_df = _safe_frame(history, 'eligible')\n    if elig_df is not None:\n        e = elig_df.reindex(columns=universe)\n        if not e.empty:\n            e_last = e.iloc[-1]\n            try:\n                eligible = e_last.fillna(False).astype(bool)\n            except Exception:\n                eligible = e_last.notna()\n    eligible = eligible.reindex(universe).fillna(False).astype(bool)\n\n    liquid = pd.Series(True, index=universe, dtype=bool)\n    vol_df = _safe_frame(history, 'volume')\n    if vol_df is not None:\n        v = vol_df.reindex(columns=universe)\n        if not v.empty:\n            v_med = v.tail(min(20, len(v))).median()\n            liquid = v_med.notna() & (v_med > 0)\n    liquid = liquid.reindex(universe).fillna(False).astype(bool)\n\n    valid = (\n        eligible\n        & liquid\n        & last.notna()\n        & (last > 0)\n        & signal.notna()\n    )\n    valid = valid.fillna(False).astype(bool)\n\n    ranked = signal[valid].sort_values(ascending=False)\n    n = len(ranked)\n    if n < 2:\n        return weights\n\n    n_side = min(50, n // 2)\n    if n_side < 1:\n        return weights\n\n    longs = ranked.index[:n_side]\n    shorts = ranked.index[-n_side:]\n    w = min(0.02, 0.5 / n_side, 1.0 / (2.0 * n_side))\n    weights.loc[longs] = w\n    weights.loc[shorts] = -w\n    return weights"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": -0.13916372894812418,
+      "annualized_return": -0.025756241347398068,
+      "total_return": -0.050455891938504305,
+      "volatility": 0.12829299210946957,
+      "max_drawdown": 0.15154400147390645,
+      "downside_risk": 0.09629721830874298,
+      "average_daily_turnover": 0.21807845427795272,
+      "total_cost": 0.05451961356948817,
+      "total_borrow_cost": 0.002976190476190477,
+      "active_days": 500
+    },
+    "implementation_sha256": "3dcdcbf48932278e4d8bcfd98c1d2d667766243069c20221a77a745f89f744f3",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "fdbce6fd7c3b1319c3181534bb63ec5e3debef179c7d7d9c4b14a07632cbe421"
+}

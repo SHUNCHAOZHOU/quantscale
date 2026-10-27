@@ -1,0 +1,7 @@
+run,topology,fleet_size,backtest_budget,seed,validation_sharpe,total_tokens,communication_turn_tokens_upper_bound,total_backtests,agent_turns,communication_calls,hypotheses,successful_candidates,unique_strategy_variants,duplicate_variant_rate,unique_families,family_entropy,mean_trials_per_active_researcher
+single-n1-b2-s7,single,1,2,7,-1.1274976175263105,740,0,2,2,0,2,2,2,0.0,1,-0.0,2.0
+single-n1-b2-s17,single,1,2,17,0.9094024930259146,755,0,2,2,0,2,2,2,0.0,1,-0.0,2.0
+independent-n2-b2-s7,independent,2,2,7,-4.051766809769953,474,0,2,2,0,2,2,2,0.0,1,-0.0,1.0
+independent-n2-b2-s17,independent,2,2,17,-1.1502030420024985,480,0,2,2,0,2,2,2,0.0,2,0.6931471805599453,1.0
+centralized-n2-b2-s7,centralized,2,2,7,0.4750633235203211,609,129,2,3,1,2,2,2,0.0,2,0.6931471805599453,1.0
+centralized-n2-b2-s17,centralized,2,2,17,-0.9085674647536928,608,129,2,3,1,2,2,2,0.0,2,0.6931471805599453,1.0

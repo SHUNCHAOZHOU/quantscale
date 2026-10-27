@@ -1,0 +1,98 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 4,
+        "tokens": 270000,
+        "max_turn_tokens": 131072,
+        "seed": 117,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024,
+        "manager_max_format_repairs": 1,
+        "manager_max_failed_rounds": 2
+      },
+      "topology": "independent",
+      "fleet_size": 4,
+      "manager_count": 0,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "selection": "highest net validation Sharpe, SHA256 ascending tie-break",
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "budget_mode": "fixed-total",
+      "seed": 117,
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ],
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768,
+        "role_settings": {
+          "researcher": {
+            "reasoning_effort": "low",
+            "max_output_tokens": 32768
+          },
+          "manager": {
+            "reasoning_effort": "none",
+            "max_output_tokens": 8192
+          }
+        },
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      }
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\nimport math\n\ndef _zscore(s):\n    s = pd.to_numeric(s, errors='coerce')\n    s = s.replace([np.inf, -np.inf], np.nan)\n    mu = s.mean()\n    sd = s.std()\n    if not np.isfinite(sd) or sd < 1e-12:\n        return pd.Series(0.0, index=s.index)\n    return (s - mu) / sd\n\ndef generate_weights(history, universe):\n    tickers = pd.Index(list(universe))\n    weights = pd.Series(0.0, index=tickers, dtype=float)\n    if len(tickers) == 0:\n        return weights\n\n    def _get(key):\n        df = history.get(key) if isinstance(history, dict) else None\n        if df is None:\n            return None\n        try:\n            return df.reindex(columns=tickers)\n        except Exception:\n            return None\n\n    adj = _get('adjusted_close')\n    raw = _get('close')\n    vol_df = _get('volume')\n    elig_df = _get('eligible')\n\n    close = adj\n    if close is None or close.dropna(how='all').shape[1] == 0:\n        close = raw\n    if close is None or close.empty:\n        return weights\n    if raw is None:\n        raw = close\n\n    n = len(close)\n    if n < 30:\n        return weights\n\n    last = close.iloc[-1].astype(float)\n    raw_last = raw.iloc[-1].astype(float)\n    valid = last.notna() & np.isfinite(last) & (last > 0.0)\n    valid = valid & raw_last.notna() & np.isfinite(raw_last) & (raw_last > 2.0)\n\n    if elig_df is not None and len(elig_df) > 0:\n        e = elig_df.iloc[-1].reindex(tickers)\n        try:\n            e = e.fillna(False).astype(bool)\n        except Exception:\n            e = e.fillna(0).astype(float).astype(bool)\n        valid = valid & e\n\n    if valid.sum() < 10:\n        valid = last.notna() & np.isfinite(last) & (last > 0.0)\n    if valid.sum() < 4:\n        return weights\n\n    rets = close / close.shift(1) - 1.0\n\n    def shift_ret(d):\n        if n > d:\n            prev = close.shift(d).iloc[-1].astype(float)\n            return last / prev - 1.0\n        return pd.Series(np.nan, index=tickers)\n\n    r252 = shift_ret(252)\n    r126 = shift_ret(126)\n    r21 = shift_ret(21)\n\n    mom = 0.5 * r126 + 0.5 * (r252 - r21)\n    mom = mom.where(np.isfinite(mom), r252)\n    mom = mom.where(np.isfinite(mom), r126)\n    mom = mom.where(np.isfinite(mom), r21)\n\n    vol_win = min(60, max(10, n - 1))\n    vol = rets.iloc[-vol_win:].std(ddof=0) * math.sqrt(252.0)\n    vol = vol.replace([np.inf, -np.inf], np.nan)\n\n    vol_short_win = min(21, max(5, n - 1))\n    vol_short = rets.iloc[-vol_short_win:].std(ddof=0) * math.sqrt(252.0)\n\n    hi_win = min(252, n)\n    hi = close.iloc[-hi_win:].max()\n    trend = last / hi - 1.0\n    trend = trend.replace([np.inf, -np.inf], np.nan)\n\n    if vol_df is not None:\n        dv = (raw * vol_df).iloc[-min(60, n):].median()\n    else:\n        dv = pd.Series(np.nan, index=tickers)\n\n    mom_adj = mom / vol\n    rev_adj = (-r21) / vol_short\n    score = (0.50 * _zscore(mom_adj)\n             + 0.25 * _zscore(trend)\n             + 0.25 * _zscore(rev_adj)\n             - 0.10 * _zscore(vol))\n\n    valid = valid & np.isfinite(score) & np.isfinite(vol) & (vol > 0.01)\n\n    if dv.notna().any():\n        dvv = dv.replace([np.inf, -np.inf], np.nan)\n        q = dvv.quantile(0.2)\n        threshold = max(250000.0, float(q) if np.isfinite(q) else 0.0)\n        valid = valid & (dvv >= threshold)\n\n    if valid.sum() < 10:\n        valid = last.notna() & np.isfinite(last) & (last > 0.0) & np.isfinite(score)\n    if valid.sum() < 4:\n        return weights\n\n    s = score[valid].dropna()\n    if len(s) < 4:\n        return weights\n\n    ordered = s.sort_values()\n    n_side = min(50, len(ordered) // 2)\n    if n_side < 1:\n        return weights\n\n    wt = min(0.5 / float(n_side), 0.02)\n    longs = ordered.index[-n_side:]\n    shorts = ordered.index[:n_side]\n    weights.loc[longs] = wt\n    weights.loc[shorts] = -wt\n    return weights.replace([np.inf, -np.inf], 0.0).fillna(0.0)\n"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": -0.22260537668134422,
+      "annualized_return": -0.03962052012921091,
+      "total_return": -0.07707921102064397,
+      "volatility": 0.13847430356945867,
+      "max_drawdown": 0.19119420529802356,
+      "downside_risk": 0.10312886718122756,
+      "average_daily_turnover": 0.18696617572932211,
+      "total_cost": 0.04674154393233053,
+      "total_borrow_cost": 0.002976190476190477,
+      "active_days": 500
+    },
+    "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "482c543321072ccc4b62f2007daeb1b51eaba48ad3669d10844f8a677669245c"
+}

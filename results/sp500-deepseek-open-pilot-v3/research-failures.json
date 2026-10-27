@@ -1,0 +1,8 @@
+[
+  {
+    "topology": "single",
+    "fleet_size": 1,
+    "seed": 17,
+    "error": "DeepSeek network/TLS failure; no automatic retry; usage may be uncertain"
+  }
+]

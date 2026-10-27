@@ -1,0 +1,12 @@
+{
+  "total_tokens": 149836,
+  "communication_turn_tokens_upper_bound": 0,
+  "total_backtests": 8,
+  "agent_turns": 8,
+  "communication_calls": 0,
+  "hypotheses": 8,
+  "successful_candidates": 6,
+  "unique_strategy_variants": 7,
+  "duplicate_variant_rate": 0.0,
+  "mean_trials_per_active_researcher": 7.0
+}

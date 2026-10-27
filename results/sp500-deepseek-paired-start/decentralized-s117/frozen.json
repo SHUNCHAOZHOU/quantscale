@@ -1,0 +1,102 @@
+{
+  "payload": {
+    "protocol": {
+      "schema_version": 1,
+      "config": {
+        "train": {
+          "start": "2016-01-01",
+          "end": "2021-12-31"
+        },
+        "validation": {
+          "start": "2022-01-01",
+          "end": "2023-12-31"
+        },
+        "test": {
+          "start": "2024-01-01",
+          "end": "2025-12-31"
+        },
+        "universe_size": 500,
+        "min_price": 5.0,
+        "min_volume": 100000.0,
+        "gross_limit": 1.0,
+        "max_weight": 0.02,
+        "net_tolerance": 0.01,
+        "cost_bps": 5.0,
+        "annual_borrow_bps": 30.0,
+        "annualization": 252,
+        "backtests": 12,
+        "tokens": 400000,
+        "max_turn_tokens": 131072,
+        "seed": 117,
+        "lookback_days": 300,
+        "universe_mode": "fixed",
+        "missing_data_policy": "skip_incomplete_sessions",
+        "strategy_mode": "python",
+        "code_history_days": null,
+        "code_call_timeout_seconds": 10,
+        "code_backtest_timeout_seconds": 180,
+        "code_memory_mb": 1024,
+        "manager_max_format_repairs": 1,
+        "manager_max_failed_rounds": 2
+      },
+      "topology": "decentralized",
+      "fleet_size": 4,
+      "manager_count": 0,
+      "research_data_hash": "bd10b28c8209e49824ed58a10184838aba97515d380de897e1a260e55d2e13bd",
+      "backend": "deepseek-flash",
+      "backend_configuration": {
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning_effort": "low",
+        "max_output_tokens": 32768,
+        "role_settings": {
+          "researcher": {
+            "reasoning_effort": "low",
+            "max_output_tokens": 32768
+          },
+          "manager": {
+            "reasoning_effort": "none",
+            "max_output_tokens": 8192
+          }
+        },
+        "input_budget_preflight": "UTF-8 JSON bytes + 1024 overhead reservation; estimated"
+      },
+      "token_accounting": "provider actual total_tokens; conservative UTF-8 input reservation, not an exact token count",
+      "seed": 117,
+      "execution": "close t -> next open -> following open; each split starts flat",
+      "selection": "highest net validation Sharpe including initial four; SHA256 ascending tie-break",
+      "budget_mode": "paired-start, 8 additional candidate attempts in exactly two scheduled rounds",
+      "initial_state_sha256": "6fae307f90873d2e01dc4d36df6fbb4c5fe2da8055232d87adcd5d36caf1167d",
+      "study_source_sha256": "b9e1493cda5da1f72b077348fb8363309e2ddb7140844f1d330281210c751012",
+      "initial_cost_accounting": "Initial four generated once, recorded separately; not charged four times",
+      "manager_failure_policy": "Skip failed scheduled round; at most two scheduled rounds; retain best initial strategy",
+      "excluded_data_sessions": [
+        "2021-05-05"
+      ]
+    },
+    "strategy": {
+      "kind": "python",
+      "source": "import numpy as np\nimport pandas as pd\nimport math\n\n\ndef _reindex(df, tickers):\n    if df is None:\n        return None\n    try:\n        return df.reindex(columns=tickers)\n    except Exception:\n        return None\n\n\ndef generate_weights(history, universe):\n    tickers = pd.Index(list(universe))\n    n = len(tickers)\n    if n == 0:\n        return pd.Series(dtype=float)\n    zero = pd.Series(0.0, index=tickers, dtype=float)\n    if not isinstance(history, dict):\n        return zero\n\n    price = _reindex(history.get('adjusted_close'), tickers)\n    if price is None or price.dropna(how='all').empty:\n        price = _reindex(history.get('close'), tickers)\n    if price is None or price.empty:\n        return zero\n    price = price.astype(float)\n    if len(price) < 120:\n        return zero\n\n    dates = price.index\n    last_pos = len(dates) - 1\n    sig_pos = last_pos\n    try:\n        periods = dates.to_period('M')\n        cur = periods[-1]\n        prior = np.where(periods < cur)[0]\n        if len(prior) > 0:\n            sig_pos = int(prior[-1])\n    except Exception:\n        sig_pos = last_pos\n    if sig_pos < 80:\n        return zero\n\n    p = price.iloc[:sig_pos + 1].tail(900)\n    if len(p) < 80:\n        return zero\n\n    raw = _reindex(history.get('close'), tickers)\n    if raw is None:\n        raw = price\n\n    last_adj = price.iloc[-1].astype(float)\n    last_sig = p.iloc[-1].astype(float)\n    valid = last_adj.notna() & np.isfinite(last_adj) & (last_adj > 0.0)\n    valid = valid & last_sig.notna() & np.isfinite(last_sig) & (last_sig > 0.0)\n\n    if raw is not None and len(raw) == len(price):\n        last_raw = raw.iloc[-1].astype(float)\n        valid = valid & last_raw.notna() & np.isfinite(last_raw) & (last_raw > 2.0)\n\n    cnt = p.notna().sum()\n    valid = valid & (cnt >= min(120, max(60, len(p) // 2)))\n\n    elig = _reindex(history.get('eligible'), tickers)\n    if elig is not None and len(elig) > 0:\n        try:\n            e = elig.iloc[-1].reindex(tickers).fillna(False).astype(bool)\n            valid = valid & e\n        except Exception:\n            pass\n\n    vol_df = _reindex(history.get('volume'), tickers)\n    if vol_df is not None:\n        try:\n            v = vol_df.iloc[:sig_pos + 1].tail(21).astype(float)\n            c = raw.iloc[:sig_pos + 1].tail(21).astype(float)\n            adv = (v * c).median()\n            adv = pd.to_numeric(adv, errors='coerce')\n            valid = valid & adv.notna() & np.isfinite(adv) & (adv > 250000.0)\n        except Exception:\n            pass\n\n    rets = p.pct_change(fill_method=None)\n    vol60 = rets.tail(60).std(ddof=0).replace([np.inf, -np.inf], np.nan)\n    ann_vol = (vol60 * math.sqrt(252.0)).clip(lower=0.05, upper=2.0)\n    valid = valid & ann_vol.notna() & np.isfinite(ann_vol) & (ann_vol > 0)\n\n    mkt = rets.mean(axis=1)\n    win = min(252, max(20, len(rets) - 1))\n    R = rets.tail(win).to_numpy(dtype=float)\n    M = mkt.tail(win).to_numpy(dtype=float)\n    mask = np.isfinite(R) & np.isfinite(M)[:, None]\n    nobs = mask.sum(axis=0)\n    R0 = np.where(mask, R, 0.0)\n    M0 = np.where(mask, M[:, None], 0.0)\n    meanR = R0.sum(axis=0) / np.maximum(nobs, 1)\n    meanM = M0.sum(axis=0) / np.maximum(nobs, 1)\n    cov = ((R0 - meanR) * (M0 - meanM)).sum(axis=0) / np.maximum(nobs - 1, 1)\n    var = ((M0 - meanM) ** 2).sum(axis=0) / np.maximum(nobs - 1, 1)\n    beta_vals = np.where((nobs >= 60) & (var > 1e-12), cov / var, np.nan)\n    beta_vals = np.clip(beta_vals, -3.0, 3.0)\n    beta = pd.Series(beta_vals, index=tickers)\n    valid = valid & beta.notna() & np.isfinite(beta)\n\n    def skip_ret(look, off=22):\n        if len(p) > look + off:\n            end = p.iloc[-off].astype(float)\n            start = p.iloc[-off - look].astype(float)\n            return end / start - 1.0\n        return pd.Series(np.nan, index=tickers)\n\n    lt1 = skip_ret(252)\n    lt2 = skip_ret(504)\n    lt3 = skip_ret(756)\n    lt = pd.concat([lt1, lt2, lt3], axis=1).mean(axis=1, skipna=True)\n    lt = lt.replace([np.inf, -np.inf], np.nan)\n\n    def mkt_cum(recent_lag, old_lag):\n        if len(mkt) > old_lag:\n            arr = mkt.iloc[-old_lag:-recent_lag].to_numpy(dtype=float)\n            return float(np.expm1(np.nansum(np.log1p(arr))))\n        return np.nan\n\n    resid12 = pd.Series(np.nan, index=tickers)\n    resid6 = pd.Series(np.nan, index=tickers)\n    mom3 = pd.Series(np.nan, index=tickers)\n\n    if len(p) > 253:\n        mom12 = p.iloc[-22].astype(float) / p.iloc[-253].astype(float) - 1.0\n        mc = mkt_cum(21, 252)\n        if np.isfinite(mc):\n            resid12 = mom12 - beta * mc\n\n    if len(p) > 148:\n        mom6 = p.iloc[-22].astype(float) / p.iloc[-148].astype(float) - 1.0\n        mc = mkt_cum(21, 147)\n        if np.isfinite(mc):\n            resid6 = mom6 - beta * mc\n\n    if len(p) > 64:\n        mom3 = p.iloc[-1].astype(float) / p.iloc[-64].astype(float) - 1.0\n\n    resid = resid12.copy()\n    resid = resid.where(resid.notna(), resid6)\n    resid = resid.where(resid.notna(), mom3)\n    resid = resid.replace([np.inf, -np.inf], np.nan)\n\n    rev_adj = (-lt) / ann_vol\n    mom_adj = resid / ann_vol\n    has_sig = (rev_adj.notna() & np.isfinite(rev_adj)) | (mom_adj.notna() & np.isfinite(mom_adj))\n    valid = valid & has_sig\n\n    if valid.sum() < 8:\n        return zero\n\n    rank_rev = rev_adj.where(valid).rank(method='average', pct=True).fillna(0.5)\n    rank_mom = mom_adj.where(valid).rank(method='average', pct=True).fillna(0.5)\n    rank_low = (-ann_vol).where(valid).rank(method='average', pct=True).fillna(0.5)\n    score = 0.45 * rank_rev + 0.45 * rank_mom + 0.10 * rank_low\n    score = score.replace([np.inf, -np.inf], np.nan)\n\n    bvals = beta[valid]\n    if len(bvals) < 8:\n        return zero\n    qs = np.nanpercentile(bvals.to_numpy(dtype=float), [20, 40, 60, 80])\n    bucket = pd.Series(np.digitize(beta.to_numpy(dtype=float), qs), index=tickers)\n\n    long_idx = []\n    short_idx = []\n    for b in range(5):\n        sub = score[valid & (bucket == b)].dropna().sort_values()\n        if len(sub) < 2:\n            continue\n        k = min(8, len(sub) // 2)\n        if k < 1:\n            continue\n        long_idx.extend(sub.index[-k:].tolist())\n        short_idx.extend(sub.index[:k].tolist())\n\n    total = len(long_idx)\n    if total < 4 or len(short_idx) != total:\n        return zero\n\n    if mkt.notna().sum() >= 60:\n        mvol = float(mkt.tail(60).std(ddof=0) * math.sqrt(252.0))\n    else:\n        mvol = 0.20\n    if not np.isfinite(mvol) or mvol <= 0:\n        mvol = 0.20\n\n    scale = min(1.0, max(0.50, 0.20 / mvol))\n    side_gross = 0.5 * scale\n    w = min(0.02, side_gross / float(total))\n\n    weights = zero.copy()\n    weights.loc[long_idx] = w\n    weights.loc[short_idx] = -w\n\n    net = weights.sum()\n    if abs(net) > 1e-12:\n        nz = weights.index[weights != 0.0]\n        if len(nz) > 0:\n            weights.loc[nz] -= net / len(nz)\n\n    weights = weights.replace([np.inf, -np.inf], 0.0).fillna(0.0).clip(-0.02, 0.02)\n\n    net = weights.sum()\n    if abs(net) > 1e-12:\n        nz = weights.index[weights != 0.0]\n        if len(nz) > 0:\n            weights.loc[nz] -= net / len(nz)\n            weights = weights.clip(-0.02, 0.02)\n\n    gross = weights.abs().sum()\n    if gross > 1.0:\n        weights = weights * (1.0 / gross)\n\n    return weights.replace([np.inf, -np.inf], 0.0).fillna(0.0).astype(float)"
+    },
+    "validation": {
+      "observations": 500,
+      "sharpe": 0.9710647894461639,
+      "annualized_return": 0.07315453474198996,
+      "total_return": 0.1503707419772773,
+      "volatility": 0.07566117796143185,
+      "max_drawdown": 0.09196676087459488,
+      "downside_risk": 0.05076195059746463,
+      "average_daily_turnover": 0.07034312259547694,
+      "total_cost": 0.017585780648869235,
+      "total_borrow_cost": 0.002743072848389515,
+      "active_days": 500
+    },
+    "implementation_sha256": "22eed4dacf73518c88377f7fa6fd670b72443877e79be9d221717e3259bc50c8",
+    "runtime_versions": {
+      "python": "3.9.6",
+      "numpy": "2.0.2",
+      "pandas": "2.3.3"
+    }
+  },
+  "artifact_sha256": "3396f73f7acbb7276d2b60fc2caa60979aa3f52939903de4dcbc45e7c126151c"
+}

@@ -1,0 +1,39 @@
+{
+  "agent": 0,
+  "round": 1,
+  "hypothesis": "volume with a 120-day horizon",
+  "strategy": {
+    "family": "volume",
+    "lookback": 120,
+    "skip": 0,
+    "fraction": 0.2,
+    "volatility_scale": false
+  },
+  "strategy_id": "6e304b1ee869d5f26811fa1be29a0b80db6e05dd0607c4f61b6c7b59733789d2",
+  "train": {
+    "observations": 129,
+    "sharpe": -1.7687815635401352,
+    "annualized_return": -0.043953077551158515,
+    "total_return": -0.02274654723348335,
+    "volatility": 0.025231116373283565,
+    "max_drawdown": 0.03495125379935671,
+    "downside_risk": 0.019901609314508916,
+    "average_daily_turnover": 0.5851776189111955,
+    "total_cost": 0.037743956419772115,
+    "total_borrow_cost": 0.0002764285714285714,
+    "active_days": 129
+  },
+  "validation": {
+    "observations": 130,
+    "sharpe": -1.1274976175263105,
+    "annualized_return": -0.02576378157342163,
+    "total_return": -0.01337480130327473,
+    "volatility": 0.022917596631713232,
+    "max_drawdown": 0.016194316460776514,
+    "downside_risk": 0.016761975220272254,
+    "average_daily_turnover": 0.587568571319191,
+    "total_cost": 0.03819195713574741,
+    "total_borrow_cost": 0.00027857142857142854,
+    "active_days": 130
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "agent": 3,
+  "round": 2,
+  "hypothesis": "Prior rounds show that short-horizon reversal and residual momentum are weak after costs in this liquid universe. I test a slower, distinct source of return: dynamic beta rotation. A dollar-neutral portfolio that is long high-beta and short low-beta when the equal-weight market is above its 200-day average, and reverses this when below, should harvest the empirical tendency for high-beta baskets to outperform in risk-on regimes and underperform in risk-off regimes. Monthly anchored rebalancing, a 60-day median dollar-volume screen, eligibility filtering, and equal weights capped at 2% keep turnover, costs and single-name risk controlled while respecting gross and net limits.",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\n\ndef generate_weights(history, universe):\n    universe = pd.Index(universe)\n    zero = pd.Series(0.0, index=universe, dtype=float)\n    if len(universe) == 0:\n        return zero\n\n    adj = history.get('adjusted_close')\n    if not isinstance(adj, pd.DataFrame) or adj.empty:\n        adj = history.get('close')\n    if not isinstance(adj, pd.DataFrame) or adj.empty:\n        return zero\n\n    cols = [c for c in universe if c in adj.columns]\n    if len(cols) < 20:\n        return zero\n\n    adj = adj[cols].sort_index()\n    n = len(adj)\n    if n < 120:\n        return zero\n\n    rebalance = 21\n    anchor = ((n - 1) // rebalance) * rebalance\n    if anchor < 100:\n        return zero\n\n    px = adj.iloc[:anchor + 1].ffill()\n    if len(px) < 100:\n        return zero\n\n    last = px.iloc[-1]\n    valid = last.notna() & (last > 1.0)\n    valid = valid & np.isfinite(last.astype(float))\n\n    elig = history.get('eligible')\n    if isinstance(elig, pd.DataFrame) and not elig.empty:\n        e = elig.reindex(index=adj.index, columns=cols)\n        if anchor < len(e):\n            ev = e.iloc[anchor].fillna(False).astype(bool)\n        else:\n            ev = e.iloc[-1].fillna(False).astype(bool)\n        valid = valid & ev\n\n    vol = history.get('volume')\n    close = history.get('close')\n    if isinstance(vol, pd.DataFrame) and not vol.empty:\n        v = vol.reindex(index=adj.index, columns=cols).iloc[:anchor + 1]\n        if isinstance(close, pd.DataFrame) and not close.empty:\n            c = close.reindex(index=adj.index, columns=cols).iloc[:anchor + 1]\n        else:\n            c = px\n        dv = v * c\n        med = dv.tail(60).median()\n        valid = valid & med.notna() & (med >= 1.0e6)\n\n    ret = px.pct_change()\n    ret = ret.replace([np.inf, -np.inf], np.nan)\n    mkt = ret.mean(axis=1, skipna=True)\n    if mkt.notna().sum() < 60:\n        return zero\n\n    window = min(252, len(ret) - 1)\n    if window < 60:\n        return zero\n    r = ret.tail(window)\n    m = mkt.tail(window)\n    mm = m.dropna()\n    if len(mm) < 60:\n        return zero\n    r = r.loc[mm.index]\n    m = mm\n\n    R = r.to_numpy(dtype=float, copy=False)\n    M = m.to_numpy(dtype=float, copy=False)\n    betas = np.full(R.shape[1], np.nan, dtype=float)\n    for j in range(R.shape[1]):\n        x = R[:, j]\n        good = np.isfinite(x) & np.isfinite(M)\n        if good.sum() < 60:\n            continue\n        xg = x[good]\n        mg = M[good]\n        varm = np.var(mg, ddof=1)\n        if not np.isfinite(varm) or varm <= 0.0:\n            continue\n        cov = np.cov(xg, mg, ddof=1)[0, 1]\n        if np.isfinite(cov):\n            betas[j] = cov / varm\n\n    beta = pd.Series(betas, index=cols)\n    valid = valid & beta.notna() & np.isfinite(beta)\n\n    mkt_index = (1.0 + mkt.fillna(0.0)).cumprod()\n    ma_len = min(200, len(mkt_index))\n    if ma_len < 20:\n        return zero\n    ma = mkt_index.tail(ma_len).mean()\n    if not np.isfinite(ma) or ma <= 0.0:\n        return zero\n    trend = mkt_index.iloc[-1] / ma - 1.0\n    risk_on = bool(trend >= 0.0)\n\n    cand = beta[valid].dropna().sort_values()\n    if len(cand) < 20:\n        return zero\n    n_side = min(50, len(cand) // 2)\n    if n_side < 5:\n        return zero\n\n    if risk_on:\n        shorts = cand.index[:n_side]\n        longs = cand.index[-n_side:]\n    else:\n        longs = cand.index[:n_side]\n        shorts = cand.index[-n_side:]\n\n    w = min(0.02, 0.5 / float(n_side))\n    weights = pd.Series(0.0, index=universe, dtype=float)\n    for t in longs:\n        weights.loc[t] = weights.loc[t] + w\n    for t in shorts:\n        weights.loc[t] = weights.loc[t] - w\n\n    weights = weights.replace([np.inf, -np.inf], 0.0).fillna(0.0).clip(-0.02, 0.02)\n    net = float(weights.sum())\n    if abs(net) > 1e-12:\n        weights = weights - net / float(len(universe))\n        weights = weights.clip(-0.02, 0.02)\n    gross = float(weights.abs().sum())\n    if gross > 1.0 and gross > 0.0:\n        weights = weights * (1.0 / gross)\n    return weights.astype(float)"
+  },
+  "strategy_id": "5c0021e8d9cd8df11cba1e464b03f4ca0c964d0d5d4b248e457ab892143335ce",
+  "source_file": "strategies/5c0021e8d9cd8df11cba1e464b03f4ca0c964d0d5d4b248e457ab892143335ce.py",
+  "cached_backtest": false,
+  "train": {
+    "observations": 1508,
+    "sharpe": 0.06786920829795529,
+    "annualized_return": -0.0010759027293050227,
+    "total_return": -0.006421100611831876,
+    "volatility": 0.14975410155002358,
+    "max_drawdown": 0.46104907277107077,
+    "downside_risk": 0.10969059394724708,
+    "average_daily_turnover": 0.03213781763962862,
+    "total_cost": 0.024231914500279977,
+    "total_borrow_cost": 0.008267857142857145,
+    "active_days": 1389
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.7193147235345678,
+    "annualized_return": 0.11774559679892094,
+    "total_return": 0.24714970036196449,
+    "volatility": 0.17632612051464955,
+    "max_drawdown": 0.1657015634240343,
+    "downside_risk": 0.11772143572454473,
+    "average_daily_turnover": 0.047079021758579045,
+    "total_cost": 0.011769755439644761,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

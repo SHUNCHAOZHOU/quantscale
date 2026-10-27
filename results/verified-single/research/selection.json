@@ -1,0 +1,39 @@
+{
+  "agent": 0,
+  "round": 2,
+  "hypothesis": "reversal with a 120-day horizon",
+  "strategy": {
+    "family": "reversal",
+    "lookback": 120,
+    "skip": 5,
+    "fraction": 0.2,
+    "volatility_scale": false
+  },
+  "strategy_id": "f951b9f403b9173074d64ff344ce63f4c64b4680a4de693b35f593acad32aece",
+  "train": {
+    "observations": 129,
+    "sharpe": 0.9812439077296916,
+    "annualized_return": 0.024399066445764506,
+    "total_return": 0.012416512851144201,
+    "volatility": 0.024881092777455385,
+    "max_drawdown": 0.007702278166026755,
+    "downside_risk": 0.01675150092355633,
+    "average_daily_turnover": 0.08995013025822743,
+    "total_cost": 0.005801783401655669,
+    "total_borrow_cost": 0.0002764285714285714,
+    "active_days": 129
+  },
+  "validation": {
+    "observations": 130,
+    "sharpe": 0.6936067568800334,
+    "annualized_return": 0.016679105382779058,
+    "total_return": 0.008569845079203775,
+    "volatility": 0.024270783476051563,
+    "max_drawdown": 0.012210480673086943,
+    "downside_risk": 0.017000232280568125,
+    "average_daily_turnover": 0.08858179830727765,
+    "total_cost": 0.005757816889973047,
+    "total_borrow_cost": 0.00027857142857142854,
+    "active_days": 130
+  }
+}

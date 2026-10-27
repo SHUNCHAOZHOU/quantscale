@@ -1,0 +1,43 @@
+{
+  "agent": 0,
+  "round": 0,
+  "hypothesis": "A market-neutral cross-sectional policy combining risk-adjusted 6-12 month momentum, proximity to the 52-week high, and one-month reversal, filtered for eligibility and liquidity, should produce robust after-cost returns. Equal-weight long/short selection of the top and bottom names respects the gross, net, and per-name limits.",
+  "source_file": "strategies/02a8b85f46077cffc72e7a29035644ac3347ea3b24b364a7685c7665583948aa.py",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\nimport math\n\ndef _zscore(s):\n    s = pd.to_numeric(s, errors='coerce')\n    s = s.replace([np.inf, -np.inf], np.nan)\n    mu = s.mean()\n    sd = s.std()\n    if not np.isfinite(sd) or sd < 1e-12:\n        return pd.Series(0.0, index=s.index)\n    return (s - mu) / sd\n\ndef generate_weights(history, universe):\n    tickers = pd.Index(list(universe))\n    weights = pd.Series(0.0, index=tickers, dtype=float)\n    if len(tickers) == 0:\n        return weights\n\n    def _get(key):\n        df = history.get(key) if isinstance(history, dict) else None\n        if df is None:\n            return None\n        try:\n            return df.reindex(columns=tickers)\n        except Exception:\n            return None\n\n    adj = _get('adjusted_close')\n    raw = _get('close')\n    vol_df = _get('volume')\n    elig_df = _get('eligible')\n\n    close = adj\n    if close is None or close.dropna(how='all').shape[1] == 0:\n        close = raw\n    if close is None or close.empty:\n        return weights\n    if raw is None:\n        raw = close\n\n    n = len(close)\n    if n < 30:\n        return weights\n\n    last = close.iloc[-1].astype(float)\n    raw_last = raw.iloc[-1].astype(float)\n    valid = last.notna() & np.isfinite(last) & (last > 0.0)\n    valid = valid & raw_last.notna() & np.isfinite(raw_last) & (raw_last > 2.0)\n\n    if elig_df is not None and len(elig_df) > 0:\n        e = elig_df.iloc[-1].reindex(tickers)\n        try:\n            e = e.fillna(False).astype(bool)\n        except Exception:\n            e = e.fillna(0).astype(float).astype(bool)\n        valid = valid & e\n\n    if valid.sum() < 10:\n        valid = last.notna() & np.isfinite(last) & (last > 0.0)\n    if valid.sum() < 4:\n        return weights\n\n    rets = close / close.shift(1) - 1.0\n\n    def shift_ret(d):\n        if n > d:\n            prev = close.shift(d).iloc[-1].astype(float)\n            return last / prev - 1.0\n        return pd.Series(np.nan, index=tickers)\n\n    r252 = shift_ret(252)\n    r126 = shift_ret(126)\n    r21 = shift_ret(21)\n\n    mom = 0.5 * r126 + 0.5 * (r252 - r21)\n    mom = mom.where(np.isfinite(mom), r252)\n    mom = mom.where(np.isfinite(mom), r126)\n    mom = mom.where(np.isfinite(mom), r21)\n\n    vol_win = min(60, max(10, n - 1))\n    vol = rets.iloc[-vol_win:].std(ddof=0) * math.sqrt(252.0)\n    vol = vol.replace([np.inf, -np.inf], np.nan)\n\n    vol_short_win = min(21, max(5, n - 1))\n    vol_short = rets.iloc[-vol_short_win:].std(ddof=0) * math.sqrt(252.0)\n\n    hi_win = min(252, n)\n    hi = close.iloc[-hi_win:].max()\n    trend = last / hi - 1.0\n    trend = trend.replace([np.inf, -np.inf], np.nan)\n\n    if vol_df is not None:\n        dv = (raw * vol_df).iloc[-min(60, n):].median()\n    else:\n        dv = pd.Series(np.nan, index=tickers)\n\n    mom_adj = mom / vol\n    rev_adj = (-r21) / vol_short\n    score = (0.50 * _zscore(mom_adj)\n             + 0.25 * _zscore(trend)\n             + 0.25 * _zscore(rev_adj)\n             - 0.10 * _zscore(vol))\n\n    valid = valid & np.isfinite(score) & np.isfinite(vol) & (vol > 0.01)\n\n    if dv.notna().any():\n        dvv = dv.replace([np.inf, -np.inf], np.nan)\n        q = dvv.quantile(0.2)\n        threshold = max(250000.0, float(q) if np.isfinite(q) else 0.0)\n        valid = valid & (dvv >= threshold)\n\n    if valid.sum() < 10:\n        valid = last.notna() & np.isfinite(last) & (last > 0.0) & np.isfinite(score)\n    if valid.sum() < 4:\n        return weights\n\n    s = score[valid].dropna()\n    if len(s) < 4:\n        return weights\n\n    ordered = s.sort_values()\n    n_side = min(50, len(ordered) // 2)\n    if n_side < 1:\n        return weights\n\n    wt = min(0.5 / float(n_side), 0.02)\n    longs = ordered.index[-n_side:]\n    shorts = ordered.index[:n_side]\n    weights.loc[longs] = wt\n    weights.loc[shorts] = -wt\n    return weights.replace([np.inf, -np.inf], 0.0).fillna(0.0)\n"
+  },
+  "strategy_id": "02a8b85f46077cffc72e7a29035644ac3347ea3b24b364a7685c7665583948aa",
+  "cached_backtest": false,
+  "execution_limits": {
+    "heap_limit_applied": false,
+    "requested_heap_mb": 1024,
+    "cpu_seconds": 180
+  },
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.7429718600384614,
+    "annualized_return": -0.09774590356919466,
+    "total_return": -0.45964118471110715,
+    "volatility": 0.1274161069793446,
+    "max_drawdown": 0.4730933079242249,
+    "downside_risk": 0.09955202091077554,
+    "average_daily_turnover": 0.19548938865204818,
+    "total_cost": 0.14739899904364429,
+    "total_borrow_cost": 0.00880357142857143,
+    "active_days": 1479
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": -0.22260537668134422,
+    "annualized_return": -0.03962052012921091,
+    "total_return": -0.07707921102064397,
+    "volatility": 0.13847430356945867,
+    "max_drawdown": 0.19119420529802356,
+    "downside_risk": 0.10312886718122756,
+    "average_daily_turnover": 0.18696617572932211,
+    "total_cost": 0.04674154393233053,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

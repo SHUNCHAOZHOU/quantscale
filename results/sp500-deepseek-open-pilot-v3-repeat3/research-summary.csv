@@ -1,0 +1,6 @@
+run,topology,fleet_size,seed,research_seconds,validation_sharpe,strategy_id,total_tokens,communication_turn_tokens_upper_bound,total_backtests,agent_turns,communication_calls,hypotheses,successful_candidates,unique_strategy_variants,duplicate_variant_rate,mean_trials_per_active_researcher
+decentralized-n4-s27,decentralized,4,27,1011.710134083,0.5029173573055283,6cfaf6c8751b29e58c0e5c9d733fb36aceaed9e510af4097eaf7004c832ca419,144189,104478,9,9,5,9,8,8,0.0,2.0
+centralized-n4-s27,centralized,4,27,1084.3026295,0.4038786739803361,a48a4200eda89d0b3e561fd34a4e09d9e23a8dd051627e2dffb993006661a412,116137,26255,8,12,4,8,7,8,0.0,2.0
+single-n1-s27,single,1,27,1276.827700417,0.41044830293912044,28571eba78e72ddce5d52fa26b6198c3d0b81f813ad5ca857f5ed759df53e292,149836,0,8,8,0,8,6,7,0.0,7.0
+hybrid-n4-s27,hybrid,4,27,1341.15562925,0.09527526430712716,b3400e39ee37189817d12d094bcbccae9bc67beb837d058e788128f950044f77,137495,91104,8,11,7,8,8,8,0.0,2.0
+independent-n4-s27,independent,4,27,1048.162137709,0.3668847219937128,ee9b81e17b23b5691d83817080ae1dbcb700ea3f23ff5fb4228f29760b4c5fa6,160941,0,12,12,0,12,7,10,0.0,2.5

@@ -1,0 +1,38 @@
+{
+  "agent": 3,
+  "round": 2,
+  "hypothesis": "Both prior books were cost-dominated: roughly 40-50% average daily turnover produced total transaction costs of 0.36 train / 0.12 validation in the first book and 0.30 / 0.10 in the second, while annualized returns were near zero or negative. Exact-dollar-neutrality plus 2% clipping likely forced daily rebalancing of many tiny weights, and the crowding/exclusion screen added churn without a stable premium. The revised experiment keeps only the reversal ingredient: 63-day cross-sectional return reversal. It drops the crowding/exclusion screen, uses equal-weight 50 long / 50 short with 2% cap and target net zero, and applies a 2% daily turnover cap through buffered exponential smoothing over a 500-day recursion. The all-cash control arm is the zero-weight book returned when signal breadth is insufficient; the active arm must clear 0% plus roughly 25bp transaction and 15bp borrow cost.",
+  "strategy": {
+    "kind": "python",
+    "source": "import numpy as np\nimport pandas as pd\n\n\ndef _get_df(history, names):\n    for name in names:\n        obj = history.get(name)\n        if isinstance(obj, pd.DataFrame) and not obj.empty:\n            return obj\n    return None\n\n\ndef _zero(universe):\n    return pd.Series(0.0, index=universe, dtype=float)\n\n\ndef generate_weights(history, universe):\n    universe = pd.Index(universe)\n    if len(universe) == 0:\n        return pd.Series(dtype=float)\n\n    price_df = _get_df(history, ['adjusted_close', 'close'])\n    if price_df is None:\n        return _zero(universe)\n\n    price_df = price_df.reindex(columns=universe).astype(float)\n    n_rows = len(price_df)\n    if n_rows < 100:\n        return _zero(universe)\n\n    lookback = min(n_rows, 700)\n    price = price_df.iloc[-lookback:].copy()\n    if len(price) < 100:\n        return _zero(universe)\n\n    vol_df = _get_df(history, ['volume'])\n    if vol_df is not None:\n        vol_df = vol_df.reindex(columns=universe).astype(float).iloc[-lookback:]\n        volmed = vol_df.rolling(20, min_periods=5).median()\n        vol_vals = volmed.values\n    else:\n        vol_vals = None\n\n    elig_df = _get_df(history, ['eligible'])\n    if elig_df is not None:\n        elig = elig_df.reindex(columns=universe).iloc[-lookback:].fillna(True).astype(bool)\n        elig_vals = elig.values\n    else:\n        elig_vals = None\n\n    price_vals = price.values\n    n_assets = price_vals.shape[1]\n    ret63 = np.full((price_vals.shape[0], n_assets), np.nan, dtype=float)\n    if price_vals.shape[0] > 63:\n        ret63[63:] = price_vals[63:] / price_vals[:-63] - 1.0\n\n    max_days = 500\n    start = max(63, len(price) - max_days)\n    prev = np.zeros(n_assets, dtype=float)\n    max_turnover = 0.02\n    alpha = 0.05\n    n_side_cap = 50\n    min_side = 5\n    min_volume = 100000.0\n    min_price = 5.0\n\n    for pos in range(start, len(price)):\n        p = price_vals[pos]\n        r = ret63[pos]\n        valid = np.isfinite(p) & (p > min_price) & np.isfinite(r) & (r > -0.95) & (r < 5.0)\n        if elig_vals is not None:\n            valid &= elig_vals[pos]\n        if vol_vals is not None:\n            vm = vol_vals[pos]\n            valid &= np.isfinite(vm) & (vm > min_volume)\n\n        idx = np.where(valid)[0]\n        if len(idx) >= 2 * min_side:\n            scores = -r[idx]\n            order = np.argsort(scores)[::-1]\n            n_side = min(n_side_cap, len(idx) // 2)\n            if n_side >= min_side:\n                long_idx = idx[order[:n_side]]\n                short_idx = idx[order[-n_side:]]\n                w = min(0.5 / float(n_side), 0.02)\n                target = np.zeros(n_assets, dtype=float)\n                target[long_idx] = w\n                target[short_idx] = -w\n            else:\n                target = np.zeros(n_assets, dtype=float)\n        else:\n            target = np.zeros(n_assets, dtype=float)\n\n        delta = target - prev\n        l1 = np.abs(delta).sum()\n        if l1 > 1e-12:\n            step = min(alpha, max_turnover / l1)\n            prev = prev + step * delta\n\n        prev = np.clip(prev, -0.02, 0.02)\n        gross = np.abs(prev).sum()\n        if gross > 1.0:\n            prev = prev / gross\n        net = prev.sum()\n        if abs(net) > 0.01:\n            prev = prev - net / float(n_assets)\n            prev = np.clip(prev, -0.02, 0.02)\n            gross = np.abs(prev).sum()\n            if gross > 1.0:\n                prev = prev / gross\n\n    return pd.Series(prev, index=universe, dtype=float).fillna(0.0)"
+  },
+  "strategy_id": "016821b0840d032114dec7d4229213e5a7423ea25737a12cf643e0a03aaa1e8d",
+  "source_file": "strategies/016821b0840d032114dec7d4229213e5a7423ea25737a12cf643e0a03aaa1e8d.py",
+  "cached_backtest": false,
+  "train": {
+    "observations": 1508,
+    "sharpe": 0.0410143475321968,
+    "annualized_return": 0.00016311291266357664,
+    "total_return": 0.000976485236043656,
+    "volatility": 0.07812028879770688,
+    "max_drawdown": 0.14010716285346192,
+    "downside_risk": 0.05071288217928054,
+    "average_daily_turnover": 0.02661517478166295,
+    "total_cost": 0.020067841785373866,
+    "total_borrow_cost": 0.006350789745331676,
+    "active_days": 1409
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": -0.00968555820745492,
+    "annualized_return": -0.00430302390323134,
+    "total_return": -0.008519667937920139,
+    "volatility": 0.08382586931165897,
+    "max_drawdown": 0.10615108682818553,
+    "downside_risk": 0.05619489429465267,
+    "average_daily_turnover": 0.029096762156360177,
+    "total_cost": 0.007274190539090045,
+    "total_borrow_cost": 0.0022921877816140476,
+    "active_days": 500
+  }
+}

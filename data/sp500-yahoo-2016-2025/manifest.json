@@ -1,0 +1,42 @@
+{
+  "source": "Yahoo Finance via yfinance",
+  "yfinance_version": "1.2.0",
+  "completed_at_utc": "2026-10-26T03:33:57.067585+00:00",
+  "request": {
+    "start_inclusive": "2016-01-01",
+    "end_exclusive": "2026-01-01",
+    "auto_adjust": false,
+    "actions": true,
+    "repair": false,
+    "interval": "1d"
+  },
+  "requested_tickers": 503,
+  "downloaded_tickers": 500,
+  "failed_tickers": {
+    "FDXF": "No complete price observations",
+    "HONA": "No complete price observations",
+    "VYLR": "No complete price observations"
+  },
+  "price_rows": 1218481,
+  "reference_sessions": 2514,
+  "first_date": "2016-01-04",
+  "last_date": "2025-12-31",
+  "late_start_tickers": 36,
+  "early_end_tickers": 0,
+  "tickers_with_internal_gaps": 2,
+  "partial_rows_dropped": 1,
+  "invalid_ohlc_rows_dropped": 1,
+  "prices_sha256": "623f4670365d58d2288aa8881089ebe43f19e3ef2b2a7b4eb305a145239a1630",
+  "limitations": [
+    "Current constituent snapshot: survivorship and future-membership bias",
+    "Yahoo historical OHLC may already reflect split adjustments",
+    "No point-in-time market capitalization or historical shares are supplied",
+    "No missing observations are forward-filled or synthesized",
+    "Price-only panel is not directly accepted by the market-cap-based research loader"
+  ],
+  "split": {
+    "train": "2016-01-01..2021-12-31",
+    "validation": "2022-01-01..2023-12-31",
+    "hidden": "2024-01-01..2025-12-31"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "agent": 1,
+  "round": 2,
+  "hypothesis": "The 60-day reversal trial with a 1-day skip and no volatility scaling was the only supplied configuration with positive net validation Sharpe, indicating medium-term reversal is the useful signal and that volatility scaling and short lookbacks add cost/noise. Tightening the selection to the most extreme 20% should strengthen the reversal exposure while retaining the lower-turnover 60-day lookback and avoiding the harmful volatility overlay.",
+  "strategy": {
+    "family": "reversal",
+    "lookback": 60,
+    "skip": 1,
+    "fraction": 0.2,
+    "volatility_scale": false
+  },
+  "strategy_id": "cc8f1e2c432e63ed9056c0ac534449f6cbad18e4e8085e485a4220146c523262",
+  "cached_backtest": false,
+  "train": {
+    "observations": 1508,
+    "sharpe": 0.1266757178885211,
+    "annualized_return": 0.007649880449044577,
+    "total_return": 0.04665948142607901,
+    "volatility": 0.09680665217603016,
+    "max_drawdown": 0.21802744235867422,
+    "downside_risk": 0.06029638164883254,
+    "average_daily_turnover": 0.2100644869910679,
+    "total_cost": 0.15838862319126518,
+    "total_borrow_cost": 0.00861309523809524,
+    "active_days": 1447
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.4646829601951667,
+    "annualized_return": 0.041160564898474084,
+    "total_return": 0.08332149860085858,
+    "volatility": 0.09685417300034478,
+    "max_drawdown": 0.07632216505276113,
+    "downside_risk": 0.06221232942801989,
+    "average_daily_turnover": 0.21793803131765938,
+    "total_cost": 0.054484507829414844,
+    "total_borrow_cost": 0.0029761904761904765,
+    "active_days": 500
+  }
+}

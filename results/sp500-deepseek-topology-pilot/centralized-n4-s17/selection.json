@@ -1,0 +1,40 @@
+{
+  "agent": 3,
+  "round": 2,
+  "hypothesis": "The 20-day reversal trial reduced turnover versus the volume trial but still produced negative cost-adjusted validation Sharpe, likely from noisy short-horizon signals and residual turnover. Extending the formation window to 60 days with a 5-day skip should focus on more persistent oversold rebounds, reduce trading frequency, and improve net validation Sharpe while volatility scaling controls risk.",
+  "strategy": {
+    "family": "reversal",
+    "lookback": 60,
+    "skip": 5,
+    "fraction": 0.25,
+    "volatility_scale": true
+  },
+  "strategy_id": "1f7178567b0d12a624a974e25e0605e46f71553d6a10a4cd8ca27ddffa91886d",
+  "cached_backtest": false,
+  "train": {
+    "observations": 1508,
+    "sharpe": -0.10269658265619654,
+    "annualized_return": -0.011454771428117683,
+    "total_return": -0.06661958194796014,
+    "volatility": 0.08066884790665145,
+    "max_drawdown": 0.18230320330642924,
+    "downside_risk": 0.05276054536554815,
+    "average_daily_turnover": 0.21386381611551997,
+    "total_cost": 0.16125331735110204,
+    "total_borrow_cost": 0.008587004341197581,
+    "active_days": 1443
+  },
+  "validation": {
+    "observations": 500,
+    "sharpe": 0.2648432007983089,
+    "annualized_return": 0.01743287783183778,
+    "total_return": 0.034885723745465835,
+    "volatility": 0.07617594542448562,
+    "max_drawdown": 0.06300011728196298,
+    "downside_risk": 0.05030665621931128,
+    "average_daily_turnover": 0.21994457343108423,
+    "total_cost": 0.05498614335777106,
+    "total_borrow_cost": 0.002976190476190477,
+    "active_days": 500
+  }
+}

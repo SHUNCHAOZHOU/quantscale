@@ -1,0 +1,1727 @@
+{
+  "completed_at_utc": "2026-10-26T15:24:06.843323+00:00",
+  "planned_baselines": 3,
+  "planned_branches": 12,
+  "research_completed": [
+    {
+      "run": "baseline-s107",
+      "seed": 107,
+      "topology": "baseline",
+      "artifact_sha256": "a861c4e49fb7fb63f19cdf011c215f05f2fe0fb8c144878c84ab6de9b5399171",
+      "validation_sharpe": -0.2517821847330097,
+      "process": {
+        "total_tokens": 40001,
+        "communication_turn_tokens_upper_bound": 0,
+        "total_backtests": 4,
+        "agent_turns": 4,
+        "communication_calls": 0,
+        "hypotheses": 4,
+        "successful_candidates": 3,
+        "unique_strategy_variants": 3,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 1.0
+      }
+    },
+    {
+      "run": "baseline-s127",
+      "seed": 127,
+      "topology": "baseline",
+      "artifact_sha256": "a4a43c907a60781b58a2c8ef31fbdc29eba4512422c4993cf463eed997a6bf2e",
+      "validation_sharpe": 0.0,
+      "process": {
+        "total_tokens": 47353,
+        "communication_turn_tokens_upper_bound": 0,
+        "total_backtests": 4,
+        "agent_turns": 4,
+        "communication_calls": 0,
+        "hypotheses": 4,
+        "successful_candidates": 3,
+        "unique_strategy_variants": 4,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 1.0
+      }
+    },
+    {
+      "run": "baseline-s117",
+      "seed": 117,
+      "topology": "baseline",
+      "artifact_sha256": "482c543321072ccc4b62f2007daeb1b51eaba48ad3669d10844f8a677669245c",
+      "validation_sharpe": -0.22260537668134422,
+      "process": {
+        "total_tokens": 48353,
+        "communication_turn_tokens_upper_bound": 0,
+        "total_backtests": 4,
+        "agent_turns": 4,
+        "communication_calls": 0,
+        "hypotheses": 4,
+        "successful_candidates": 4,
+        "unique_strategy_variants": 4,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 1.0
+      }
+    },
+    {
+      "run": "centralized-s127",
+      "seed": 127,
+      "topology": "centralized",
+      "artifact_sha256": "cfb13960ba149db41022669a23cd8d595930c46e1b362fe9435616e5a559713b",
+      "validation_sharpe": 0.0,
+      "process": {
+        "total_tokens": 74114,
+        "communication_turn_tokens_upper_bound": 16964,
+        "total_backtests": 8,
+        "agent_turns": 6,
+        "communication_calls": 2,
+        "hypotheses": 8,
+        "successful_candidates": 7,
+        "unique_strategy_variants": 8,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 2.0,
+        "inherited_trials": 4,
+        "additional_trials": 4,
+        "complete_eight_attempts": false,
+        "elapsed_seconds": 768.4929939589999,
+        "baseline_best_validation": 0.0,
+        "final_validation": 0.0,
+        "winner_from_initial": true
+      }
+    },
+    {
+      "run": "hybrid-s127",
+      "seed": 127,
+      "topology": "hybrid",
+      "artifact_sha256": "6db76e18ae88f6ef19efefcab6215e70755388b6069ea37cc2438d0c76ec7f9d",
+      "validation_sharpe": 0.5328973947217087,
+      "process": {
+        "total_tokens": 152788,
+        "communication_turn_tokens_upper_bound": 152788,
+        "total_backtests": 12,
+        "agent_turns": 10,
+        "communication_calls": 10,
+        "hypotheses": 12,
+        "successful_candidates": 10,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 914.2743782080001,
+        "baseline_best_validation": 0.0,
+        "final_validation": 0.5328973947217087,
+        "winner_from_initial": false
+      }
+    },
+    {
+      "run": "decentralized-s127",
+      "seed": 127,
+      "topology": "decentralized",
+      "artifact_sha256": "d395bebce16b2832ef811b66f4a53632283287c80648786593439fe6019485b2",
+      "validation_sharpe": 0.7193147235345678,
+      "process": {
+        "total_tokens": 159542,
+        "communication_turn_tokens_upper_bound": 159542,
+        "total_backtests": 12,
+        "agent_turns": 8,
+        "communication_calls": 8,
+        "hypotheses": 12,
+        "successful_candidates": 10,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1075.312211208,
+        "baseline_best_validation": 0.0,
+        "final_validation": 0.7193147235345678,
+        "winner_from_initial": false
+      }
+    },
+    {
+      "run": "independent-s127",
+      "seed": 127,
+      "topology": "independent",
+      "artifact_sha256": "9423f5a2528e3e77a0dcde294252d534d32201840172352849b55252815844a9",
+      "validation_sharpe": 0.07765660596523129,
+      "process": {
+        "total_tokens": 99456,
+        "communication_turn_tokens_upper_bound": 0,
+        "total_backtests": 12,
+        "agent_turns": 8,
+        "communication_calls": 0,
+        "hypotheses": 12,
+        "successful_candidates": 8,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1151.203512708,
+        "baseline_best_validation": 0.0,
+        "final_validation": 0.07765660596523129,
+        "winner_from_initial": false
+      }
+    },
+    {
+      "run": "independent-s107",
+      "seed": 107,
+      "topology": "independent",
+      "artifact_sha256": "afb9d488389590f9ce5da2a0ae8777c605f44ae193a703037416e9a463fcb541",
+      "validation_sharpe": 0.3200755831655966,
+      "process": {
+        "total_tokens": 112756,
+        "communication_turn_tokens_upper_bound": 0,
+        "total_backtests": 12,
+        "agent_turns": 8,
+        "communication_calls": 0,
+        "hypotheses": 11,
+        "successful_candidates": 10,
+        "unique_strategy_variants": 11,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 2.75,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 937.3585479170001,
+        "baseline_best_validation": -0.2517821847330097,
+        "final_validation": 0.3200755831655966,
+        "winner_from_initial": false
+      }
+    },
+    {
+      "run": "centralized-s117",
+      "seed": 117,
+      "topology": "centralized",
+      "artifact_sha256": "adff49793b76db6500c4db15a9a035f3f027b742fe47efe13c8888d72c164d1f",
+      "validation_sharpe": -0.00968555820745492,
+      "process": {
+        "total_tokens": 158707,
+        "communication_turn_tokens_upper_bound": 22738,
+        "total_backtests": 12,
+        "agent_turns": 11,
+        "communication_calls": 3,
+        "hypotheses": 12,
+        "successful_candidates": 11,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1173.163934084,
+        "baseline_best_validation": -0.22260537668134422,
+        "final_validation": -0.00968555820745492,
+        "winner_from_initial": false
+      }
+    },
+    {
+      "run": "independent-s117",
+      "seed": 117,
+      "topology": "independent",
+      "artifact_sha256": "029e9d422ebb234370bc5a7e90b9a9dc6f12d96418555b97a4ff644f0250b8d5",
+      "validation_sharpe": 0.01079751902178099,
+      "process": {
+        "total_tokens": 149166,
+        "communication_turn_tokens_upper_bound": 0,
+        "total_backtests": 12,
+        "agent_turns": 8,
+        "communication_calls": 0,
+        "hypotheses": 12,
+        "successful_candidates": 12,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1136.033777709,
+        "baseline_best_validation": -0.22260537668134422,
+        "final_validation": 0.01079751902178099,
+        "winner_from_initial": false
+      }
+    },
+    {
+      "run": "decentralized-s117",
+      "seed": 117,
+      "topology": "decentralized",
+      "artifact_sha256": "3396f73f7acbb7276d2b60fc2caa60979aa3f52939903de4dcbc45e7c126151c",
+      "validation_sharpe": 0.9710647894461639,
+      "process": {
+        "total_tokens": 204557,
+        "communication_turn_tokens_upper_bound": 204557,
+        "total_backtests": 12,
+        "agent_turns": 8,
+        "communication_calls": 8,
+        "hypotheses": 12,
+        "successful_candidates": 12,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1121.0551062079999,
+        "baseline_best_validation": -0.22260537668134422,
+        "final_validation": 0.9710647894461639,
+        "winner_from_initial": false
+      }
+    },
+    {
+      "run": "hybrid-s117",
+      "seed": 117,
+      "topology": "hybrid",
+      "artifact_sha256": "f51a2db0f3527c5bee2bb661becd27b45a62a59b78c05b8ea8c0feef580fb3cb",
+      "validation_sharpe": 0.22617322089870842,
+      "process": {
+        "total_tokens": 204493,
+        "communication_turn_tokens_upper_bound": 204493,
+        "total_backtests": 12,
+        "agent_turns": 10,
+        "communication_calls": 10,
+        "hypotheses": 12,
+        "successful_candidates": 12,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1040.1660421249999,
+        "baseline_best_validation": -0.22260537668134422,
+        "final_validation": 0.22617322089870842,
+        "winner_from_initial": false
+      }
+    },
+    {
+      "run": "hybrid-s107",
+      "seed": 107,
+      "topology": "hybrid",
+      "artifact_sha256": "f1407de0c63b3703b3ee9e48c39bb7d7f32b5c436bee455e287183ac90829afd",
+      "validation_sharpe": 0.3226573581598807,
+      "process": {
+        "total_tokens": 194375,
+        "communication_turn_tokens_upper_bound": 194375,
+        "total_backtests": 12,
+        "agent_turns": 10,
+        "communication_calls": 10,
+        "hypotheses": 11,
+        "successful_candidates": 10,
+        "unique_strategy_variants": 11,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 2.75,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1171.219734708,
+        "baseline_best_validation": -0.2517821847330097,
+        "final_validation": 0.3226573581598807,
+        "winner_from_initial": false
+      }
+    },
+    {
+      "run": "centralized-s107",
+      "seed": 107,
+      "topology": "centralized",
+      "artifact_sha256": "1440fef2e5117faff88ad1d26ed51fa51c741fd19114b01e38f3863a53acffa8",
+      "validation_sharpe": 0.1479732733852987,
+      "process": {
+        "total_tokens": 133128,
+        "communication_turn_tokens_upper_bound": 15186,
+        "total_backtests": 12,
+        "agent_turns": 10,
+        "communication_calls": 2,
+        "hypotheses": 11,
+        "successful_candidates": 11,
+        "unique_strategy_variants": 11,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 2.75,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1334.5592800420004,
+        "baseline_best_validation": -0.2517821847330097,
+        "final_validation": 0.1479732733852987,
+        "winner_from_initial": false
+      }
+    }
+  ],
+  "research_failures": [
+    {
+      "run": "decentralized-s107",
+      "seed": 107,
+      "topology": "decentralized",
+      "error": "DeepSeek network/TLS failure; no automatic retry; usage may be uncertain"
+    }
+  ],
+  "evaluation_failures": [],
+  "results": [
+    {
+      "run": "baseline-s107",
+      "seed": 107,
+      "topology": "baseline",
+      "artifact_sha256": "a861c4e49fb7fb63f19cdf011c215f05f2fe0fb8c144878c84ab6de9b5399171",
+      "validation_sharpe": -0.2517821847330097,
+      "process": {
+        "total_tokens": 40001,
+        "communication_turn_tokens_upper_bound": 0,
+        "total_backtests": 4,
+        "agent_turns": 4,
+        "communication_calls": 0,
+        "hypotheses": 4,
+        "successful_candidates": 3,
+        "unique_strategy_variants": 3,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 1.0
+      },
+      "evaluation": {
+        "artifact_sha256": "a861c4e49fb7fb63f19cdf011c215f05f2fe0fb8c144878c84ab6de9b5399171",
+        "evaluated_at": "2026-10-26T15:17:02.933048+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": 0.49301554038308915,
+          "annualized_return": 0.04391338561546876,
+          "total_return": 0.08901201514518498,
+          "volatility": 0.09663459521935508,
+          "max_drawdown": 0.13633975927618747,
+          "downside_risk": 0.06825395102569129,
+          "average_daily_turnover": 0.26813480944249324,
+          "total_cost": 0.06703370236062331,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation": {
+          "observations": 500,
+          "sharpe": -0.2517821847330097,
+          "annualized_return": -0.04006240199292266,
+          "total_return": -0.07792157320046844,
+          "volatility": 0.12920956772150258,
+          "max_drawdown": 0.1668864884308755,
+          "downside_risk": 0.09596443506933039,
+          "average_daily_turnover": 0.2514703049788024,
+          "total_cost": 0.0628675762447006,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation_test_sharpe_gap": -0.7447977251160989,
+        "positive_hidden_sharpe": true,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": 1.295195665538052,
+            "annualized_return": 0.10467763578158884,
+            "total_return": 0.1042413148637078,
+            "volatility": 0.07929315811729612,
+            "max_drawdown": 0.050155386610751695,
+            "downside_risk": 0.05145546282768516,
+            "average_daily_turnover": 0.2711631958689545,
+            "total_cost": 0.03403098108155378,
+            "total_borrow_cost": 0.0014940476190476192,
+            "active_days": 251
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": -0.07048757210219861,
+            "annualized_return": -0.013956640333967374,
+            "total_return": -0.013791640933487948,
+            "volatility": 0.11147598658639916,
+            "max_drawdown": 0.13633975927618858,
+            "downside_risk": 0.0817660755585922,
+            "average_daily_turnover": 0.2650820986270645,
+            "total_cost": 0.03300272127906953,
+            "total_borrow_cost": 0.0014821428571428577,
+            "active_days": 249
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    },
+    {
+      "run": "centralized-s107",
+      "seed": 107,
+      "topology": "centralized",
+      "artifact_sha256": "1440fef2e5117faff88ad1d26ed51fa51c741fd19114b01e38f3863a53acffa8",
+      "validation_sharpe": 0.1479732733852987,
+      "process": {
+        "total_tokens": 133128,
+        "communication_turn_tokens_upper_bound": 15186,
+        "total_backtests": 12,
+        "agent_turns": 10,
+        "communication_calls": 2,
+        "hypotheses": 11,
+        "successful_candidates": 11,
+        "unique_strategy_variants": 11,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 2.75,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1334.5592800420004,
+        "baseline_best_validation": -0.2517821847330097,
+        "final_validation": 0.1479732733852987,
+        "winner_from_initial": false
+      },
+      "evaluation": {
+        "artifact_sha256": "1440fef2e5117faff88ad1d26ed51fa51c741fd19114b01e38f3863a53acffa8",
+        "evaluated_at": "2026-10-26T15:17:21.100307+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": -1.2621372968746103,
+          "annualized_return": -0.10699553126980899,
+          "total_return": -0.20110930016263018,
+          "volatility": 0.08667341349271307,
+          "max_drawdown": 0.22549950580512312,
+          "downside_risk": 0.06256502517235826,
+          "average_daily_turnover": 0.10654622277442459,
+          "total_cost": 0.02663655569360615,
+          "total_borrow_cost": 0.002678571428571429,
+          "active_days": 500
+        },
+        "validation": {
+          "observations": 500,
+          "sharpe": 0.1479732733852987,
+          "annualized_return": 0.00921374207783332,
+          "total_return": 0.018364112724977177,
+          "volatility": 0.088163411166136,
+          "max_drawdown": 0.07261536158796777,
+          "downside_risk": 0.06001327735758945,
+          "average_daily_turnover": 0.10912957237648263,
+          "total_cost": 0.027282393094120658,
+          "total_borrow_cost": 0.002678571428571429,
+          "active_days": 500
+        },
+        "validation_test_sharpe_gap": 1.410110570259909,
+        "positive_hidden_sharpe": false,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": -1.6363858872114927,
+            "annualized_return": -0.10234928297166046,
+            "total_return": -0.10196458486132765,
+            "volatility": 0.06469435035288638,
+            "max_drawdown": 0.12232186533126943,
+            "downside_risk": 0.049367181805305214,
+            "average_daily_turnover": 0.10672607788568621,
+            "total_cost": 0.01339412277465362,
+            "total_borrow_cost": 0.0013446428571428572,
+            "active_days": 251
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": -1.0820610558990282,
+            "annualized_return": -0.11165475962252924,
+            "total_return": -0.11040178775799403,
+            "volatility": 0.10438497633834519,
+            "max_drawdown": 0.14851875220744915,
+            "downside_risk": 0.07350858237246612,
+            "average_daily_turnover": 0.10636492304379543,
+            "total_cost": 0.01324243291895253,
+            "total_borrow_cost": 0.0013339285714285718,
+            "active_days": 249
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    },
+    {
+      "run": "hybrid-s107",
+      "seed": 107,
+      "topology": "hybrid",
+      "artifact_sha256": "f1407de0c63b3703b3ee9e48c39bb7d7f32b5c436bee455e287183ac90829afd",
+      "validation_sharpe": 0.3226573581598807,
+      "process": {
+        "total_tokens": 194375,
+        "communication_turn_tokens_upper_bound": 194375,
+        "total_backtests": 12,
+        "agent_turns": 10,
+        "communication_calls": 10,
+        "hypotheses": 11,
+        "successful_candidates": 10,
+        "unique_strategy_variants": 11,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 2.75,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1171.219734708,
+        "baseline_best_validation": -0.2517821847330097,
+        "final_validation": 0.3226573581598807,
+        "winner_from_initial": false
+      },
+      "evaluation": {
+        "artifact_sha256": "f1407de0c63b3703b3ee9e48c39bb7d7f32b5c436bee455e287183ac90829afd",
+        "evaluated_at": "2026-10-26T15:17:55.588401+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": -0.5989989514900113,
+          "annualized_return": -0.025127465554546702,
+          "total_return": -0.04923956398485296,
+          "volatility": 0.0410782038532081,
+          "max_drawdown": 0.06405552971926232,
+          "downside_risk": 0.028785567455651292,
+          "average_daily_turnover": 0.043760334049359216,
+          "total_cost": 0.010940083512339806,
+          "total_borrow_cost": 0.002678571443043671,
+          "active_days": 500
+        },
+        "validation": {
+          "observations": 500,
+          "sharpe": 0.3226573581598807,
+          "annualized_return": 0.01173737280845133,
+          "total_return": 0.02342293291853248,
+          "volatility": 0.03845133375422783,
+          "max_drawdown": 0.03375560405428646,
+          "downside_risk": 0.025378552429826416,
+          "average_daily_turnover": 0.04533317565021348,
+          "total_cost": 0.011333293912553371,
+          "total_borrow_cost": 0.002678571442700227,
+          "active_days": 500
+        },
+        "validation_test_sharpe_gap": 0.921656309649892,
+        "positive_hidden_sharpe": false,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": -0.3856765418814393,
+            "annualized_return": -0.01574274734270642,
+            "total_return": -0.015680768507000842,
+            "volatility": 0.03916364524473516,
+            "max_drawdown": 0.04183472744534944,
+            "downside_risk": 0.02635963582589071,
+            "average_daily_turnover": 0.04325410618106865,
+            "total_cost": 0.005428390325724116,
+            "total_borrow_cost": 0.0013446428716150992,
+            "active_days": 251
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": -0.7951005042662441,
+            "annualized_return": -0.03449700274574352,
+            "total_return": -0.0340934062894912,
+            "volatility": 0.04299257553269377,
+            "max_drawdown": 0.058276505530901135,
+            "downside_risk": 0.031039682869856634,
+            "average_daily_turnover": 0.044270628004945294,
+            "total_cost": 0.005511693186615689,
+            "total_borrow_cost": 0.0013339285714285716,
+            "active_days": 249
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    },
+    {
+      "run": "independent-s107",
+      "seed": 107,
+      "topology": "independent",
+      "artifact_sha256": "afb9d488389590f9ce5da2a0ae8777c605f44ae193a703037416e9a463fcb541",
+      "validation_sharpe": 0.3200755831655966,
+      "process": {
+        "total_tokens": 112756,
+        "communication_turn_tokens_upper_bound": 0,
+        "total_backtests": 12,
+        "agent_turns": 8,
+        "communication_calls": 0,
+        "hypotheses": 11,
+        "successful_candidates": 10,
+        "unique_strategy_variants": 11,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 2.75,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 937.3585479170001,
+        "baseline_best_validation": -0.2517821847330097,
+        "final_validation": 0.3200755831655966,
+        "winner_from_initial": false
+      },
+      "evaluation": {
+        "artifact_sha256": "afb9d488389590f9ce5da2a0ae8777c605f44ae193a703037416e9a463fcb541",
+        "evaluated_at": "2026-10-26T15:18:23.907767+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": -0.373859564524329,
+          "annualized_return": -0.03810781717380096,
+          "total_return": -0.07419264733267161,
+          "volatility": 0.092503029890735,
+          "max_drawdown": 0.13404069376535166,
+          "downside_risk": 0.06426369635882852,
+          "average_daily_turnover": 0.09777928189617767,
+          "total_cost": 0.024444820474044414,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation": {
+          "observations": 500,
+          "sharpe": 0.3200755831655966,
+          "annualized_return": 0.023357892691902915,
+          "total_return": 0.04687762935540318,
+          "volatility": 0.0828184040665517,
+          "max_drawdown": 0.08076716871046374,
+          "downside_risk": 0.05525472132370295,
+          "average_daily_turnover": 0.10080077546552033,
+          "total_cost": 0.02520019386638008,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation_test_sharpe_gap": 0.6939351476899256,
+        "positive_hidden_sharpe": false,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": -1.2315638805593085,
+            "annualized_return": -0.09368688190015484,
+            "total_return": -0.09333302550170308,
+            "volatility": 0.07743566065213985,
+            "max_drawdown": 0.11503597872391003,
+            "downside_risk": 0.05526563823378182,
+            "average_daily_turnover": 0.09781179989061156,
+            "total_cost": 0.012275380886271753,
+            "total_borrow_cost": 0.0014940476190476192,
+            "active_days": 251
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": 0.2528340506887776,
+            "annualized_return": 0.021367748242354656,
+            "total_return": 0.021110704048333373,
+            "volatility": 0.10555896709842635,
+            "max_drawdown": 0.10966359285311245,
+            "downside_risk": 0.07220798695751354,
+            "average_daily_turnover": 0.09774650271303344,
+            "total_cost": 0.012169439587772665,
+            "total_borrow_cost": 0.0014821428571428577,
+            "active_days": 249
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    },
+    {
+      "run": "baseline-s117",
+      "seed": 117,
+      "topology": "baseline",
+      "artifact_sha256": "482c543321072ccc4b62f2007daeb1b51eaba48ad3669d10844f8a677669245c",
+      "validation_sharpe": -0.22260537668134422,
+      "process": {
+        "total_tokens": 48353,
+        "communication_turn_tokens_upper_bound": 0,
+        "total_backtests": 4,
+        "agent_turns": 4,
+        "communication_calls": 0,
+        "hypotheses": 4,
+        "successful_candidates": 4,
+        "unique_strategy_variants": 4,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 1.0
+      },
+      "evaluation": {
+        "artifact_sha256": "482c543321072ccc4b62f2007daeb1b51eaba48ad3669d10844f8a677669245c",
+        "evaluated_at": "2026-10-26T15:18:48.825105+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": 0.061151423983666575,
+          "annualized_return": 0.0010419305211832874,
+          "total_return": 0.0020683823647205113,
+          "volatility": 0.10181829353409147,
+          "max_drawdown": 0.16476410864902058,
+          "downside_risk": 0.07581766146984278,
+          "average_daily_turnover": 0.18757788116300952,
+          "total_cost": 0.046894470290752374,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation": {
+          "observations": 500,
+          "sharpe": -0.22260537668134422,
+          "annualized_return": -0.03962052012921091,
+          "total_return": -0.07707921102064397,
+          "volatility": 0.13847430356945867,
+          "max_drawdown": 0.19119420529802356,
+          "downside_risk": 0.10312886718122756,
+          "average_daily_turnover": 0.18696617572932211,
+          "total_cost": 0.04674154393233053,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation_test_sharpe_gap": -0.2837568006650108,
+        "positive_hidden_sharpe": true,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": 1.3057015891132129,
+            "annualized_return": 0.10281970037456234,
+            "total_return": 0.10239147696718609,
+            "volatility": 0.07724767637875446,
+            "max_drawdown": 0.048469074174985805,
+            "downside_risk": 0.05281666280212544,
+            "average_daily_turnover": 0.18888599145183316,
+            "total_cost": 0.023705191927205063,
+            "total_borrow_cost": 0.0014940476190476192,
+            "active_days": 251
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": -0.7336716012679844,
+            "annualized_return": -0.09204932974144764,
+            "total_return": -0.09100496211968723,
+            "volatility": 0.12153922208859985,
+            "max_drawdown": 0.1647641086490198,
+            "downside_risk": 0.09343875274498199,
+            "average_daily_turnover": 0.18625926396423548,
+            "total_cost": 0.023189278363547314,
+            "total_borrow_cost": 0.0014821428571428577,
+            "active_days": 249
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    },
+    {
+      "run": "centralized-s117",
+      "seed": 117,
+      "topology": "centralized",
+      "artifact_sha256": "adff49793b76db6500c4db15a9a035f3f027b742fe47efe13c8888d72c164d1f",
+      "validation_sharpe": -0.00968555820745492,
+      "process": {
+        "total_tokens": 158707,
+        "communication_turn_tokens_upper_bound": 22738,
+        "total_backtests": 12,
+        "agent_turns": 11,
+        "communication_calls": 3,
+        "hypotheses": 12,
+        "successful_candidates": 11,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1173.163934084,
+        "baseline_best_validation": -0.22260537668134422,
+        "final_validation": -0.00968555820745492,
+        "winner_from_initial": false
+      },
+      "evaluation": {
+        "artifact_sha256": "adff49793b76db6500c4db15a9a035f3f027b742fe47efe13c8888d72c164d1f",
+        "evaluated_at": "2026-10-26T15:19:58.907652+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": -0.577099872393113,
+          "annualized_return": -0.05027712149737451,
+          "total_return": -0.09728760644551138,
+          "volatility": 0.08337252608603736,
+          "max_drawdown": 0.11991881508115887,
+          "downside_risk": 0.057834551293762644,
+          "average_daily_turnover": 0.029371142258169742,
+          "total_cost": 0.0073427855645424355,
+          "total_borrow_cost": 0.0022960353097981855,
+          "active_days": 500
+        },
+        "validation": {
+          "observations": 500,
+          "sharpe": -0.00968555820745492,
+          "annualized_return": -0.00430302390323134,
+          "total_return": -0.008519667937920139,
+          "volatility": 0.08382586931165897,
+          "max_drawdown": 0.10615108682818553,
+          "downside_risk": 0.05619489429465267,
+          "average_daily_turnover": 0.029096762156360177,
+          "total_cost": 0.007274190539090045,
+          "total_borrow_cost": 0.0022921877816140476,
+          "active_days": 500
+        },
+        "validation_test_sharpe_gap": 0.5674143141856581,
+        "positive_hidden_sharpe": false,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": -1.1681961305227824,
+            "annualized_return": -0.07841233826312699,
+            "total_return": -0.07811366117951479,
+            "volatility": 0.06792379720084378,
+            "max_drawdown": 0.08956336223875694,
+            "downside_risk": 0.047674062594400955,
+            "average_daily_turnover": 0.030051055390913732,
+            "total_cost": 0.003771407451559674,
+            "total_borrow_cost": 0.0011510777967748964,
+            "active_days": 251
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": -0.17218562317089608,
+            "annualized_return": -0.02104653004367807,
+            "total_return": -0.020798600064441453,
+            "volatility": 0.09657807148739443,
+            "max_drawdown": 0.09011415086429142,
+            "downside_risk": 0.06652416852137036,
+            "average_daily_turnover": 0.028685767975765157,
+            "total_cost": 0.0035713781129827617,
+            "total_borrow_cost": 0.0011449575130232893,
+            "active_days": 249
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    },
+    {
+      "run": "decentralized-s117",
+      "seed": 117,
+      "topology": "decentralized",
+      "artifact_sha256": "3396f73f7acbb7276d2b60fc2caa60979aa3f52939903de4dcbc45e7c126151c",
+      "validation_sharpe": 0.9710647894461639,
+      "process": {
+        "total_tokens": 204557,
+        "communication_turn_tokens_upper_bound": 204557,
+        "total_backtests": 12,
+        "agent_turns": 8,
+        "communication_calls": 8,
+        "hypotheses": 12,
+        "successful_candidates": 12,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1121.0551062079999,
+        "baseline_best_validation": -0.22260537668134422,
+        "final_validation": 0.9710647894461639,
+        "winner_from_initial": false
+      },
+      "evaluation": {
+        "artifact_sha256": "3396f73f7acbb7276d2b60fc2caa60979aa3f52939903de4dcbc45e7c126151c",
+        "evaluated_at": "2026-10-26T15:20:25.840056+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": 0.0041990061656824755,
+          "annualized_return": -0.0010600287370929884,
+          "total_return": -0.0021021345664149482,
+          "volatility": 0.05047651041824146,
+          "max_drawdown": 0.08454111542061071,
+          "downside_risk": 0.037208455785403785,
+          "average_daily_turnover": 0.07105476407829664,
+          "total_cost": 0.017763691019574167,
+          "total_borrow_cost": 0.002849523821487728,
+          "active_days": 500
+        },
+        "validation": {
+          "observations": 500,
+          "sharpe": 0.9710647894461639,
+          "annualized_return": 0.07315453474198996,
+          "total_return": 0.1503707419772773,
+          "volatility": 0.07566117796143185,
+          "max_drawdown": 0.09196676087459488,
+          "downside_risk": 0.05076195059746463,
+          "average_daily_turnover": 0.07034312259547694,
+          "total_cost": 0.017585780648869235,
+          "total_borrow_cost": 0.002743072848389515,
+          "active_days": 500
+        },
+        "validation_test_sharpe_gap": 0.9668657832804815,
+        "positive_hidden_sharpe": true,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": -0.47800664679182353,
+            "annualized_return": -0.028894063212349663,
+            "total_return": -0.028781070328875002,
+            "volatility": 0.05784320993468025,
+            "max_drawdown": 0.07587865497785529,
+            "downside_risk": 0.044090519820676986,
+            "average_daily_turnover": 0.07376958293742189,
+            "total_cost": 0.009258082658646447,
+            "total_borrow_cost": 0.0014940476190476192,
+            "active_days": 251
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": 0.6769148957213352,
+            "annualized_return": 0.027805056121711358,
+            "total_return": 0.02746953848139433,
+            "volatility": 0.04180307985745682,
+            "max_drawdown": 0.04391033532583799,
+            "downside_risk": 0.028643854693560008,
+            "average_daily_turnover": 0.06831813944520254,
+            "total_cost": 0.008505608360927716,
+            "total_borrow_cost": 0.0013554762024401085,
+            "active_days": 249
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    },
+    {
+      "run": "hybrid-s117",
+      "seed": 117,
+      "topology": "hybrid",
+      "artifact_sha256": "f51a2db0f3527c5bee2bb661becd27b45a62a59b78c05b8ea8c0feef580fb3cb",
+      "validation_sharpe": 0.22617322089870842,
+      "process": {
+        "total_tokens": 204493,
+        "communication_turn_tokens_upper_bound": 204493,
+        "total_backtests": 12,
+        "agent_turns": 10,
+        "communication_calls": 10,
+        "hypotheses": 12,
+        "successful_candidates": 12,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1040.1660421249999,
+        "baseline_best_validation": -0.22260537668134422,
+        "final_validation": 0.22617322089870842,
+        "winner_from_initial": false
+      },
+      "evaluation": {
+        "artifact_sha256": "f51a2db0f3527c5bee2bb661becd27b45a62a59b78c05b8ea8c0feef580fb3cb",
+        "evaluated_at": "2026-10-26T15:21:03.023147+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": -0.9148565937345939,
+          "annualized_return": -0.08584530214682617,
+          "total_return": -0.16312975666209717,
+          "volatility": 0.09332965372094952,
+          "max_drawdown": 0.2196181375778833,
+          "downside_risk": 0.07168254928989737,
+          "average_daily_turnover": 0.08748844744301014,
+          "total_cost": 0.02187211186075254,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation": {
+          "observations": 500,
+          "sharpe": 0.22617322089870842,
+          "annualized_return": 0.022411485620377647,
+          "total_return": 0.04495755459427264,
+          "volatility": 0.14341210135010912,
+          "max_drawdown": 0.12811646789044306,
+          "downside_risk": 0.10072385099233455,
+          "average_daily_turnover": 0.08850705756067123,
+          "total_cost": 0.022126764390167804,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation_test_sharpe_gap": 1.1410298146333024,
+        "positive_hidden_sharpe": false,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": -0.17079832355666677,
+            "annualized_return": -0.012619280068787653,
+            "total_return": -0.012569519609019197,
+            "volatility": 0.06283401424785477,
+            "max_drawdown": 0.08484208425972228,
+            "downside_risk": 0.04573086982663857,
+            "average_daily_turnover": 0.0945879000870156,
+            "total_cost": 0.011870781460920458,
+            "total_borrow_cost": 0.0014940476190476192,
+            "active_days": 251
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": -1.3824511602490894,
+            "annualized_return": -0.15416441287091676,
+            "total_return": -0.1524767971447094,
+            "volatility": 0.11619518098870929,
+            "max_drawdown": 0.18519842512809326,
+            "downside_risk": 0.09060870704100316,
+            "average_daily_turnover": 0.08033197108298858,
+            "total_cost": 0.010001330399832078,
+            "total_borrow_cost": 0.0014821428571428577,
+            "active_days": 249
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    },
+    {
+      "run": "independent-s117",
+      "seed": 117,
+      "topology": "independent",
+      "artifact_sha256": "029e9d422ebb234370bc5a7e90b9a9dc6f12d96418555b97a4ff644f0250b8d5",
+      "validation_sharpe": 0.01079751902178099,
+      "process": {
+        "total_tokens": 149166,
+        "communication_turn_tokens_upper_bound": 0,
+        "total_backtests": 12,
+        "agent_turns": 8,
+        "communication_calls": 0,
+        "hypotheses": 12,
+        "successful_candidates": 12,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1136.033777709,
+        "baseline_best_validation": -0.22260537668134422,
+        "final_validation": 0.01079751902178099,
+        "winner_from_initial": false
+      },
+      "evaluation": {
+        "artifact_sha256": "029e9d422ebb234370bc5a7e90b9a9dc6f12d96418555b97a4ff644f0250b8d5",
+        "evaluated_at": "2026-10-26T15:21:27.487116+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": 0.02660296141016842,
+          "annualized_return": -0.007081920037131817,
+          "total_return": -0.014002461030574231,
+          "volatility": 0.1486319414745916,
+          "max_drawdown": 0.2765522130805175,
+          "downside_risk": 0.11205266618236327,
+          "average_daily_turnover": 0.056880020806634346,
+          "total_cost": 0.014220005201658587,
+          "total_borrow_cost": 0.002392261904761905,
+          "active_days": 500
+        },
+        "validation": {
+          "observations": 500,
+          "sharpe": 0.01079751902178099,
+          "annualized_return": -0.010953462300768324,
+          "total_return": -0.02161591648921224,
+          "volatility": 0.1595651418698955,
+          "max_drawdown": 0.18670946557357904,
+          "downside_risk": 0.11664972533490264,
+          "average_daily_turnover": 0.06915982129323595,
+          "total_cost": 0.01728995532330899,
+          "total_borrow_cost": 0.0024690476190476194,
+          "active_days": 500
+        },
+        "validation_test_sharpe_gap": -0.01580544238838743,
+        "positive_hidden_sharpe": true,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": 1.1286968835090527,
+            "annualized_return": 0.15052885648380188,
+            "total_return": 0.14988883962063326,
+            "volatility": 0.13196913110642164,
+            "max_drawdown": 0.1119544751448317,
+            "downside_risk": 0.09429192357626874,
+            "average_daily_turnover": 0.049538379165882815,
+            "total_cost": 0.006217066585318293,
+            "total_borrow_cost": 0.0011952380952380951,
+            "active_days": 251
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": -0.8699137518537258,
+            "annualized_return": -0.1441150427994704,
+            "total_return": -0.1425279514020481,
+            "volatility": 0.16347563016740677,
+            "max_drawdown": 0.2765522130805168,
+            "downside_risk": 0.12747576066161578,
+            "average_daily_turnover": 0.06428063145654854,
+            "total_cost": 0.008002938616340292,
+            "total_borrow_cost": 0.0011970238095238095,
+            "active_days": 249
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    },
+    {
+      "run": "baseline-s127",
+      "seed": 127,
+      "topology": "baseline",
+      "artifact_sha256": "a4a43c907a60781b58a2c8ef31fbdc29eba4512422c4993cf463eed997a6bf2e",
+      "validation_sharpe": 0.0,
+      "process": {
+        "total_tokens": 47353,
+        "communication_turn_tokens_upper_bound": 0,
+        "total_backtests": 4,
+        "agent_turns": 4,
+        "communication_calls": 0,
+        "hypotheses": 4,
+        "successful_candidates": 3,
+        "unique_strategy_variants": 4,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 1.0
+      },
+      "evaluation": {
+        "artifact_sha256": "a4a43c907a60781b58a2c8ef31fbdc29eba4512422c4993cf463eed997a6bf2e",
+        "evaluated_at": "2026-10-26T15:21:40.556248+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": 0.0,
+          "annualized_return": 0.0,
+          "total_return": 0.0,
+          "volatility": 0.0,
+          "max_drawdown": 0.0,
+          "downside_risk": 0.0,
+          "average_daily_turnover": 0.0,
+          "total_cost": 0.0,
+          "total_borrow_cost": 0.0,
+          "active_days": 0
+        },
+        "validation": {
+          "observations": 500,
+          "sharpe": 0.0,
+          "annualized_return": 0.0,
+          "total_return": 0.0,
+          "volatility": 0.0,
+          "max_drawdown": 0.0,
+          "downside_risk": 0.0,
+          "average_daily_turnover": 0.0,
+          "total_cost": 0.0,
+          "total_borrow_cost": 0.0,
+          "active_days": 0
+        },
+        "validation_test_sharpe_gap": 0.0,
+        "positive_hidden_sharpe": false,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": 0.0,
+            "annualized_return": 0.0,
+            "total_return": 0.0,
+            "volatility": 0.0,
+            "max_drawdown": 0.0,
+            "downside_risk": 0.0,
+            "average_daily_turnover": 0.0,
+            "total_cost": 0.0,
+            "total_borrow_cost": 0.0,
+            "active_days": 0
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": 0.0,
+            "annualized_return": 0.0,
+            "total_return": 0.0,
+            "volatility": 0.0,
+            "max_drawdown": 0.0,
+            "downside_risk": 0.0,
+            "average_daily_turnover": 0.0,
+            "total_cost": 0.0,
+            "total_borrow_cost": 0.0,
+            "active_days": 0
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    },
+    {
+      "run": "centralized-s127",
+      "seed": 127,
+      "topology": "centralized",
+      "artifact_sha256": "cfb13960ba149db41022669a23cd8d595930c46e1b362fe9435616e5a559713b",
+      "validation_sharpe": 0.0,
+      "process": {
+        "total_tokens": 74114,
+        "communication_turn_tokens_upper_bound": 16964,
+        "total_backtests": 8,
+        "agent_turns": 6,
+        "communication_calls": 2,
+        "hypotheses": 8,
+        "successful_candidates": 7,
+        "unique_strategy_variants": 8,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 2.0,
+        "inherited_trials": 4,
+        "additional_trials": 4,
+        "complete_eight_attempts": false,
+        "elapsed_seconds": 768.4929939589999,
+        "baseline_best_validation": 0.0,
+        "final_validation": 0.0,
+        "winner_from_initial": true
+      },
+      "evaluation": {
+        "artifact_sha256": "cfb13960ba149db41022669a23cd8d595930c46e1b362fe9435616e5a559713b",
+        "evaluated_at": "2026-10-26T15:21:53.631333+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": 0.0,
+          "annualized_return": 0.0,
+          "total_return": 0.0,
+          "volatility": 0.0,
+          "max_drawdown": 0.0,
+          "downside_risk": 0.0,
+          "average_daily_turnover": 0.0,
+          "total_cost": 0.0,
+          "total_borrow_cost": 0.0,
+          "active_days": 0
+        },
+        "validation": {
+          "active_days": 0,
+          "annualized_return": 0.0,
+          "average_daily_turnover": 0.0,
+          "downside_risk": 0.0,
+          "max_drawdown": 0.0,
+          "observations": 500,
+          "sharpe": 0.0,
+          "total_borrow_cost": 0.0,
+          "total_cost": 0.0,
+          "total_return": 0.0,
+          "volatility": 0.0
+        },
+        "validation_test_sharpe_gap": 0.0,
+        "positive_hidden_sharpe": false,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": 0.0,
+            "annualized_return": 0.0,
+            "total_return": 0.0,
+            "volatility": 0.0,
+            "max_drawdown": 0.0,
+            "downside_risk": 0.0,
+            "average_daily_turnover": 0.0,
+            "total_cost": 0.0,
+            "total_borrow_cost": 0.0,
+            "active_days": 0
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": 0.0,
+            "annualized_return": 0.0,
+            "total_return": 0.0,
+            "volatility": 0.0,
+            "max_drawdown": 0.0,
+            "downside_risk": 0.0,
+            "average_daily_turnover": 0.0,
+            "total_cost": 0.0,
+            "total_borrow_cost": 0.0,
+            "active_days": 0
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    },
+    {
+      "run": "decentralized-s127",
+      "seed": 127,
+      "topology": "decentralized",
+      "artifact_sha256": "d395bebce16b2832ef811b66f4a53632283287c80648786593439fe6019485b2",
+      "validation_sharpe": 0.7193147235345678,
+      "process": {
+        "total_tokens": 159542,
+        "communication_turn_tokens_upper_bound": 159542,
+        "total_backtests": 12,
+        "agent_turns": 8,
+        "communication_calls": 8,
+        "hypotheses": 12,
+        "successful_candidates": 10,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1075.312211208,
+        "baseline_best_validation": 0.0,
+        "final_validation": 0.7193147235345678,
+        "winner_from_initial": false
+      },
+      "evaluation": {
+        "artifact_sha256": "d395bebce16b2832ef811b66f4a53632283287c80648786593439fe6019485b2",
+        "evaluated_at": "2026-10-26T15:22:40.715773+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": 0.3815865165595397,
+          "annualized_return": 0.0542595484967745,
+          "total_return": 0.11053139215576269,
+          "volatility": 0.18212379948361382,
+          "max_drawdown": 0.2787462417849933,
+          "downside_risk": 0.1373603966921785,
+          "average_daily_turnover": 0.03935336156785987,
+          "total_cost": 0.009838340391964968,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation": {
+          "observations": 500,
+          "sharpe": 0.7193147235345678,
+          "annualized_return": 0.11774559679892094,
+          "total_return": 0.24714970036196449,
+          "volatility": 0.17632612051464955,
+          "max_drawdown": 0.1657015634240343,
+          "downside_risk": 0.11772143572454473,
+          "average_daily_turnover": 0.047079021758579045,
+          "total_cost": 0.011769755439644761,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation_test_sharpe_gap": 0.33772820697502814,
+        "positive_hidden_sharpe": true,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": 0.9550986542335258,
+            "annualized_return": 0.125294235483415,
+            "total_return": 0.12476723652343447,
+            "volatility": 0.1328543100680224,
+            "max_drawdown": 0.08648749531716926,
+            "downside_risk": 0.09520940209936973,
+            "average_daily_turnover": 0.030735324289209713,
+            "total_cost": 0.003857283198295819,
+            "total_borrow_cost": 0.0014940476190476192,
+            "active_days": 251
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": 0.05263611508876386,
+            "annualized_return": -0.012808212221540716,
+            "total_return": -0.012656702565122857,
+            "volatility": 0.22117916257233883,
+            "max_drawdown": 0.27874624178499297,
+            "downside_risk": 0.16955726541429134,
+            "average_daily_turnover": 0.04804062002947107,
+            "total_cost": 0.005981057193669148,
+            "total_borrow_cost": 0.0014821428571428577,
+            "active_days": 249
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    },
+    {
+      "run": "hybrid-s127",
+      "seed": 127,
+      "topology": "hybrid",
+      "artifact_sha256": "6db76e18ae88f6ef19efefcab6215e70755388b6069ea37cc2438d0c76ec7f9d",
+      "validation_sharpe": 0.5328973947217087,
+      "process": {
+        "total_tokens": 152788,
+        "communication_turn_tokens_upper_bound": 152788,
+        "total_backtests": 12,
+        "agent_turns": 10,
+        "communication_calls": 10,
+        "hypotheses": 12,
+        "successful_candidates": 10,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 914.2743782080001,
+        "baseline_best_validation": 0.0,
+        "final_validation": 0.5328973947217087,
+        "winner_from_initial": false
+      },
+      "evaluation": {
+        "artifact_sha256": "6db76e18ae88f6ef19efefcab6215e70755388b6069ea37cc2438d0c76ec7f9d",
+        "evaluated_at": "2026-10-26T15:23:21.560767+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": 1.1943440706565591,
+          "annualized_return": 0.21087979360765208,
+          "total_return": 0.46178331355743496,
+          "volatility": 0.17275333842900134,
+          "max_drawdown": 0.19203469413421437,
+          "downside_risk": 0.12016890208116611,
+          "average_daily_turnover": 0.03381770043831046,
+          "total_cost": 0.008454425109577616,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation": {
+          "observations": 500,
+          "sharpe": 0.5328973947217087,
+          "annualized_return": 0.07961296431246234,
+          "total_return": 0.1641477876763846,
+          "volatility": 0.1711736434801318,
+          "max_drawdown": 0.17459703859237263,
+          "downside_risk": 0.11625405696392568,
+          "average_daily_turnover": 0.03424007306648026,
+          "total_cost": 0.008560018266620065,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation_test_sharpe_gap": -0.6614466759348504,
+        "positive_hidden_sharpe": true,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": 0.9736757838080767,
+            "annualized_return": 0.13422010964252196,
+            "total_return": 0.13365338747622602,
+            "volatility": 0.13934702506113777,
+            "max_drawdown": 0.12862316718795108,
+            "downside_risk": 0.0992727859658547,
+            "average_daily_turnover": 0.03422059631223307,
+            "total_cost": 0.00429468483718525,
+            "total_borrow_cost": 0.0014940476190476192,
+            "active_days": 251
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": 1.3802446936853683,
+            "annualized_return": 0.2934000193291455,
+            "total_return": 0.2894446659853447,
+            "volatility": 0.20108208561198834,
+            "max_drawdown": 0.19203469413421426,
+            "downside_risk": 0.13806837138874878,
+            "average_daily_turnover": 0.03341156845295073,
+            "total_cost": 0.004159740272392366,
+            "total_borrow_cost": 0.0014821428571428577,
+            "active_days": 249
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    },
+    {
+      "run": "independent-s127",
+      "seed": 127,
+      "topology": "independent",
+      "artifact_sha256": "9423f5a2528e3e77a0dcde294252d534d32201840172352849b55252815844a9",
+      "validation_sharpe": 0.07765660596523129,
+      "process": {
+        "total_tokens": 99456,
+        "communication_turn_tokens_upper_bound": 0,
+        "total_backtests": 12,
+        "agent_turns": 8,
+        "communication_calls": 0,
+        "hypotheses": 12,
+        "successful_candidates": 8,
+        "unique_strategy_variants": 12,
+        "duplicate_variant_rate": 0.0,
+        "mean_trials_per_active_researcher": 3.0,
+        "inherited_trials": 4,
+        "additional_trials": 8,
+        "complete_eight_attempts": true,
+        "elapsed_seconds": 1151.203512708,
+        "baseline_best_validation": 0.0,
+        "final_validation": 0.07765660596523129,
+        "winner_from_initial": false
+      },
+      "evaluation": {
+        "artifact_sha256": "9423f5a2528e3e77a0dcde294252d534d32201840172352849b55252815844a9",
+        "evaluated_at": "2026-10-26T15:24:06.698387+00:00",
+        "evaluator_data_sha256": "c959bc587538b4a4a5d9e9280c6a32a37aadd8e32b966b2d9b96461f0770fc73",
+        "hidden": {
+          "observations": 500,
+          "sharpe": 0.7645336428978762,
+          "annualized_return": 0.11381837211910217,
+          "total_return": 0.23847050776704126,
+          "volatility": 0.15717131304007528,
+          "max_drawdown": 0.13819873058710808,
+          "downside_risk": 0.11149225064523187,
+          "average_daily_turnover": 0.05948629685515228,
+          "total_cost": 0.01487157421378807,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation": {
+          "observations": 500,
+          "sharpe": 0.07765660596523129,
+          "annualized_return": -0.0011405496218015454,
+          "total_return": -0.0022617252290703105,
+          "volatility": 0.1685543943006462,
+          "max_drawdown": 0.20366029055064339,
+          "downside_risk": 0.1245851329040002,
+          "average_daily_turnover": 0.06540104823454479,
+          "total_cost": 0.016350262058636197,
+          "total_borrow_cost": 0.002976190476190477,
+          "active_days": 500
+        },
+        "validation_test_sharpe_gap": -0.6868770369326449,
+        "positive_hidden_sharpe": true,
+        "by_calendar_year": {
+          "2024": {
+            "observations": 251,
+            "sharpe": 1.3621077384342974,
+            "annualized_return": 0.19806638955930111,
+            "total_return": 0.19720756547327412,
+            "volatility": 0.13987490884822856,
+            "max_drawdown": 0.10764100655509301,
+            "downside_risk": 0.09684621467696666,
+            "average_daily_turnover": 0.05950339275554289,
+            "total_cost": 0.007467675790820632,
+            "total_borrow_cost": 0.0014940476190476192,
+            "active_days": 251
+          },
+          "2025": {
+            "observations": 249,
+            "sharpe": 0.2845385087807031,
+            "annualized_return": 0.03488840291259643,
+            "total_return": 0.034465988591924956,
+            "volatility": 0.17303689877587677,
+            "max_drawdown": 0.1381987305871082,
+            "downside_risk": 0.12452454901206793,
+            "average_daily_turnover": 0.059469063638292685,
+            "total_cost": 0.00740389842296744,
+            "total_borrow_cost": 0.0014821428571428577,
+            "active_days": 249
+          }
+        },
+        "excluded_data_sessions": [
+          "2021-05-05",
+          "2025-11-12"
+        ],
+        "backend": "deepseek-flash"
+      }
+    }
+  ],
+  "usage": {
+    "baseline-s117": {
+      "confirmed_tokens": 48353,
+      "model_calls": 4,
+      "candidate_attempts": 4,
+      "unconfirmed_requests": []
+    },
+    "decentralized-s127": {
+      "confirmed_tokens": 159542,
+      "model_calls": 8,
+      "candidate_attempts": 8,
+      "unconfirmed_requests": []
+    },
+    "baseline-s127": {
+      "confirmed_tokens": 47353,
+      "model_calls": 4,
+      "candidate_attempts": 4,
+      "unconfirmed_requests": []
+    },
+    "decentralized-s117": {
+      "confirmed_tokens": 204557,
+      "model_calls": 8,
+      "candidate_attempts": 8,
+      "unconfirmed_requests": []
+    },
+    "centralized-s127": {
+      "confirmed_tokens": 74114,
+      "model_calls": 6,
+      "candidate_attempts": 4,
+      "unconfirmed_requests": []
+    },
+    "independent-s117": {
+      "confirmed_tokens": 149166,
+      "model_calls": 8,
+      "candidate_attempts": 8,
+      "unconfirmed_requests": []
+    },
+    "centralized-s117": {
+      "confirmed_tokens": 158707,
+      "model_calls": 11,
+      "candidate_attempts": 8,
+      "unconfirmed_requests": []
+    },
+    "independent-s127": {
+      "confirmed_tokens": 99456,
+      "model_calls": 8,
+      "candidate_attempts": 8,
+      "unconfirmed_requests": []
+    },
+    "hybrid-s117": {
+      "confirmed_tokens": 204493,
+      "model_calls": 10,
+      "candidate_attempts": 8,
+      "unconfirmed_requests": []
+    },
+    "hybrid-s127": {
+      "confirmed_tokens": 152788,
+      "model_calls": 10,
+      "candidate_attempts": 8,
+      "unconfirmed_requests": []
+    },
+    "hybrid-s107": {
+      "confirmed_tokens": 194375,
+      "model_calls": 10,
+      "candidate_attempts": 8,
+      "unconfirmed_requests": []
+    },
+    "centralized-s107": {
+      "confirmed_tokens": 133128,
+      "model_calls": 10,
+      "candidate_attempts": 8,
+      "unconfirmed_requests": []
+    },
+    "independent-s107": {
+      "confirmed_tokens": 112756,
+      "model_calls": 8,
+      "candidate_attempts": 8,
+      "unconfirmed_requests": []
+    },
+    "decentralized-s107": {
+      "confirmed_tokens": 108968,
+      "model_calls": 6,
+      "candidate_attempts": 6,
+      "unconfirmed_requests": [
+        {
+          "role": "researcher",
+          "max_total_tokens": 131072
+        }
+      ]
+    },
+    "baseline-s107": {
+      "confirmed_tokens": 40001,
+      "model_calls": 4,
+      "candidate_attempts": 4,
+      "unconfirmed_requests": []
+    }
+  },
+  "confirmed_tokens": 1887757,
+  "unconfirmed_requests": 1
+}
